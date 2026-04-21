@@ -1,0 +1,387 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════ */
+:root {
+  /* Moctale Core Colors (Strict) */
+  --bg-base: #050505;
+  --bg-surface: #0d0d0f;
+  --bg-elevated: #111115;
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-light: rgba(255, 255, 255, 0.10);
+
+  /* Primary Moctale Accents */
+  --accent-purple: #7c3aed;
+  --accent-indigo: #6366f1;
+  --accent-glow: rgba(124, 58, 237, 0.6);
+  --hover-glow: rgba(99, 102, 241, 0.5);
+
+  /* Typography Scale */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.70);
+  --text-muted: rgba(255, 255, 255, 0.40);
+
+  /* Transitions */
+  --moctale-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ═══════════════════════════════
+   RESET
+═══════════════════════════════ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.02em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -1.5px !important;
+  font-weight: 700 !important;
+}
+
+::selection {
+  background: rgba(124, 58, 237, 0.35);
+}
+
+/* ═══════════════════════════════
+   SCROLLBAR
+═══════════════════════════════ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-purple);
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+/* Custom Scrollbar Utility */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-purple);
+}
+
+/* ═══════════════════════════════
+   COMPONENTS
+═══════════════════════════════ */
+@layer components {
+
+  /* Glass card */
+  .glass {
+    @apply backdrop-blur-2xl border rounded-2xl;
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  }
+
+  /* Premium input */
+  .input-field {
+    @apply w-full rounded-xl px-4 py-3 text-sm outline-none transition-all duration-200;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .input-field::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+  }
+
+  .input-field:focus {
+    border-color: rgba(124, 58, 237, 0.7);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12), 0 0 20px rgba(124, 58, 237, 0.08);
+  }
+
+  /* Cinematic Moctale Premium Button */
+  .btn-primary {
+    @apply w-full py-3.5 rounded-xl font-bold text-sm transition-all text-white;
+    background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-indigo) 100%);
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    transition: all 200ms ease-out;
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 8px 30px var(--accent-glow);
+    transform: scale(1.03);
+  }
+
+  .btn-primary:active {
+    filter: brightness(0.9);
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+    transform: scale(0.98);
+  }
+
+  /* Secondary Button */
+  .btn-secondary {
+    @apply w-full py-3.5 rounded-xl font-bold text-sm transition-all;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 200ms ease-out;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent-purple);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.15);
+  }
+
+  /* Nav icon button */
+  .nav-icon-btn {
+    @apply flex flex-col items-center gap-1.5 px-4 py-2 rounded-xl transition-all cursor-pointer relative;
+    color: rgba(255, 255, 255, 0.5);
+    transition: all 200ms ease-out;
+  }
+
+  .nav-icon-btn:hover {
+    color: var(--accent-purple);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .nav-icon-btn.active {
+    color: #fff;
+  }
+
+  .nav-icon-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--accent-purple);
+  }
+
+  /* Cinematic Moctale Cards */
+  .cinematic-card {
+    @apply rounded-xl transition-all relative overflow-hidden;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-light);
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out;
+  }
+
+  .cinematic-card:hover {
+    border-color: rgba(124, 58, 237, 0.4);
+    transform: translateY(-6px);
+    box-shadow: 0 0 40px rgba(124, 58, 237, 0.4);
+  }
+
+  /* Section tag */
+  .tag {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest;
+    background: rgba(124, 58, 237, 0.15);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    color: #a78bfa;
+  }
+}
+
+/* ═══════════════════════════════
+   ANIMATIONS
+═══════════════════════════════ */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes glow-pulse {
+
+  0%,
+  100% {
+    opacity: 0.18;
+  }
+
+  50% {
+    opacity: 0.32;
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.stagger>*:nth-child(1) {
+  animation-delay: 0.05s;
+  opacity: 0;
+}
+
+.stagger>*:nth-child(2) {
+  animation-delay: 0.10s;
+  opacity: 0;
+}
+
+.stagger>*:nth-child(3) {
+  animation-delay: 0.15s;
+  opacity: 0;
+}
+
+.stagger>*:nth-child(4) {
+  animation-delay: 0.20s;
+  opacity: 0;
+}
+
+.stagger>*:nth-child(5) {
+  animation-delay: 0.25s;
+  opacity: 0;
+}
+
+.stagger>*:nth-child(6) {
+  animation-delay: 0.30s;
+  opacity: 0;
+}
+
+/* ═══════════════════════════════
+   CINEMATIC GLOW BACKGROUNDS
+═══════════════════════════════ */
+.glow-purple {
+  position: absolute;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.35) 0%, transparent 60%);
+  opacity: 0.4;
+  mix-blend-mode: screen;
+}
+
+.glow-indigo {
+  position: absolute;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 60%);
+  opacity: 0.3;
+  mix-blend-mode: screen;
+}
+
+/* ═══════════════════════════════
+   SMOOTH TRANSITIONS
+═══════════════════════════════ */
+* {
+  @apply transition-colors duration-200;
+}
+
+button, a, [role="button"] {
+  @apply active:scale-95 transition-transform duration-150;
+}
+
+input, textarea, select {
+  @apply transition-all duration-200;
+}
+
+/* ═══════════════════════════════
+   SCROLLING POSTERS (LOGIN)
+═══════════════════════════════ */
+@keyframes scrollUp {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes scrollDown {
+  0% {
+    transform: translateY(-50%);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.scrolling-column-up {
+  animation: scrollUp 45s linear infinite;
+}
+
+.scrolling-column-down {
+  animation: scrollDown 45s linear infinite;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
