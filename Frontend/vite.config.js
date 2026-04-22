@@ -8,4 +8,14 @@ export default defineConfig({
         host: true,
         port: 5173,
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'lucide-react', 'axios'],
+                },
+            },
+        },
+        chunkSizeWarningLimit: 1000,
+    },
 })
