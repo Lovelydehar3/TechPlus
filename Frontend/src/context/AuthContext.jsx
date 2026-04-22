@@ -12,13 +12,25 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // ✅ HYDRATE USER (IMPORTANT FIX)
     useEffect(() => {
         const hydrate = async () => {
             try {
+                // 🔥 STEP 1: localStorage se user lo
+                const storedUser = localStorage.getItem("user");
+                if (storedUser) {
+                    setUser(JSON.parse(storedUser));
+                }
+
+                // 🔥 STEP 2: backend verify
                 const response = await userAPI.getProfile();
-                if (response?.success) setUser(response.user);
+                if (response?.success) {
+                    setUser(response.user);
+                    localStorage.setItem("user", JSON.stringify(response.user));
+                }
             } catch {
                 setUser(null);
+                localStorage.removeItem("user");
             } finally {
                 setLoading(false);
             }
@@ -26,15 +38,22 @@ export function AuthProvider({ children }) {
         hydrate();
     }, []);
 
+    // ✅ LOGIN FIX
     const login = useCallback((userData) => {
         setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData)); // 🔥 SAVE
         setError(null);
     }, []);
 
     const updateUser = useCallback((partialUser) => {
-        setUser(prev => ({ ...(prev || {}), ...(partialUser || {}) }));
+        setUser(prev => {
+            const updated = { ...(prev || {}), ...(partialUser || {}) };
+            localStorage.setItem("user", JSON.stringify(updated)); // 🔥 UPDATE STORAGE
+            return updated;
+        });
     }, []);
 
+    // ✅ LOGOUT FIX
     const logout = useCallback(async () => {
         try {
             await authAPI.logout();
@@ -42,6 +61,7 @@ export function AuthProvider({ children }) {
             /* ignore */
         } finally {
             setUser(null);
+            localStorage.removeItem("user"); // 🔥 CLEAR STORAGE
             setError(null);
         }
     }, []);
@@ -61,15 +81,11 @@ export function AuthProvider({ children }) {
         try {
             setError(null);
             const response = await authAPI.verifyOtp(email, otp);
+
             if (response.success && response.user) {
-                login(response.user);
-                try {
-                    const profile = await userAPI.getProfile();
-                    if (profile?.success) setUser(profile.user);
-                } catch {
-                    /* keep login payload */
-                }
+                login(response.user); // 🔥 SAVE USER
             }
+
             return response;
         } catch (err) {
             const message = err?.message || 'OTP verification failed';
@@ -93,15 +109,11 @@ export function AuthProvider({ children }) {
         try {
             setError(null);
             const response = await authAPI.login(email, password);
+
             if (response.success && response.user) {
-                login(response.user);
-                try {
-                    const profile = await userAPI.getProfile();
-                    if (profile?.success) setUser(profile.user);
-                } catch {
-                    /* keep login payload */
-                }
+                login(response.user); // 🔥 SAVE USER
             }
+
             return response;
         } catch (err) {
             const message = err?.message || 'Login failed';
