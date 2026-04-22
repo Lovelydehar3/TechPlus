@@ -25,7 +25,7 @@ export const uploadProfileImage = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { profileImage: imageData },
-      { new: true }
+      { returnDocument: "after" }
     ).select('-password -otp -otpExpires -resetToken -resetTokenExpires')
     if (!user) return res.status(404).json({ success: false, message: "User not found" })
     res.status(200).json({ success: true, message: "Profile image updated", user })

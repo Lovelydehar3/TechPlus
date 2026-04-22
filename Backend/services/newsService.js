@@ -143,7 +143,7 @@ export const cacheNewsInDB = async (articles) => {
             image: article.image || NEWS_IMAGE_FALLBACK
           }
         },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: "after" }
       );
     }
   } catch {

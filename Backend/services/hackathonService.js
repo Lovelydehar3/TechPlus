@@ -304,12 +304,12 @@ export const bookmarkHackathon = async (userId, hackathonId) => {
     return { message: "Already bookmarked" };
   }
 
-  await Hackathon.findByIdAndUpdate(hackathonId, { $push: { bookmarkedBy: userId } }, { new: true });
+  await Hackathon.findByIdAndUpdate(hackathonId, { $push: { bookmarkedBy: userId } }, { returnDocument: "after" });
   return { success: true };
 };
 
 export const removeHackathonBookmark = async (userId, hackathonId) => {
-  await Hackathon.findByIdAndUpdate(hackathonId, { $pull: { bookmarkedBy: userId } }, { new: true });
+  await Hackathon.findByIdAndUpdate(hackathonId, { $pull: { bookmarkedBy: userId } }, { returnDocument: "after" });
   return { success: true };
 };
 
