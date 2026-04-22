@@ -12,6 +12,7 @@ import About from './pages/About';
 import Profile from './pages/Profile';
 import Bookmarks from './pages/Bookmarks';
 import PasswordReset from './pages/PasswordReset';
+import NotFound from './pages/NotFound';
 import Layout from './components/Layout';
 import Toast from './components/Toast';
 import ScrollToTop from './components/ScrollToTop';
@@ -45,7 +46,7 @@ function AppContent() {
                 <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
                 <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile user={user} /></ProtectedRoute>} />
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<NotFound />} />
             </Routes>
             <Toast />
         </ErrorBoundary>
