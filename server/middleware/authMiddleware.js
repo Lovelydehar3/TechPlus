@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken"
-import { jwtBlacklist } from "../server.js"
 
 export const protect = (req, res, next) => {
   try {
@@ -9,11 +8,6 @@ export const protect = (req, res, next) => {
 
     if (!token) {
       return res.status(401).json({ message: "Token required. Please login." })
-    }
-
-    // Check if token is blacklisted (logged out)
-    if (jwtBlacklist.has(token)) {
-      return res.status(401).json({ message: "Token has been revoked. Please login again." })
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET)

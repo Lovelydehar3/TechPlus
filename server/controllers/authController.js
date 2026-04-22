@@ -4,23 +4,10 @@ import validator from "validator"
 import crypto from "crypto"
 import { User } from "../models/userModel.js"
 import { generateOtp, sendOtpEmail, sendResetEmail } from "../emailVerify/sendOtp.js"
-import { jwtBlacklist } from "../server.js"
+import { buildAuthCookieOptions } from "../utils/cookies.js"
 
 function hasEmailConfig() {
   return Boolean(process.env.EMAIL && process.env.EMAIL_PASS)
-}
-
-function buildAuthCookieOptions() {
-  const sameSite = process.env.COOKIE_SAME_SITE === "none" ? "none" : "lax"
-  const secure =
-    sameSite === "none" ? true : process.env.NODE_ENV === "production"
-  return {
-    httpOnly: true,
-    sameSite,
-    secure,
-    path: "/",
-    maxAge: 7 * 24 * 60 * 60 * 1000
-  }
 }
 
 // ================== REGISTER ==================
@@ -224,12 +211,6 @@ export const login = async (req, res) => {
 // ================== LOGOUT ==================
 export const logout = async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1] || req.cookies?.techplus_token
-
-    if (token) {
-      jwtBlacklist.add(token)
-    }
-
     res.clearCookie('techplus_token', buildAuthCookieOptions())
 
     res.status(200).json({ success: true, message: "Logged out successfully" })

@@ -30,6 +30,8 @@ if (missingEnv.length > 0) {
 }
 
 const app = express()
+// Render / reverse proxies (needed for Secure cookies behind HTTPS proxies)
+app.set("trust proxy", 1)
 
 // ============ MIDDLEWARE ============
 app.use(helmet({
@@ -48,7 +50,10 @@ app.use(cors({
     if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
       return callback(null, true)
     }
-    callback(null, true) // permissive for dev
+    if (process.env.NODE_ENV !== "production") {
+      return callback(null, true) // permissive for dev
+    }
+    callback(new Error("Not allowed by CORS"))
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -59,9 +64,6 @@ app.use(cookieParser())
 app.use(express.json({ limit: '5mb' }))
 app.use(express.urlencoded({ extended: true, limit: '5mb' }))
 
-// ============ JWT BLACKLIST (In-memory) ============
-export const jwtBlacklist = new Set()
-
 // ============ ROUTES ============
 app.use('/api/auth', authLimiter, authRoute)
 app.use('/api/user', userRoute)
@@ -70,15 +72,23 @@ app.use('/api/hackathons', hackathonRoute)
 app.use('/api/playlists', playlistRoute)
 app.use('/api/roadmaps', roadmapRoute)
 
+app.get('/api/health', (req, res) => {
+  res.json({ success: true, status: "ok" })
+})
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../Frontend/dist")))
-  
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "../Frontend/dist", "index.html"))
-  })
+  // In production we usually deploy frontend (Vercel) and backend (Render) separately.
+  // Only serve static assets if explicitly enabled (e.g. single-server deployment).
+  if (process.env.SERVE_STATIC === "true") {
+    app.use(express.static(path.join(__dirname, "../Frontend/dist")))
+
+    app.get("*", (req, res) => {
+      res.sendFile(path.resolve(__dirname, "../Frontend/dist", "index.html"))
+    })
+  }
 } else {
   app.get('/', (req, res) => {
     res.json({ success: true, message: "TechPlus Server Running" })

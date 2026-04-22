@@ -10,16 +10,96 @@ export const ROADMAPS = [
         badge: 'Beginner to Pro',
         description: 'Master the modern web — HTML/CSS fundamentals to React, TypeScript, state management, and performance.',
         steps: [
-            { title: 'HTML & CSS Fundamentals', detail: 'Semantic HTML5 elements, CSS Flexbox & Grid layouts, Responsive Design with media queries, CSS variables, BEM naming convention', videoUrl: 'https://www.youtube.com/embed/qz0aGYMCzl0' },
-            { title: 'JavaScript ES6+', detail: 'Closures & Scope chains, Promises & Async/Await, Destructuring & Spread operator, Array methods (map, filter, reduce), ES Modules', videoUrl: 'https://www.youtube.com/embed/hdI2bqOjyvg' },
-            { title: 'TypeScript', detail: 'Type annotations & interfaces, Generics, Enums, Type guards, Utility types (Partial, Pick, Omit)', videoUrl: 'https://www.youtube.com/embed/BwuLxPH8IDs' },
-            { title: 'React & Hooks', detail: 'Virtual DOM, JSX, useState, useEffect, useRef, useMemo, useCallback, Custom Hooks, React.memo', videoUrl: 'https://www.youtube.com/embed/SqcY0GlETPk' },
-            { title: 'State Management', detail: 'Redux Toolkit (slices, thunks), Zustand, Context API, React Query / TanStack Query for server state', videoUrl: 'https://www.youtube.com/embed/0W6i5De-qpU' },
-            { title: 'Routing & Navigation', detail: 'React Router v6 (nested routes, dynamic segments), Protected routes, Lazy loading routes, URL parameters', videoUrl: 'https://www.youtube.com/embed/Ul3y1LXxzdU' },
-            { title: 'Styling & UI Libraries', detail: 'Tailwind CSS, Styled Components, CSS Modules, Material UI, Shadcn/UI, Framer Motion animations', videoUrl: 'https://www.youtube.com/embed/mr15Xzb1Ook' },
-            { title: 'Testing', detail: 'Jest unit testing, React Testing Library, Cypress E2E testing, Mocking APIs, Code coverage', videoUrl: 'https://www.youtube.com/embed/8Xwq35cPwYg' },
-            { title: 'Build Tools & Bundlers', detail: 'Vite, Webpack, ESBuild, Babel, Environment variables, Code splitting & tree shaking', videoUrl: 'https://www.youtube.com/embed/5IG4UmULyoA' },
-            { title: 'Web Performance', detail: 'Lighthouse audits, Lazy loading images, Code splitting, Bundle analysis, Core Web Vitals, Service Workers', videoUrl: 'https://www.youtube.com/embed/0fONene3OIA' },
+            {
+                title: 'HTML & CSS Fundamentals',
+                detail: 'Semantic HTML5 elements, CSS Flexbox & Grid layouts, Responsive Design with media queries, CSS variables, BEM naming convention',
+                videoUrl: 'https://www.youtube.com/embed/qz0aGYMCzl0',
+                links: [
+                    { title: 'MDN: HTML', url: 'https://developer.mozilla.org/en-US/docs/Web/HTML' },
+                    { title: 'MDN: CSS', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS' },
+                    { title: 'Flexbox Guide', url: 'https://css-tricks.com/snippets/css/a-guide-to-flexbox/' }
+                ]
+            },
+            {
+                title: 'JavaScript ES6+',
+                detail: 'Closures & Scope chains, Promises & Async/Await, Destructuring & Spread operator, Array methods (map, filter, reduce), ES Modules',
+                videoUrl: 'https://www.youtube.com/embed/hdI2bqOjyvg',
+                links: [
+                    { title: 'JavaScript.info', url: 'https://javascript.info/' },
+                    { title: 'MDN: Async function', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function' }
+                ]
+            },
+            {
+                title: 'TypeScript',
+                detail: 'Type annotations & interfaces, Generics, Enums, Type guards, Utility types (Partial, Pick, Omit)',
+                videoUrl: 'https://www.youtube.com/embed/BwuLxPH8IDs',
+                links: [
+                    { title: 'TypeScript Handbook', url: 'https://www.typescriptlang.org/docs/handbook/intro.html' },
+                    { title: 'TS Utility Types', url: 'https://www.typescriptlang.org/docs/handbook/utility-types.html' }
+                ]
+            },
+            {
+                title: 'React & Hooks',
+                detail: 'Virtual DOM, JSX, useState, useEffect, useRef, useMemo, useCallback, Custom Hooks, React.memo',
+                videoUrl: 'https://www.youtube.com/embed/SqcY0GlETPk',
+                links: [
+                    { title: 'React Docs', url: 'https://react.dev/learn' },
+                    { title: 'Hooks Reference', url: 'https://react.dev/reference/react' }
+                ]
+            },
+            {
+                title: 'State Management',
+                detail: 'Redux Toolkit (slices, thunks), Zustand, Context API, React Query / TanStack Query for server state',
+                videoUrl: 'https://www.youtube.com/embed/0W6i5De-qpU',
+                links: [
+                    { title: 'Redux Toolkit', url: 'https://redux-toolkit.js.org/' },
+                    { title: 'TanStack Query', url: 'https://tanstack.com/query/latest' }
+                ]
+            },
+            {
+                title: 'Routing & Navigation',
+                detail: 'React Router v6 (nested routes, dynamic segments), Protected routes, Lazy loading routes, URL parameters',
+                videoUrl: 'https://www.youtube.com/embed/Ul3y1LXxzdU',
+                links: [
+                    { title: 'React Router', url: 'https://reactrouter.com/en/main' }
+                ]
+            },
+            {
+                title: 'Styling & UI Libraries',
+                detail: 'Tailwind CSS, Styled Components, CSS Modules, Material UI, Shadcn/UI, Framer Motion animations',
+                videoUrl: 'https://www.youtube.com/embed/mr15Xzb1Ook',
+                links: [
+                    { title: 'Tailwind CSS', url: 'https://tailwindcss.com/docs' },
+                    { title: 'Framer Motion', url: 'https://www.framer.com/motion/' }
+                ]
+            },
+            {
+                title: 'Testing',
+                detail: 'Jest unit testing, React Testing Library, Cypress E2E testing, Mocking APIs, Code coverage',
+                videoUrl: 'https://www.youtube.com/embed/8Xwq35cPwYg',
+                links: [
+                    { title: 'Testing Library', url: 'https://testing-library.com/docs/react-testing-library/intro/' },
+                    { title: 'Cypress', url: 'https://docs.cypress.io/' }
+                ]
+            },
+            {
+                title: 'Build Tools & Bundlers',
+                detail: 'Vite, Webpack, ESBuild, Babel, Environment variables, Code splitting & tree shaking',
+                videoUrl: 'https://www.youtube.com/embed/5IG4UmULyoA',
+                links: [
+                    { title: 'Vite', url: 'https://vite.dev/' },
+                    { title: 'Webpack Concepts', url: 'https://webpack.js.org/concepts/' }
+                ]
+            },
+            {
+                title: 'Web Performance',
+                detail: 'Lighthouse audits, Lazy loading images, Code splitting, Bundle analysis, Core Web Vitals, Service Workers',
+                videoUrl: 'https://www.youtube.com/embed/0fONene3OIA',
+                links: [
+                    { title: 'Web Vitals', url: 'https://web.dev/vitals/' },
+                    { title: 'Lighthouse', url: 'https://developer.chrome.com/docs/lighthouse/overview/' }
+                ]
+            },
         ],
         color: 'var(--accent-purple)',
     },

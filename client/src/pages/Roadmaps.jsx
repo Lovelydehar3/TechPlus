@@ -91,6 +91,15 @@ export default function Roadmaps() {
         loadProgress();
     }, [selectedDomain]);
 
+    const getStepTopics = (detail) => {
+        if (!detail || typeof detail !== 'string') return [];
+        const parts = detail
+            .split(',')
+            .map((p) => p.trim())
+            .filter(Boolean);
+        return parts.length >= 2 ? parts : [detail.trim()];
+    };
+
     const downloadPDF = async () => {
         if (!selectedDomain || isDownloading) return;
         setIsDownloading(true);
@@ -165,13 +174,18 @@ export default function Roadmaps() {
                 doc.setFontSize(9.5);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(160, 160, 190);
-                wrapText(`Topics: ${step.detail}`, margin + 5, maxW - 5, 5);
+                const topics = getStepTopics(step.detail);
+                wrapText(`Focus:`, margin + 5, maxW - 5, 5);
+                topics.forEach((t) => wrapText(`• ${t}`, margin + 8, maxW - 8, 5));
                 
-                if (step.links && step.links.length > 0) {
+                const links = Array.isArray(step.links) ? step.links : [];
+                const inferredLinks = links.length > 0 ? links : [];
+
+                if (inferredLinks.length > 0) {
                     y += 2;
                     doc.setFont('helvetica', 'bold');
                     doc.setTextColor(168, 85, 247);
-                    const linkTexts = step.links.map(l => l.title || l.url).join(' \u2022 ');
+                    const linkTexts = inferredLinks.map(l => l.title || l.url).join(' \u2022 ');
                     wrapText(`Resources: ${linkTexts}`, margin + 5, maxW - 5, 5);
                     y += 2;
                 }
@@ -556,9 +570,16 @@ export default function Roadmaps() {
                                                                     <span className="w-1.5 h-1.5 rounded-full bg-[#7c3aed]" />
                                                                     Technical Focus
                                                                 </div>
-                                                                <p className="text-sm lg:text-base leading-relaxed font-medium mb-3" style={{ color: '#E2E8F0' }}>
-                                                                    {step.detail}
-                                                                </p>
+                                                                <div className="space-y-2.5 mb-3">
+                                                                    {getStepTopics(step.detail).map((t, tidx) => (
+                                                                        <div key={tidx} className="flex items-start gap-2.5">
+                                                                            <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#7c3aed] shrink-0" />
+                                                                            <p className="text-sm lg:text-base leading-relaxed font-medium" style={{ color: '#E2E8F0' }}>
+                                                                                {t}
+                                                                            </p>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
                                                                 {step.links && step.links.length > 0 && (
                                                                     <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/10">
                                                                         {step.links.map((link, lidx) => (

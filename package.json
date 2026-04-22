@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "npm start --prefix Backend",
-    "install-all": "npm install --prefix Backend && npm install --prefix Frontend",
-    "build-frontend": "npm run build --prefix Frontend",
+    "start": "npm start --prefix server",
+    "install-all": "npm install --prefix server && npm install --prefix client",
+    "build-frontend": "npm run build --prefix client",
     "heroku-postbuild": "npm run install-all && npm run build-frontend",
     "render-postbuild": "npm run install-all && npm run build-frontend"
   }

@@ -3,6 +3,7 @@ import { Bookmark } from "../models/bookmarkModel.js"
 import { Hackathon } from "../models/hackathonModel.js"
 import { Playlist } from "../models/playlistModel.js"
 import bcrypt from "bcryptjs"
+import { buildAuthCookieOptions } from "../utils/cookies.js"
 
 function buildUserStats(userDoc, savedHackathonsCount = 0) {
   return {
@@ -129,7 +130,7 @@ export const deleteAccount = async (req, res) => {
     await Bookmark.deleteMany({ userId: req.user.id })
     await User.findByIdAndDelete(req.user.id)
 
-    res.clearCookie('techplus_token')
+    res.clearCookie('techplus_token', buildAuthCookieOptions())
     res.status(200).json({ success: true, message: "Account deleted successfully" })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })

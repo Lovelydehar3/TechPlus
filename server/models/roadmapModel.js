@@ -4,7 +4,13 @@ const roadmapStepSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     detail: { type: String, required: true },
-    videoUrl: { type: String, default: "" }
+    videoUrl: { type: String, default: "" },
+    links: [
+      {
+        title: { type: String, required: true },
+        url: { type: String, required: true }
+      }
+    ]
   },
   { _id: false }
 )
