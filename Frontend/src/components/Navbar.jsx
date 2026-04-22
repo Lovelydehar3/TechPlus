@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import NewsSidebar from './NewsSidebar';
 
@@ -13,6 +13,7 @@ const Icons = {
     About: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><line x1="12" y1="8" x2="12" y2="8" /><path d="M10 12h2v4h2" /></svg>,
     Profile: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>,
     Bookmarks: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" /></svg>,
+    Admin: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>,
     Logout: () => <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>,
     Menu: () => <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>,
     Close: () => <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>,
@@ -36,7 +37,7 @@ const Icons = {
     Sun: () => <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>,
 };
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
     { label: 'Home', path: '/', icon: Icons.Home },
     { label: 'Roadmaps', path: '/roadmaps', icon: Icons.Roadmaps },
     { label: 'Hackathons', path: '/hackathons', icon: Icons.Hackathons },
@@ -55,6 +56,14 @@ export default function Navbar() {
         logout();
         navigate('/login');
     };
+
+    const navItems = useMemo(() => {
+        const items = [...BASE_NAV_ITEMS];
+        if (user?.role === 'admin') {
+            items.push({ label: 'Admin', path: '/admin', icon: Icons.Admin });
+        }
+        return items;
+    }, [user]);
 
     const displayName = user?.username || user?.name || 'Explorer';
     const profileImageSrc = user?.profileImage || user?.avatar || null;
@@ -105,7 +114,7 @@ export default function Navbar() {
                     <div className="flex items-center gap-10">
                         {/* Nav Items - Icon to Text Expand */}
                         <nav className="hidden md:flex items-center h-[64px] gap-2">
-                            {NAV_ITEMS.map(({ label, path, icon: Icon }) => {
+                            {navItems.map(({ label, path, icon: Icon }) => {
                                 const isActive = location.pathname === path;
                                 return (
                                     <Link
@@ -194,7 +203,7 @@ export default function Navbar() {
                     {/* Inner active marker (glow) */}
                     <div className="absolute inset-0 pointer-events-none opacity-20" style={{ background: 'radial-gradient(circle at 50% 120%, var(--accent-purple), transparent 70%)' }} />
                     
-                    {NAV_ITEMS.filter(item => item.label !== 'About').map(({ label, path, icon: Icon }) => {
+                    {navItems.filter(item => item.label !== 'About').map(({ label, path, icon: Icon }) => {
                         const isActive = location.pathname === path;
                         return (
                             <Link

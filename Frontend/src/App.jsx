@@ -14,7 +14,9 @@ const About = lazy(() => import('./pages/About'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Bookmarks = lazy(() => import('./pages/Bookmarks'));
 const PasswordReset = lazy(() => import('./pages/PasswordReset'));
+const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+
 import Layout from './components/Layout';
 import Toast from './components/Toast';
 import ScrollToTop from './components/ScrollToTop';
@@ -24,12 +26,25 @@ function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
     if (loading) {
         return (
-            <div className="h-screen flex items-center justify-center">
+            <div className="h-screen flex items-center justify-center bg-[#050505]">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-[#7c3aed]"></div>
             </div>
         );
     }
     if (!user) return <Navigate to="/login" replace />;
+    return <Layout>{children}</Layout>;
+}
+
+function AdminRoute({ children }) {
+    const { user, loading } = useAuth();
+    if (loading) {
+        return (
+            <div className="h-screen flex items-center justify-center bg-[#050505]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-[#7c3aed]"></div>
+            </div>
+        );
+    }
+    if (!user || user.role !== 'admin') return <Navigate to="/" replace />;
     return <Layout>{children}</Layout>;
 }
 
@@ -53,6 +68,7 @@ function AppContent() {
                     <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
                     <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile user={user} /></ProtectedRoute>} />
+                    <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </Suspense>
