@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import dns from "dns";
 
 export const generateOtp = () => {
   return crypto.randomInt(100000, 999999).toString();
@@ -7,16 +8,22 @@ export const generateOtp = () => {
 
 // DO NOT cache as a module-level singleton — reset on failure
 let transporter = null;
+dns.setDefaultResultOrder("ipv4first");
 
 const clean = (value) => (value || "").trim().replace(/^"|"$/g, "");
+const isHttpUrl = (value) => /^https?:\/\/[^/\s]+/i.test(String(value || "").trim());
 
-const resolveClientUrl = () => {
+const resolveClientUrl = (overrideUrl) => {
+  const fromOverride = clean(overrideUrl);
+  if (fromOverride && isHttpUrl(fromOverride)) return fromOverride.replace(/\/$/, "");
+
   const fromClient = clean(process.env.CLIENT_URL);
-  if (fromClient) return fromClient.replace(/\/$/, "");
+  if (fromClient && isHttpUrl(fromClient)) return fromClient.replace(/\/$/, "");
 
   const fromAllowed = clean(process.env.ALLOWED_ORIGINS)
     .split(",")
     .map((v) => v.trim().replace(/^"|"$/g, "").replace(/\/$/, ""))
+    .filter((v) => isHttpUrl(v))
     .find(Boolean);
 
   return fromAllowed || "http://localhost:5173";
@@ -29,6 +36,7 @@ const createTransporter = () => {
     host: "smtp.gmail.com",
     port: 465,       // 465 (SSL) works on Render; 587 is blocked on free tier
     secure: true,    // true for port 465
+    family: 4,
     pool: false,
     auth: {
       user: clean(process.env.EMAIL),
@@ -78,9 +86,9 @@ export const sendOtpEmail = async (email, otp) => {
   }
 };
 
-export const sendResetEmail = async (email, resetToken) => {
+export const sendResetEmail = async (email, resetToken, clientUrlOverride = "") => {
   const mailer = createTransporter();
-  const resetLink = `${resolveClientUrl()}/password-reset?token=${resetToken}`;
+  const resetLink = `${resolveClientUrl(clientUrlOverride)}/password-reset?token=${resetToken}`;
   try {
     await mailer.sendMail({
       from: `"TechPlus" <${clean(process.env.EMAIL)}>`,

@@ -12,6 +12,12 @@ function hasEmailConfig() {
 
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
 const EMAIL_TIMEOUT_MS = 25000
+const maskEmail = (email) => {
+  const [name = "", domain = ""] = String(email || "").split("@")
+  if (!name || !domain) return email
+  const prefix = name.slice(0, 2)
+  return `${prefix}${"*".repeat(Math.max(name.length - 2, 1))}@${domain}`
+}
 
 async function sendEmailWithTimeout(task) {
   return Promise.race([
@@ -282,12 +288,15 @@ export const forgotPassword = async (req, res) => {
 
     // Only send email if config is present
     if (hasEmailConfig()) {
-      await sendEmailWithTimeout(sendResetEmail(email, resetToken))
+      const originFromClient = String(req.body?.clientOrigin || "").trim()
+      const originFromHeader = String(req.headers.origin || "").trim()
+      await sendEmailWithTimeout(sendResetEmail(email, resetToken, originFromClient || originFromHeader))
     }
 
     res.status(200).json({
       success: true,
       message: hasEmailConfig() ? "Password reset email sent" : "Password reset token generated in development mode",
+      recipientHint: maskEmail(email),
       ...(hasEmailConfig() ? {} : { devResetToken: resetToken })
     })
 

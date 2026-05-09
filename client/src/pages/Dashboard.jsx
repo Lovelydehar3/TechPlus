@@ -1,4 +1,4 @@
-﻿import { memo, useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react';
+import { memo, useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
@@ -92,13 +92,13 @@ const NewsListCard = memo(function NewsListCard({ item, index, onOpen }) {
           <h3 className="text-[16px] md:text-2xl font-black text-white leading-tight lg:leading-tight group-hover:text-[#a855f7] transition-colors uppercase tracking-tight line-clamp-2">
             {item.title}
           </h3>
-          <p className="text-[12px] md:text-sm text-white/45 leading-relaxed line-clamp-2 italic">
+          <p className="text-[12px] md:text-sm text-white/70 leading-relaxed line-clamp-2 italic">
             {item.description || 'Synthesizing full intel brief... Click to explore original report transmission.'}
           </p>
         </div>
 
         <div className="flex items-center justify-between mt-1.5 md:mt-0 pt-3 border-t border-white/[0.03]">
-          <div className="flex items-center gap-3 md:gap-4 text-[9px] md:text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
+          <div className="flex items-center gap-3 md:gap-4 text-[9px] md:text-[10px] font-bold text-white/50 uppercase tracking-[0.2em]">
             <span className="hidden md:inline truncate max-w-[80px] md:max-w-none">
               {typeof item.source === 'string' ? item.source : item.source?.name || 'Intel Source'}
             </span>
@@ -302,7 +302,7 @@ export default function Dashboard() {
                     <div className="w-1.5 h-6 rounded-full bg-[#7c3aed] shadow-[0_0_15px_rgba(124,58,237,0.6)] shrink-0" />
                     <h2 className="text-xl md:text-3xl font-black text-white uppercase tracking-tight truncate">Latest News</h2>
                   </div>
-                  <p className="text-white/40 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] ml-4">Technology Intelligence</p>
+                  <p className="text-white/60 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] ml-4">Technology Intelligence</p>
                 </div>
                 <button
                   type="button"

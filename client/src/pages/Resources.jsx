@@ -1,4 +1,4 @@
-﻿import { memo, useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from 'react';
+import { memo, useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { playlistAPI, userAPI } from '../config/api';
@@ -220,8 +220,8 @@ const ResourceCard = memo(function ResourceCard({ item, isSaved, savingId, onTog
             className="group cinematic-card flex flex-col justify-between h-full p-4 sm:p-6 cursor-pointer transition-all duration-300 ease-in-out"
         >
             <div className="mb-5 sm:mb-8">
-                <h3 className="text-lg font-bold text-white/90 group-hover:text-[#7c3aed] transition-colors duration-200 mb-2 leading-snug">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-white/40">{item.description}</p>
+                <h3 className="text-lg font-bold text-white group-hover:text-[#a855f7] transition-colors duration-200 mb-2 leading-snug">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-white/70">{item.description}</p>
             </div>
 
             <div className="mt-auto flex items-center justify-between gap-3">
@@ -244,7 +244,7 @@ const ResourceCard = memo(function ResourceCard({ item, isSaved, savingId, onTog
                             onToggleSaved(item._id);
                         }}
                         disabled={savingId === String(item._id)}
-                        className={`px-3 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${isSaved ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-white/10 bg-white/5 text-white/45 hover:text-white'}`}
+                        className={`px-3 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${isSaved ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-white/10 bg-white/5 text-white/60 hover:text-white'}`}
                     >
                         {savingId === String(item._id) ? '...' : isSaved ? 'Saved' : 'Save'}
                     </button>
@@ -532,7 +532,7 @@ export default function Resources() {
                     <motion.div key={activeSection} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: 'easeInOut' }}>
                         <div className="mb-6 pb-6 md:mb-10 md:pb-8 border-b border-white/5">
                             <h1 className="text-xl sm:text-3xl font-black text-white uppercase tracking-tighter mb-3 sm:mb-4">{activeSection}</h1>
-                            <p className="text-base text-white/50 leading-relaxed max-w-2xl mb-8">High-quality developer courses, trusted certifications, and curated YouTube learning paths.</p>
+                            <p className="text-base text-white/70 leading-relaxed max-w-2xl mb-8">High-quality developer courses, trusted certifications, and curated YouTube learning paths.</p>
                             <div className="relative max-w-md">
                                 <input
                                     type="text"

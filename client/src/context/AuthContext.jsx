@@ -107,10 +107,10 @@ export function AuthProvider({ children }) {
         }
     }, [login]);
 
-    const forgotPassword = useCallback(async (email) => {
+    const forgotPassword = useCallback(async (email, clientOrigin) => {
         try {
             setError(null);
-            return await authAPI.forgotPassword(email);
+            return await authAPI.forgotPassword(email, clientOrigin);
         } catch (err) {
             const message = err?.message || 'Failed to send reset email';
             setError(message);

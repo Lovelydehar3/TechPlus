@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { roadmapAPI } from '../config/api';
@@ -62,7 +62,7 @@ export default function RoadmapDetail() {
                     </span>
                 </div>
                 <h1 className="text-2xl sm:text-4xl font-black tracking-tighter text-white mb-3">{roadmap.title}</h1>
-                <p style={{ color: 'rgba(255,255,255,0.5)' }}>{roadmap.description}</p>
+                <p style={{ color: 'rgba(255,255,255,0.7)' }}>{roadmap.description}</p>
             </div>
 
             <div className="relative">
@@ -92,10 +92,10 @@ export default function RoadmapDetail() {
                                     onClick={() => setOpenStep(isOpen ? null : idx)}
                                     className="w-full text-left py-4 flex items-center gap-4 group"
                                 >
-                                    <span className="text-[11px] font-black uppercase shrink-0" style={{ color: isOpen ? '#a855f7' : 'rgba(255,255,255,0.2)' }}>
+                                    <span className="text-[11px] font-black uppercase shrink-0 transition-colors !text-[#a855f7] group-hover:!text-white">
                                         {String(idx + 1).padStart(2, '0')}
                                     </span>
-                                    <span className="text-sm sm:text-base font-semibold transition-colors duration-200 leading-snug" style={{ color: isOpen ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.6)' }}>
+                                    <span className="text-sm sm:text-base font-semibold transition-colors duration-200 leading-snug !text-[#a855f7] group-hover:!text-white">
                                         {step.title}
                                     </span>
                                     <span className={`ml-auto text-xs transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} style={{ color: 'rgba(255,255,255,0.2)' }}>v</span>
@@ -112,7 +112,7 @@ export default function RoadmapDetail() {
                                         >
                                             <div className="pb-4">
                                                 <div className="p-5 rounded-3xl" style={{ background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                                    <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>{step.detail}</p>
+                                                    <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.85)' }}>{step.detail}</p>
                                                     {step.videoUrl ? (
                                                         <div className="rounded-2xl overflow-hidden aspect-video border border-white/10 shadow-2xl">
                                                             <iframe

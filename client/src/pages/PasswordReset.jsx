@@ -48,6 +48,7 @@ export default function PasswordReset() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [devResetLink, setDevResetLink] = useState('');
+  const [recipientHint, setRecipientHint] = useState('');
   const { forgotPassword, resetPassword } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
@@ -63,7 +64,8 @@ export default function PasswordReset() {
 
     setLoading(true);
     try {
-      const response = await forgotPassword(email);
+      const response = await forgotPassword(email, window.location.origin);
+      setRecipientHint(response?.recipientHint || email);
       if (response?.devResetToken) {
         const resetLink = `${window.location.origin}/password-reset?token=${response.devResetToken}`;
         setDevResetLink(resetLink);
@@ -228,7 +230,7 @@ export default function PasswordReset() {
                     Check Your Email
                   </h2>
                   <p className="text-sm text-gray-600 text-center mb-6 leading-relaxed">
-                    We've sent a password reset link to <strong>{email}</strong>. Click the link to proceed.
+                    We've sent a password reset link to <strong>{recipientHint || email}</strong>. Click the link to proceed.
                   </p>
                   
                   {devResetLink && (

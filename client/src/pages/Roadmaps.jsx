@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo, useDeferredValue } from 'react';
+import { useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { userAPI, roadmapAPI } from '../config/api';
@@ -381,7 +381,7 @@ export default function Roadmaps() {
                                 <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black text-white uppercase tracking-tighter mb-4 sm:mb-6 leading-tight">
                                     {selectedDomain.title}
                                 </h1>
-                                <p className="text-base lg:text-lg text-white/40 leading-relaxed max-w-2xl mb-8">
+                                <p className="text-base lg:text-lg text-white/70 leading-relaxed max-w-2xl mb-8">
                                     {selectedDomain.description}
                                 </p>
                                 <div className="flex items-center gap-4">
@@ -392,7 +392,7 @@ export default function Roadmaps() {
                                     >
                                         {isDownloading ? 'Preparing...' : 'Download Full Plan (PDF)'}
                                     </button>
-                                    <div className="hidden sm:flex items-center gap-2 px-4 py-3 rounded-2xl border border-white/5 bg-white/[0.02] text-[10px] font-bold text-white/30 uppercase tracking-widest">
+                                    <div className="hidden sm:flex items-center gap-2 px-4 py-3 rounded-2xl border border-white/5 bg-white/[0.02] text-[10px] font-bold text-white/60 uppercase tracking-widest">
                                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                                         {selectedDomain.steps?.length || 0} Strategic Steps
                                     </div>
@@ -420,24 +420,26 @@ export default function Roadmaps() {
                                                         e.stopPropagation();
                                                         toggleStepCompletion(idx);
                                                     }}
-                                                    className={`w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shrink-0 ${isCompleted ? 'bg-green-500/10 border-green-500/30 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 'bg-white/5 border-white/10 text-white/20 group-hover:border-[#7c3aed]/30 group-hover:text-[#a855f7]'}`}
+                                                    className={`w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shrink-0 ${isCompleted ? 'bg-green-500/10 border-green-500/30 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 'bg-[#7c3aed]/5 border-[#7c3aed]/20 text-[#a855f7] group-hover:border-[#7c3aed]/60 group-hover:bg-[#7c3aed]/10'}`}
                                                 >
                                                     {isCompleted ? (
                                                         <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" /></svg>
                                                     ) : (
-                                                        <span className="text-sm font-black tracking-tight">{String(idx + 1).padStart(2, '0')}</span>
+                                                        <span className="text-sm font-black tracking-tight text-[#a855f7] group-hover:text-white transition-colors">
+                                                            {String(idx + 1).padStart(2, '0')}
+                                                        </span>
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className={`text-sm sm:text-base lg:text-xl font-black uppercase tracking-tight leading-snug transition-colors ${isExpanded ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>
+                                                    <h3 className={`text-sm sm:text-base lg:text-xl font-black uppercase tracking-tight leading-snug transition-colors ${isExpanded ? '!text-white' : '!text-[#a855f7] group-hover:!text-white'}`}>
                                                         {step.title}
                                                     </h3>
                                                     <div className="flex items-center gap-4 mt-1">
-                                                        <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">PHASE {idx + 1}</span>
+                                                        <span className="text-[10px] font-bold !text-[#a855f7] group-hover:!text-white uppercase tracking-widest transition-colors">PHASE {idx + 1}</span>
                                                         {isCompleted && <span className="text-[10px] font-black text-green-400 uppercase tracking-widest">Verified</span>}
                                                     </div>
                                                 </div>
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isExpanded ? 'bg-[#7c3aed] text-white rotate-180' : 'text-white/20'}`}>
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isExpanded ? 'bg-[#7c3aed] text-white rotate-180' : 'text-[#a855f7]/40 group-hover:text-white'}`}>
                                                     <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
                                                 </div>
                                             </div>
