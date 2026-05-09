@@ -10,10 +10,23 @@ function hasEmailConfig() {
   return Boolean(process.env.EMAIL && process.env.EMAIL_PASS)
 }
 
+const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
+const EMAIL_TIMEOUT_MS = 12000
+
+async function sendEmailWithTimeout(task) {
+  return Promise.race([
+    task,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Email service timeout. Please try again.")), EMAIL_TIMEOUT_MS)
+    })
+  ])
+}
+
 // ================== REGISTER ==================
 export const register = async (req, res) => {
   try {
-    const { username, email, password, confirmPassword } = req.body
+    const { username, password, confirmPassword } = req.body
+    const email = normalizeEmail(req.body.email)
 
     // Validation
     if (!username || !email || !password || !confirmPassword) {
@@ -43,6 +56,27 @@ export const register = async (req, res) => {
     // Check if user exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }] })
     if (existingUser) {
+      if (existingUser.email === email && !existingUser.isVerified) {
+        const hashedPassword = await bcrypt.hash(password, 10)
+        const otp = generateOtp()
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000)
+
+        existingUser.username = username
+        existingUser.password = hashedPassword
+        existingUser.otp = otp
+        existingUser.otpExpires = otpExpires
+        await existingUser.save()
+
+        if (hasEmailConfig()) {
+          await sendEmailWithTimeout(sendOtpEmail(email, otp))
+        }
+
+        return res.status(200).json({
+          success: true,
+          message: hasEmailConfig() ? "Account exists but unverified. New OTP sent." : "OTP regenerated in development mode.",
+          ...(hasEmailConfig() ? {} : { devOtp: otp })
+        })
+      }
       return res.status(400).json({ success: false, message: "Email or username already registered" })
     }
 
@@ -52,7 +86,7 @@ export const register = async (req, res) => {
     const otp = generateOtp()
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000) // 10 min
 
-    const user = await User.create({
+    await User.create({
       username,
       email,
       password: hashedPassword,
@@ -63,7 +97,7 @@ export const register = async (req, res) => {
 
     // Only attempt to send email if config is present; skip gracefully in dev mode
     if (hasEmailConfig()) {
-      await sendOtpEmail(email, otp)
+      await sendEmailWithTimeout(sendOtpEmail(email, otp))
     }
 
     res.status(201).json({
@@ -80,7 +114,8 @@ export const register = async (req, res) => {
 // ================== VERIFY OTP ==================
 export const verifyOtp = async (req, res) => {
   try {
-    const { email, otp } = req.body
+    const email = normalizeEmail(req.body.email)
+    const { otp } = req.body
 
     if (!email || !otp) {
       return res.status(400).json({ success: false, message: "Email and OTP are required" })
@@ -133,7 +168,7 @@ export const verifyOtp = async (req, res) => {
 // ================== RESEND OTP ==================
 export const resendOtp = async (req, res) => {
   try {
-    const { email } = req.body
+    const email = normalizeEmail(req.body.email)
 
     if (!email) {
       return res.status(400).json({ success: false, message: "Email is required" })
@@ -152,7 +187,7 @@ export const resendOtp = async (req, res) => {
 
     // Only attempt to send email if config is present
     if (hasEmailConfig()) {
-      await sendOtpEmail(email, otp)
+      await sendEmailWithTimeout(sendOtpEmail(email, otp))
     }
 
     res.status(200).json({
@@ -169,7 +204,8 @@ export const resendOtp = async (req, res) => {
 // ================== LOGIN ==================
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body
+    const email = normalizeEmail(req.body.email)
+    const { password } = req.body
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: "Email and password are required" })
@@ -223,7 +259,7 @@ export const logout = async (req, res) => {
 // ================== FORGOT PASSWORD ==================
 export const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body
+    const email = normalizeEmail(req.body.email)
 
     if (!email) {
       return res.status(400).json({ success: false, message: "Email is required" })
@@ -246,7 +282,7 @@ export const forgotPassword = async (req, res) => {
 
     // Only send email if config is present
     if (hasEmailConfig()) {
-      await sendResetEmail(email, resetToken)
+      await sendEmailWithTimeout(sendResetEmail(email, resetToken))
     }
 
     res.status(200).json({

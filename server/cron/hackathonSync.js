@@ -12,7 +12,12 @@ export const startHackathonSyncJob = () => {
     }
   });
 
-  syncHackathonsFromAPI().catch(() => {});
+  const shouldRunImmediateSync =
+    process.env.HACKATHON_SYNC_ON_BOOT === "true" && process.env.NODE_ENV !== "production";
+
+  if (shouldRunImmediateSync) {
+    syncHackathonsFromAPI().catch(() => {});
+  }
 
   return task;
 };
