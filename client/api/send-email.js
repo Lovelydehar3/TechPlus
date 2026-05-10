@@ -33,15 +33,17 @@ export default async function handler(req, res) {
     }
   }
 
-  const emailUser = clean(process.env.EMAIL)
-  const emailPass = clean(process.env.EMAIL_PASS)
+  const bodySmtpUser = clean(body.smtpUser)
+  const bodySmtpPass = clean(body.smtpPass)
+  const emailUser = clean(process.env.EMAIL) || bodySmtpUser
+  const emailPass = clean(process.env.EMAIL_PASS) || bodySmtpPass
   const from = clean(body.from) || emailUser
   const to = clean(body.to)
   const subject = clean(body.subject)
   const html = String(body.html || "")
 
   if (!emailUser || !emailPass) {
-    return res.status(503).json({ success: false, message: "Email credentials are not configured on Vercel" })
+    return res.status(503).json({ success: false, message: "Email credentials are not configured on Vercel or relay payload" })
   }
 
   if (!isEmail(to) || !subject || !html) {
