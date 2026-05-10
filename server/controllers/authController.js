@@ -13,7 +13,7 @@ function hasEmailConfig() {
 }
 
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
-const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 90000
+const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 15000
 const isMailTransportError = (error) => {
   const raw = `${error?.message || ""} ${error?.code || ""}`
   return /ENETUNREACH|ETIMEDOUT|EAI_AGAIN|ECONNREFUSED|ESOCKET|timeout|network|aborted/i.test(raw)
@@ -301,16 +301,12 @@ export const forgotPassword = async (req, res) => {
 
     console.log(`[Auth] ForgotPassword request for: ${email}. Email config detected: ${hasEmailConfig()}`);
 
-    // Do not block API response on provider latency/timeouts.
-    // Email delivery is attempted in background and failures are logged.
     if (hasEmailConfig()) {
       const originFromClient = String(req.body?.clientOrigin || "").trim()
       const originFromHeader = String(req.headers.origin || "").trim()
-      void sendEmailWithTimeout(
+      await sendEmailWithTimeout(
         sendResetEmail(email, resetToken, originFromClient || originFromHeader)
-      ).catch((error) => {
-        console.error("[Auth] Background reset email error:", error.message, error.code || "", error.responseCode || "")
-      })
+      )
     }
 
     res.status(200).json({
