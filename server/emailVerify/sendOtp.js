@@ -1,14 +1,11 @@
 import nodemailer from "nodemailer";
 import crypto from "crypto";
-import dns from "dns";
-
-dns.setDefaultResultOrder("ipv4first");
 
 export const generateOtp = () => crypto.randomInt(100000, 999999).toString();
 
 const clean = (value) => (value || "").trim().replace(/^"|"$/g, "");
 const isHttpUrl = (value) => /^https?:\/\/[^/\s]+/i.test(String(value || "").trim());
-const EMAIL_PROVIDER_TIMEOUT_MS = Number(clean(process.env.EMAIL_PROVIDER_TIMEOUT_MS)) || 20000;
+const EMAIL_PROVIDER_TIMEOUT_MS = Number(clean(process.env.EMAIL_PROVIDER_TIMEOUT_MS)) || 30000;
 
 const resolveClientUrl = (overrideUrl) => {
   const fromOverride = clean(overrideUrl);
@@ -26,70 +23,35 @@ const resolveClientUrl = (overrideUrl) => {
   return fromAllowed || "http://localhost:5173";
 };
 
-const forceIpv4Lookup = (hostname, _options, callback) => {
-  dns.resolve4(hostname, (resolveErr, addresses) => {
-    if (!resolveErr && Array.isArray(addresses) && addresses.length > 0) {
-      return callback(null, addresses[0], 4);
-    }
-
-    dns.lookup(hostname, { family: 4, all: false }, callback);
-  });
-};
-
 const getConfiguredSenderAddress = () => clean(process.env.EMAIL_FROM) || clean(process.env.EMAIL);
 const buildFromAddress = () => getConfiguredSenderAddress() || "no-reply@techplus.dev";
 const smtpEnabled = () => Boolean(clean(process.env.EMAIL) && clean(process.env.EMAIL_PASS));
 const brevoEnabled = () => Boolean(clean(process.env.BREVO_API_KEY) && getConfiguredSenderAddress());
 
-// IMPORTANT: Build SMTP options lazily (at send-time) so dotenv.config()
-// has already run. Reading process.env at module-load time caused
-// "Missing credentials for PLAIN" because env vars weren't loaded yet.
-const getBaseSmtpOptions = () => ({
-  host: "smtp.gmail.com",
-  auth: {
-    user: clean(process.env.EMAIL),
-    pass: clean(process.env.EMAIL_PASS)
-  },
-  tls: {
-    servername: "smtp.gmail.com",
-    rejectUnauthorized: false
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
-  lookup: forceIpv4Lookup
-});
+// Use nodemailer's built-in 'gmail' service — it handles host, port, TLS,
+// and DNS automatically. This works reliably on cloud platforms like Render
+// where manual host + custom DNS lookup can fail.
+function createGmailTransporter() {
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: clean(process.env.EMAIL),
+      pass: clean(process.env.EMAIL_PASS)
+    },
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000
+  });
+}
 
-const smtpAttempts = [
-  { port: 587, secure: false },
-  { port: 465, secure: true }
-];
-
-async function sendWithSmtpFallback(mailOptions) {
-  let lastError;
-  const baseSmtpOptions = getBaseSmtpOptions();
-
-  for (const attempt of smtpAttempts) {
-    const transporter = nodemailer.createTransport({
-      ...baseSmtpOptions,
-      ...attempt
-    });
-
-    try {
-      await transporter.sendMail(mailOptions);
-      return;
-    } catch (error) {
-      lastError = error;
-    } finally {
-      try {
-        transporter.close();
-      } catch {
-        /* ignore */
-      }
-    }
+async function sendWithSmtp(mailOptions) {
+  const transporter = createGmailTransporter();
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("[Email] Sent via Gmail SMTP:", info.messageId);
+  } finally {
+    try { transporter.close(); } catch { /* ignore */ }
   }
-
-  throw lastError;
 }
 
 async function sendWithBrevo({ to, subject, html }) {
@@ -125,6 +87,7 @@ async function sendWithBrevo({ to, subject, html }) {
       const bodyText = await response.text();
       throw new Error(`Brevo API failed (${response.status}): ${bodyText.slice(0, 180)}`);
     }
+    console.log("[Email] Sent via Brevo API");
   } finally {
     clearTimeout(timeout);
   }
@@ -139,6 +102,7 @@ async function sendEmail(mailOptions) {
       await sendWithBrevo(mailOptions);
       return;
     } catch (error) {
+      console.error("[Email] Brevo failed:", error.message);
       brevoError = error;
       if (provider === "brevo") throw error;
     }
@@ -146,7 +110,7 @@ async function sendEmail(mailOptions) {
 
   if ((provider === "smtp" || provider === "auto") && smtpEnabled()) {
     try {
-      await sendWithSmtpFallback({
+      await sendWithSmtp({
         from: `"TechPlus" <${buildFromAddress()}>`,
         to: mailOptions.to,
         subject: mailOptions.subject,
@@ -154,6 +118,7 @@ async function sendEmail(mailOptions) {
       });
       return;
     } catch (smtpError) {
+      console.error("[Email] Gmail SMTP failed:", smtpError.message);
       if (brevoError) {
         throw new Error(`Brevo + SMTP failed: ${brevoError.message} | ${smtpError.message}`);
       }

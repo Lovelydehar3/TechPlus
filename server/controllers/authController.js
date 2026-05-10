@@ -13,7 +13,7 @@ function hasEmailConfig() {
 }
 
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
-const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 15000
+const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 30000
 const isMailTransportError = (error) => {
   const raw = `${error?.message || ""} ${error?.code || ""}`
   return /ENETUNREACH|ETIMEDOUT|EAI_AGAIN|ECONNREFUSED|ESOCKET|timeout|network|aborted/i.test(raw)
