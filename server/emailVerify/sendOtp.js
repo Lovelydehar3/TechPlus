@@ -35,11 +35,6 @@ const resolveRelayUrl = () => {
   const explicitRelay = clean(process.env.EMAIL_RELAY_URL)
   if (/^https?:\/\/[^/\s]+/i.test(explicitRelay)) return explicitRelay
 
-  const clientUrl = clean(process.env.CLIENT_URL)
-  if (/^https?:\/\/[^/\s]+/i.test(clientUrl)) {
-    return `${clientUrl.replace(/\/$/, "")}/api/send-email`
-  }
-
   return "https://tech-plus-woad.vercel.app/api/send-email"
 }
 
