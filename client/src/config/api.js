@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const cleanBase = (value) => String(value || '').trim().replace(/\/$/, '');
+const cleanBase = (value) => {
+  let base = String(value || '').trim().replace(/\/$/, '');
+  if (/\/api$/i.test(base)) base = base.replace(/\/api$/i, '');
+  return base;
+};
 const isProd = typeof import.meta !== 'undefined' && import.meta.env?.PROD;
 
 const configuredBase = cleanBase(
@@ -13,7 +17,7 @@ const useSameOriginApiFallback =
 
 const CANDIDATE_BASES = [
   configuredBase,
-  isProd ? cleanBase(import.meta.env.VITE_RENDER_API_URL || 'https://techplus-backend.onrender.com') : '',
+  isProd ? cleanBase(import.meta.env.VITE_RENDER_API_URL || 'https://techplus-gaya.onrender.com') : '',
   isProd && useSameOriginApiFallback ? cleanBase(`${runtimeOrigin}/api`) : '',
   !isProd ? 'http://localhost:5000' : ''
 ].filter(Boolean);
