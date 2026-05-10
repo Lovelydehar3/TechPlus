@@ -1,10 +1,19 @@
 import axios from 'axios';
 
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:5000'
-).replace(/\/api\/?$/, '').replace(/\/$/, '');
+const cleanBase = (value) =>
+  String(value || '')
+    .trim()
+    .replace(/\/api\/?$/, '')
+    .replace(/\/$/, '');
+
+const isProd = import.meta.env.PROD;
+const CANDIDATE_BASES = [
+  cleanBase(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL),
+  isProd ? cleanBase(import.meta.env.VITE_RENDER_API_URL || 'https://techplus-gaya.onrender.com') : '',
+  !isProd ? 'http://localhost:5000' : ''
+].filter(Boolean);
+
+const API_BASE_URL = CANDIDATE_BASES[0];
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -13,14 +22,36 @@ const apiClient = axios.create({
   timeout: 90000
 });
 
+let activeBaseIndex = 0;
+const switchToNextBase = () => {
+  if (activeBaseIndex >= CANDIDATE_BASES.length - 1) return false;
+  activeBaseIndex += 1;
+  apiClient.defaults.baseURL = CANDIDATE_BASES[activeBaseIndex];
+  return true;
+};
+
 apiClient.interceptors.response.use(
   (response) => response.data,
-  (error) => {
+  async (error) => {
+    const originalConfig = error?.config || {};
+
     if (!error?.response) {
+      if (!originalConfig.__retryWithNextBase && switchToNextBase()) {
+        originalConfig.__retryWithNextBase = true;
+        originalConfig.baseURL = apiClient.defaults.baseURL;
+        return apiClient.request(originalConfig);
+      }
+
       return Promise.reject({
         success: false,
         message: 'Server timeout/unreachable. Please retry in a few seconds.'
       });
+    }
+
+    if ((error.response.status === 404 || error.response.status === 405) && !originalConfig.__retryWithNextBase && switchToNextBase()) {
+      originalConfig.__retryWithNextBase = true;
+      originalConfig.baseURL = apiClient.defaults.baseURL;
+      return apiClient.request(originalConfig);
     }
 
     const status = error.response?.status;
@@ -139,4 +170,3 @@ export const hackathonAPI = {
 };
 
 export default apiClient;
-

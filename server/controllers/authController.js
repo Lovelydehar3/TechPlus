@@ -27,10 +27,15 @@ async function sendEmailWithTimeout(task) {
   ])
 }
 
+const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
+const normalizeUsername = (value) => String(value || "").trim()
+
 // ================== REGISTER ==================
 export const register = async (req, res) => {
   try {
-    const { username, email, password, confirmPassword } = req.body
+    const username = normalizeUsername(req.body.username)
+    const email = normalizeEmail(req.body.email)
+    const { password, confirmPassword } = req.body
 
     // Validation
     if (!username || !email || !password || !confirmPassword) {
@@ -57,19 +62,44 @@ export const register = async (req, res) => {
       return res.status(400).json({ success: false, message: "Username must be 3-50 characters" })
     }
 
-    // Check if user exists
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] })
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: "Email or username already registered" })
+    const existingByEmail = await User.findOne({ email })
+    const existingByUsername = await User.findOne({ username })
+
+    if (existingByUsername && existingByUsername.email !== email) {
+      return res.status(400).json({ success: false, message: "Username already taken" })
+    }
+
+    if (existingByEmail?.isVerified) {
+      return res.status(400).json({ success: false, message: "Email already registered. Please log in." })
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
-
-    // Generate OTP
     const otp = generateOtp()
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000) // 10 min
 
-    const user = await User.create({
+    if (existingByEmail && !existingByEmail.isVerified) {
+      existingByEmail.username = username
+      existingByEmail.password = hashedPassword
+      existingByEmail.otp = otp
+      existingByEmail.otpExpires = otpExpires
+      await existingByEmail.save()
+
+      if (hasEmailConfig()) {
+        await sendEmailWithTimeout(sendOtpEmail(email, otp))
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: hasEmailConfig() ? "New OTP sent. Please verify your email." : "OTP regenerated in development mode.",
+        ...(hasEmailConfig() ? {} : { devOtp: otp })
+      })
+    }
+
+    if (hasEmailConfig()) {
+      await sendEmailWithTimeout(sendOtpEmail(email, otp))
+    }
+
+    await User.create({
       username,
       email,
       password: hashedPassword,
@@ -77,11 +107,6 @@ export const register = async (req, res) => {
       otpExpires,
       isVerified: false
     })
-
-    // Only attempt to send email if config is present; skip gracefully in dev mode
-    if (hasEmailConfig()) {
-      await sendEmailWithTimeout(sendOtpEmail(email, otp))
-    }
 
     res.status(201).json({
       success: true,
