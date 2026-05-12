@@ -2,8 +2,17 @@ import axios from "axios";
 import mongoose from "mongoose";
 import { News } from "../models/newsModel.js";
 
+const clean = (value) =>
+  String(value || "")
+    .trim()
+    .replace(/^"|"$/g, "");
+
 const NEWS_IMAGE_FALLBACK =
   "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80";
+const GNEWS_API_URL =
+  clean(process.env.GNEWS_API_URL) || "https://gnews.io/api/v4/search";
+const NEWSAPI_URL =
+  clean(process.env.NEWSAPI_URL) || "https://newsapi.org/v2/top-headlines";
 
 let memoryNewsCache = [];
 let lastLiveFetchAt = 0;
@@ -87,7 +96,8 @@ const CATEGORY_ALIAS = {
   "software engineering": "Software Engineering"
 };
 
-const TRUNCATION_MARKER_REGEX = /\s*\[\+\d+\s+chars\]\s*$/i;
+const TRUNCATION_MARKER_REGEX = /\s*\[(?:\+)?\d+\s+chars\]\s*$/i;
+const TRAILING_ELLIPSIS_REGEX = /\s*(?:\.\.\.|…)\s*$/;
 const HTML_ENTITY_MAP = {
   '&nbsp;': ' ',
   '&amp;': '&',
@@ -129,7 +139,10 @@ function stripHtml(text = "") {
 function cleanArticleText(text = "") {
   return String(text || "")
     .replace(TRUNCATION_MARKER_REGEX, "")
-    .replace(/\s+/g, " ")
+    .replace(TRAILING_ELLIPSIS_REGEX, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]{2,}/g, " ")
     .trim();
 }
 
@@ -146,7 +159,11 @@ function buildReadableContent(article = {}) {
 
 function isTruncatedArticleContent(text = "") {
   const cleaned = String(text || "").trim();
-  return !cleaned || TRUNCATION_MARKER_REGEX.test(cleaned);
+  return (
+    !cleaned ||
+    TRUNCATION_MARKER_REGEX.test(cleaned) ||
+    TRAILING_ELLIPSIS_REGEX.test(cleaned)
+  );
 }
 
 function extractArticleTextFromHtml(html = "") {
@@ -170,6 +187,7 @@ function extractArticleTextFromHtml(html = "") {
 async function fetchOriginalArticleContent(url) {
   if (!url) return "";
 
+  let directExtracted = "";
   try {
     const response = await axios.get(url, {
       timeout: 8000,
@@ -182,10 +200,37 @@ async function fetchOriginalArticleContent(url) {
       responseType: "text"
     });
 
-    return extractArticleTextFromHtml(response.data || "");
+    directExtracted = extractArticleTextFromHtml(response.data || "");
+    if (directExtracted.length >= 500) return directExtracted;
   } catch {
-    return "";
+    /* fall through to reader mirror */
   }
+
+  try {
+    const readerResponse = await axios.get(`https://r.jina.ai/${url}`, {
+      timeout: 10000,
+      headers: {
+        Accept: "text/plain"
+      },
+      responseType: "text"
+    });
+
+    const readerText = String(readerResponse.data || "")
+      .replace(/^Title:.*$/im, "")
+      .replace(/^URL Source:.*$/im, "")
+      .replace(/^Published Time:.*$/im, "")
+      .replace(/^Markdown Content:\s*/im, "")
+      .trim();
+
+    const cleanedReaderText = cleanArticleText(readerText);
+    if (cleanedReaderText.length > directExtracted.length) {
+      return cleanedReaderText;
+    }
+  } catch {
+    /* non-fatal fallback miss */
+  }
+
+  return directExtracted;
 }
 
 async function enrichArticleContent(article) {
@@ -193,12 +238,14 @@ async function enrichArticleContent(article) {
 
   const mergedContent = buildReadableContent(article);
   const needsOriginalFetch =
+    article.forceOriginalFetch === true ||
     isTruncatedArticleContent(article.content) ||
-    mergedContent.length < 500;
+    mergedContent.length < 1200;
 
   if (!needsOriginalFetch || !article.url) {
     return {
       ...article,
+      forceOriginalFetch: undefined,
       content: mergedContent
     };
   }
@@ -222,6 +269,7 @@ async function enrichArticleContent(article) {
 
   return {
     ...article,
+    forceOriginalFetch: undefined,
     content: finalContent || mergedContent
   };
 }
@@ -293,13 +341,16 @@ function normalizeArticle(article) {
 
 export const fetchGTechNews = async (query = "technology", page = 1) => {
   try {
-    const response = await axios.get("https://gnews.io/api/v4/search", {
+    const apiKey = clean(process.env.GNEWS_API_KEY);
+    if (!apiKey) return [];
+
+    const response = await axios.get(GNEWS_API_URL, {
       params: {
         q: query,
         page,
         max: 25,
         lang: "en",
-        token: process.env.GNEWS_API_KEY
+        token: apiKey
       },
       timeout: 8000
     });
@@ -332,13 +383,16 @@ export const fetchGTechNews = async (query = "technology", page = 1) => {
 
 export const fetchNewsAPI = async (category = "technology", page = 1) => {
   try {
-    const response = await axios.get("https://newsapi.org/v2/top-headlines", {
+    const apiKey = clean(process.env.NEWSAPI_KEY);
+    if (!apiKey) return [];
+
+    const response = await axios.get(NEWSAPI_URL, {
       params: {
         category,
         page,
         pageSize: 25,
         language: "en",
-        apiKey: process.env.NEWSAPI_KEY
+        apiKey
       },
       timeout: 8000
     });
@@ -453,9 +507,16 @@ export const getNewsById = async (id) => {
     }
 
     if (!article) return null;
+    const hadTruncationMarker =
+      TRUNCATION_MARKER_REGEX.test(String(article.content || "")) ||
+      TRUNCATION_MARKER_REGEX.test(String(article.description || ""));
+
     const normalized = normalizeArticle(article);
     if (!isTechArticle(normalized)) return null;
-    return enrichArticleContent(normalized);
+    return enrichArticleContent({
+      ...normalized,
+      forceOriginalFetch: hadTruncationMarker
+    });
   } catch {
     return null;
   }

@@ -17,6 +17,9 @@ export const getTechNews = async (req, res) => {
     const cat = parseCategory(category);
     const result = await getNewsWithFallback(cat, 40, forceLive);
 
+    // Cache for 5 mins in browser, 30 mins in CDN
+    res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=1800');
+
     res.status(200).json({
       success: true,
       source: result.source,
@@ -122,6 +125,9 @@ export const getAllTechNews = async (req, res) => {
     const forceLive = refresh === "1" || refresh === "true";
 
     const result = await getNewsWithFallback(normalized, 40, forceLive);
+
+    // Cache for 5 mins in browser, 30 mins in CDN
+    res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=1800');
 
     res.status(200).json({
       success: true,

@@ -14,7 +14,9 @@ export const connectDB = async () => {
       throw new Error("Missing MONGO_URI environment variable")
     }
 
-    const fallbackUri = process.env.MONGO_URI_FALLBACK?.replace(/^"|"$/g, "")
+    const fallbackUri =
+      process.env.MONGO_URI_FALLBACK?.replace(/^"|"$/g, "") ||
+      process.env.MONGO_URI_SRV?.replace(/^"|"$/g, "")
 
     mongoose.set("strictQuery", true)
 

@@ -10,15 +10,19 @@ import {
 // ============ GET ALL HACKATHONS (with filters) ============
 export const getHackathons = async (req, res) => {
   try {
-    const { mode, search, tags, upcoming } = req.query;
+    const { mode, search, tags, upcoming, refresh } = req.query;
 
     const filters = {};
     if (mode) filters.mode = mode;
     if (search) filters.search = search;
     if (tags) filters.tags = Array.isArray(tags) ? tags : [tags];
     if (upcoming === 'true') filters.upcoming = true;
+    if (refresh === 'true') filters.refresh = true;
 
     const hackathons = await getAllHackathons(filters);
+
+    // Cache for 10 mins in browser, 1 hour in CDN (hackathons change even less frequently)
+    res.setHeader('Cache-Control', 'public, max-age=600, s-maxage=3600');
 
     res.status(200).json({
       success: true,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { newsAPI } from '../config/api';
@@ -12,6 +12,21 @@ function normalizeSource(source, apiSource) {
   return source?.name || apiSource || 'TechPlus Intelligence';
 }
 
+function sanitizeArticleText(text = '') {
+  return String(text || '')
+    .replace(/\s*\[(?:\+)?\d+\s+chars\]\s*$/i, '')
+    .replace(/\s*(?:\.\.\.|\u2026|â€¦|Ã¢â‚¬Â¦)\s*$/, '')
+    .trim();
+}
+
+function normalizeForCompare(text = '') {
+  return sanitizeArticleText(text)
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export default function NewsDetail() {
   const { id } = useParams();
   const { state } = useLocation();
@@ -22,41 +37,51 @@ export default function NewsDetail() {
   const storageKey = useMemo(() => `techplus-news-${id}`, [id]);
 
   useEffect(() => {
-    if (state?.article) {
-      sessionStorage.setItem(storageKey, JSON.stringify(state.article));
-      return;
+    let seedArticle = state?.article || null;
+    if (seedArticle) {
+      setArticle(seedArticle);
+      sessionStorage.setItem(storageKey, JSON.stringify(seedArticle));
+      setLoading(false);
     }
 
+    let cancelled = false;
     const cached = sessionStorage.getItem(storageKey);
-    if (cached) {
+    if (!seedArticle && cached) {
       try {
         const parsed = JSON.parse(cached);
         if (parsed) {
+          seedArticle = parsed;
           setArticle(parsed);
           setLoading(false);
-          return;
         }
       } catch {
-        /* continue to API */
+        /* continue with API load */
       }
     }
 
     const load = async () => {
       try {
-        setLoading(true);
+        if (!seedArticle) setLoading(true);
         const response = await newsAPI.getById(id);
-        if (response?.success && response.article) {
+        if (!cancelled && response?.success && response.article) {
           setArticle(response.article);
           sessionStorage.setItem(storageKey, JSON.stringify(response.article));
         }
       } catch (error) {
-        addToast(error?.message || 'Failed to load article', 'error');
+        // If we already have route/cached article, avoid noisy "Not found" toast.
+        if (!cancelled && !seedArticle) {
+          addToast(error?.message || 'Failed to load article', 'error');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id, state?.article, addToast, storageKey]);
 
   if (loading) {
@@ -87,11 +112,18 @@ export default function NewsDetail() {
     : null;
 
   const sourceName = normalizeSource(article.source, article.apiSource);
-  const descriptionText = (article.description || '').trim();
-  const contentText = (article.content || '').trim();
+  const descriptionText = sanitizeArticleText(article.description || '');
+  const contentText = sanitizeArticleText(article.content || '');
   const bodyText = contentText.startsWith(descriptionText) && descriptionText
     ? contentText.slice(descriptionText.length).trim()
     : contentText;
+
+  const descriptionCompare = normalizeForCompare(descriptionText);
+  const bodyParagraphs = (bodyText || descriptionText || '')
+    .split(/\n+/)
+    .map((para) => sanitizeArticleText(para))
+    .filter(Boolean)
+    .filter((para) => normalizeForCompare(para) !== descriptionCompare);
 
   return (
     <motion.div
@@ -141,17 +173,14 @@ export default function NewsDetail() {
             {article.title}
           </h1>
 
-          {article.description && (
-            <p className="text-base text-white/70 leading-relaxed mb-6">{article.description}</p>
+          {descriptionText && (
+            <p className="text-base text-white/70 leading-relaxed mb-6">{descriptionText}</p>
           )}
 
           <div className="space-y-4 text-sm md:text-[15px] text-white/65 leading-relaxed">
-            {(bodyText || descriptionText || '')
-              .split(/\n+/)
-              .filter(Boolean)
-              .map((para, idx) => (
-                <p key={`${id}-p-${idx}`}>{para}</p>
-              ))}
+            {bodyParagraphs.map((para, idx) => (
+              <p key={`${id}-p-${idx}`}>{para}</p>
+            ))}
           </div>
 
           {article.url && (
@@ -162,7 +191,7 @@ export default function NewsDetail() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center px-5 py-2.5 rounded-xl bg-[#7c3aed] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#6d28d9] transition-colors"
               >
-                Read original article
+                Go to original article
               </a>
             </div>
           )}

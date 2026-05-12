@@ -6,6 +6,20 @@ import { hackathonAPI } from '../config/api'
 const FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80'
 
+const normalizeKey = (value) =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+
+const getHackathonKey = (hackathon) => {
+  if (!hackathon) return ''
+  if (hackathon.sourceKey) return `source:${normalizeKey(hackathon.sourceKey)}`
+  if (hackathon.sourceUrl) return `url:${normalizeKey(hackathon.sourceUrl)}`
+  if (hackathon.registrationLink) return `link:${normalizeKey(hackathon.registrationLink)}`
+  return `${normalizeKey(hackathon.title)}|${String(hackathon.startDate || '').slice(0, 10)}`
+}
+
 export default function Hackathons() {
   const { addToast } = useToast()
   const isDark = true // dark mode always active
@@ -66,7 +80,8 @@ export default function Hackathons() {
   const dedupedHackathons = useMemo(() => {
     const seen = new Set()
     return hackathons.filter((hackathon) => {
-      const key = `${hackathon.title?.trim()?.toLowerCase() || ''}|${String(hackathon.startDate || '').slice(0, 10)}`
+      const key = getHackathonKey(hackathon)
+      if (!key) return false
       if (seen.has(key)) return false
       seen.add(key)
       return true
@@ -87,10 +102,13 @@ export default function Hackathons() {
       const query = deferredSearchQuery.toLowerCase()
       filtered = filtered.filter(
         (h) =>
-          h.title.toLowerCase().includes(query) ||
-          h.description?.toLowerCase().includes(query) ||
-          h.organizer?.toLowerCase().includes(query) ||
-          h.tags?.some((tag) => tag.toLowerCase().includes(query))
+          String(h.title || '').toLowerCase().includes(query) ||
+          String(h.description || '').toLowerCase().includes(query) ||
+          String(h.organizer || '').toLowerCase().includes(query) ||
+          String(h.location || '').toLowerCase().includes(query) ||
+          String(h.city || '').toLowerCase().includes(query) ||
+          String(h.state || '').toLowerCase().includes(query) ||
+          h.tags?.some((tag) => String(tag || '').toLowerCase().includes(query))
       )
     }
 
@@ -378,7 +396,7 @@ export default function Hackathons() {
 
               return (
                 <motion.div
-                  key={hackathon._id}
+                  key={hackathon.sourceKey || hackathon.sourceUrl || hackathon._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.04, duration: 0.35 }}
@@ -393,6 +411,8 @@ export default function Hackathons() {
                     <img
                       src={hackathon.image || FALLBACK_IMAGE}
                       alt={hackathon.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
                         e.currentTarget.onerror = null
@@ -546,7 +566,7 @@ export default function Hackathons() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedHackathon(null)}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -554,7 +574,7 @@ export default function Hackathons() {
             className={`fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none`}
           >
             <div
-              className={`pointer-events-auto rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border ${isDark ? 'bg-[#0f0f13] border-white/10' : 'bg-white border-gray-200'}`}
+              className="pointer-events-auto rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-[#ececf4] bg-[#f7f7fb] shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="h-48 overflow-hidden">
@@ -572,43 +592,43 @@ export default function Hackathons() {
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className={`text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    <h2 className="text-3xl font-black mb-2 text-[#111827]">
                       {selectedHackathon.title}
                     </h2>
                   </div>
                   <button
                     type="button"
                     onClick={() => setSelectedHackathon(null)}
-                    className={`p-2 rounded-lg ${isDark ? 'hover:bg-slate-700' : 'hover:bg-gray-200'}`}
+                    className="w-9 h-9 rounded-full bg-[#ececf4] hover:bg-[#dedfee] text-[#4b5563] flex items-center justify-center transition-colors"
                   >
                     <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
                   </button>
                 </div>
 
-                <p className={`mb-6 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
+                <p className="mb-6 text-[#4b5563]">
                   {selectedHackathon.description}
                 </p>
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className={`p-4 rounded-lg ${isDark ? 'bg-slate-700/50' : 'bg-gray-100'}`}>
-                    <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Location</p>
-                    <p className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedHackathon.location || '-'}</p>
+                  <div className="p-4 rounded-xl bg-[#ececf4]">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Location</p>
+                    <p className="font-bold text-[#111827]">{selectedHackathon.location || '-'}</p>
                   </div>
-                  <div className={`p-4 rounded-lg ${isDark ? 'bg-slate-700/50' : 'bg-gray-100'}`}>
-                    <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Mode</p>
-                    <p className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedHackathon.mode}</p>
+                  <div className="p-4 rounded-xl bg-[#ececf4]">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Mode</p>
+                    <p className="font-bold text-[#111827]">{selectedHackathon.mode}</p>
                   </div>
-                  <div className={`p-4 rounded-lg ${isDark ? 'bg-slate-700/50' : 'bg-gray-100'}`}>
-                    <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Organizer</p>
-                    <p className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedHackathon.organizer || 'TBA'}</p>
+                  <div className="p-4 rounded-xl bg-[#ececf4]">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Organizer</p>
+                    <p className="font-bold text-[#111827]">{selectedHackathon.organizer || 'TBA'}</p>
                   </div>
-                  <div className={`p-4 rounded-lg ${isDark ? 'bg-slate-700/50' : 'bg-gray-100'}`}>
-                    <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Start Date</p>
-                    <p className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatDate(selectedHackathon.startDate)}</p>
+                  <div className="p-4 rounded-xl bg-[#ececf4]">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Start Date</p>
+                    <p className="font-bold text-[#111827]">{formatDate(selectedHackathon.startDate)}</p>
                   </div>
-                  <div className={`p-4 rounded-lg ${isDark ? 'bg-slate-700/50' : 'bg-gray-100'}`}>
-                    <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Prize Pool</p>
-                    <p className={`font-bold text-blue-500`}>{selectedHackathon.prize || 'Not specified'}</p>
+                  <div className="p-4 rounded-xl bg-[#ececf4]">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Prize Pool</p>
+                    <p className="font-bold text-[#7c3aed]">{selectedHackathon.prize || 'Not specified'}</p>
                   </div>
                 </div>
 
@@ -616,7 +636,7 @@ export default function Hackathons() {
                   <button
                     type="button"
                     onClick={() => setSelectedHackathon(null)}
-                    className={`flex-1 px-4 py-2 rounded-lg font-medium ${isDark ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'}`}
+                    className="flex-1 px-5 py-3.5 rounded-full font-bold text-[17px] bg-[#cfd7e6] hover:bg-[#bfc9dc] text-[#1f2937] transition-colors"
                   >
                     Close
                   </button>
@@ -625,9 +645,10 @@ export default function Hackathons() {
                       href={selectedHackathon.registrationLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-center"
+                      className="flex-1 px-5 py-3.5 rounded-full font-bold text-[17px] text-white text-center bg-gradient-to-r from-[#8b5cf6] to-[#a855f7] hover:from-[#7c3aed] hover:to-[#9333ea] transition-all shadow-[0_8px_24px_rgba(139,92,246,0.35)]"
                     >
-                      Register Now</a>
+                      Register Now
+                    </a>
                   )}
                 </div>
               </div>

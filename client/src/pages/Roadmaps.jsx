@@ -66,8 +66,16 @@ export default function Roadmaps() {
                     setRoadmaps(response.roadmaps);
                     const params = new URLSearchParams(location.search);
                     const idFromUrl = params.get('id');
+                    const stepFromUrl = params.get('step');
                     const initial = idFromUrl ? response.roadmaps.find((r) => r.id === idFromUrl) : response.roadmaps[0];
                     setSelectedDomain(initial || response.roadmaps[0]);
+                    const parsedStep = Number.parseInt(stepFromUrl ?? '', 10);
+                    const selected = initial || response.roadmaps[0];
+                    const hasValidStep =
+                        Number.isInteger(parsedStep) &&
+                        parsedStep >= 0 &&
+                        parsedStep < (selected?.steps?.length || 0);
+                    setExpandedStep(hasValidStep ? parsedStep : null);
                 }
             } catch (error) {
                 addToast(error?.message || 'Failed to fetch roadmaps', 'error');
@@ -128,7 +136,8 @@ export default function Roadmaps() {
 
             await userAPI.recordRoadmapDownload({
                 title: selectedDomain.title,
-                roadmapId: selectedDomain.id
+                roadmapId: selectedDomain.id,
+                pdfPath: selectedDomain.pdfPath
             });
 
             addToast(`Downloaded ${selectedDomain.title} roadmap PDF`, 'success');
@@ -420,26 +429,26 @@ export default function Roadmaps() {
                                                         e.stopPropagation();
                                                         toggleStepCompletion(idx);
                                                     }}
-                                                    className={`w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shrink-0 ${isCompleted ? 'bg-green-500/10 border-green-500/30 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 'bg-[#7c3aed]/5 border-[#7c3aed]/20 text-[#a855f7] group-hover:border-[#7c3aed]/60 group-hover:bg-[#7c3aed]/10'}`}
+                                                    className={`w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shrink-0 ${isCompleted ? 'bg-green-500/10 border-green-500/30 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 'bg-[#7c3aed]/5 border-[#7c3aed]/10 text-[#c4b5fd]/60 group-hover:border-[#6d28d9]/60 group-hover:bg-[#6d28d9]/10'}`}
                                                 >
                                                     {isCompleted ? (
                                                         <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" /></svg>
                                                     ) : (
-                                                        <span className="text-sm font-black tracking-tight text-[#a855f7] group-hover:text-white transition-colors">
+                                                        <span className="text-sm font-black tracking-tight text-[#c4b5fd]/60 group-hover:text-[#6d28d9] transition-colors">
                                                             {String(idx + 1).padStart(2, '0')}
                                                         </span>
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className={`text-sm sm:text-base lg:text-xl font-black uppercase tracking-tight leading-snug transition-colors ${isExpanded ? '!text-white' : '!text-[#a855f7] group-hover:!text-white'}`}>
+                                                    <h3 className={`text-sm sm:text-base lg:text-xl font-black uppercase tracking-tight leading-snug transition-colors ${isExpanded ? '!text-white' : '!text-[#c4b5fd]/60 group-hover:!text-[#6d28d9]'}`}>
                                                         {step.title}
                                                     </h3>
                                                     <div className="flex items-center gap-4 mt-1">
-                                                        <span className="text-[10px] font-bold !text-[#a855f7] group-hover:!text-white uppercase tracking-widest transition-colors">PHASE {idx + 1}</span>
+                                                        <span className="text-[10px] font-bold !text-[#c4b5fd]/50 group-hover:!text-[#6d28d9] uppercase tracking-widest transition-colors">PHASE {idx + 1}</span>
                                                         {isCompleted && <span className="text-[10px] font-black text-green-400 uppercase tracking-widest">Verified</span>}
                                                     </div>
                                                 </div>
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isExpanded ? 'bg-[#7c3aed] text-white rotate-180' : 'text-[#a855f7]/40 group-hover:text-white'}`}>
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isExpanded ? 'bg-[#6d28d9] text-white rotate-180' : 'text-[#c4b5fd]/30 group-hover:text-[#6d28d9]'}`}>
                                                     <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
                                                 </div>
                                             </div>

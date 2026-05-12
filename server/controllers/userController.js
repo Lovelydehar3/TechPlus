@@ -6,8 +6,9 @@ import bcrypt from "bcryptjs"
 import { buildAuthCookieOptions } from "../utils/cookies.js"
 
 function buildUserStats(userDoc, savedHackathonsCount = 0) {
+  const resourceWatchHistory = userDoc.watchHistory?.filter((item) => item?.type === 'resource') || []
   return {
-    videosWatched: userDoc.watchHistory?.length || 0,
+    videosWatched: resourceWatchHistory.length,
     bookmarksSaved: userDoc.bookmarks?.length || 0,
     savedResources: userDoc.savedResources?.length || 0,
     savedHackathons: savedHackathonsCount,
@@ -38,28 +39,31 @@ export const uploadProfileImage = async (req, res) => {
 // ================== GET USER PROFILE ==================
 export const getUserProfile = async (req, res) => {
   try {
+    // 1. Single efficient fetch with lean()
     const user = await User.findById(req.user.id)
       .select('-password -otp -otpExpires -resetToken -resetTokenExpires')
       .populate('bookmarks')
       .populate('savedResources', 'category title description totalDuration difficulty thumbnail externalUrl')
+      .lean();
 
     if (!user) return res.status(404).json({ success: false, message: "User not found" })
 
+    // 2. Efficient parallel fetch for hackathons
     const savedHackathons = await Hackathon.find({ bookmarkedBy: req.user.id })
       .select('title startDate mode location image description')
       .sort({ startDate: 1 })
+      .lean();
 
     const stats = buildUserStats(user, savedHackathons.length)
 
-    // Use findByIdAndUpdate to avoid calling .save() on a populated document
-    // (populated ObjectId refs are full objects — Mongoose can't cast them back)
-    await User.findByIdAndUpdate(req.user.id, { $set: { stats } })
-    user.stats = stats
-
+    // 3. Only update DB if stats actually changed significantly (optional optimization)
+    // For now, just return the calculated stats to avoid blocking the response with a write
+    
     res.status(200).json({ 
       success: true, 
       user: {
-        ...user.toObject(),
+        ...user,
+        stats,
         createdAt: user.createdAt,
         memberSince: user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown',
         isVerified: user.isVerified,
@@ -68,6 +72,11 @@ export const getUserProfile = async (req, res) => {
       },
       savedHackathons 
     })
+    
+    // Background update of stats if they changed, don't wait for it
+    if (JSON.stringify(user.stats) !== JSON.stringify(stats)) {
+      User.findByIdAndUpdate(req.user.id, { $set: { stats } }).catch(() => {});
+    }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
@@ -227,27 +236,6 @@ export const updateRoadmapProgress = async (req, res) => {
       user.roadmapProgress.push({ roadmapId, itemId, completed })
     }
 
-    const historyIndex = user.watchHistory.findIndex(
-      (item) => item.type === 'roadmap' && item.roadmapId === roadmapId && item.itemId === itemId
-    )
-    const historyPayload = {
-      type: 'roadmap',
-      title: title || roadmapId,
-      path: `/roadmaps?id=${roadmapId}&step=${itemId}`,
-      roadmapId,
-      itemId,
-      completed: Boolean(completed),
-      progress: completed ? 100 : 0,
-      timestamp: Date.now()
-    }
-    if (historyIndex !== -1) {
-      user.watchHistory[historyIndex] = { ...user.watchHistory[historyIndex].toObject(), ...historyPayload }
-    } else {
-      user.watchHistory.push(historyPayload)
-    }
-    if (user.watchHistory.length > 100) {
-      user.watchHistory = user.watchHistory.slice(-100)
-    }
     user.stats = buildUserStats(user)
 
     await user.save()
@@ -281,30 +269,42 @@ export const updateLastActivity = async (req, res) => {
     const prev = user.lastActivity?.toObject?.() ?? (user.lastActivity && typeof user.lastActivity === "object" ? { ...user.lastActivity } : {})
     const next = { ...prev }
 
-    const fields = ["type", "title", "path", "timestamp", "videoId", "videoTitle", "videoIndex", "seconds", "playbackStarted"]
+    const fields = [
+      "type",
+      "title",
+      "path",
+      "timestamp",
+      "playlistSourceId",
+      "playlistSourceUrl",
+      "videoId",
+      "videoTitle",
+      "videoIndex",
+      "seconds",
+      "playbackStarted"
+    ]
 
     for (const key of fields) {
       if (req.body[key] !== undefined) next[key] = req.body[key]
     }
 
     if (req.body.type != null && req.body.type !== "resource") {
+      next.playlistSourceId = null; next.playlistSourceUrl = null;
       next.videoId = null; next.videoTitle = null; next.videoIndex = null; next.seconds = null; next.playbackStarted = false;
     }
 
     next.timestamp = typeof req.body.timestamp === "number" ? req.body.timestamp : Date.now()
     user.lastActivity = next
-    if (next.type === "resource" || next.type === "roadmap") {
+    if (next.type === "resource") {
       const historyIndex = user.watchHistory.findIndex((item) => {
-        if (next.type === "resource") {
-          return item.type === "resource" && item.videoId === next.videoId && item.path === next.path
-        }
-        return item.type === "roadmap" && item.path === next.path && item.title === next.title
+        return item.type === "resource" && item.videoId === next.videoId && item.path === next.path
       })
 
       const historyPayload = {
         type: next.type,
         title: next.title,
         path: next.path,
+        playlistSourceId: next.playlistSourceId || null,
+        playlistSourceUrl: next.playlistSourceUrl || null,
         videoId: next.videoId || null,
         videoTitle: next.videoTitle || null,
         videoIndex: next.videoIndex ?? null,
@@ -336,7 +336,7 @@ export const updateLastActivity = async (req, res) => {
 // ================== RECORD ROADMAP DOWNLOAD ==================
 export const recordRoadmapDownload = async (req, res) => {
   try {
-    const { title, roadmapId } = req.body
+    const { title, roadmapId, pdfPath } = req.body
     if (!title || !roadmapId) {
       return res.status(400).json({ success: false, message: "Title and RoadmapId are required" })
     }
@@ -347,12 +347,24 @@ export const recordRoadmapDownload = async (req, res) => {
     // Initialize array if it doesn't exist (safety)
     if (!user.downloadedRoadmaps) user.downloadedRoadmaps = []
 
-    // Add new download to the end
-    user.downloadedRoadmaps.push({
+    const downloadPayload = {
       title,
       roadmapId,
+      pdfPath: pdfPath || undefined,
       timestamp: new Date()
+    }
+
+    const existingIndex = user.downloadedRoadmaps.findIndex((item) => {
+      const sameRoadmap = String(item.roadmapId) === String(roadmapId)
+      const samePath = pdfPath && item.pdfPath && String(item.pdfPath) === String(pdfPath)
+      return sameRoadmap || samePath
     })
+
+    if (existingIndex !== -1) {
+      user.downloadedRoadmaps.splice(existingIndex, 1)
+    }
+
+    user.downloadedRoadmaps.push(downloadPayload)
 
     // Keep only the latest 20
     if (user.downloadedRoadmaps.length > 20) {

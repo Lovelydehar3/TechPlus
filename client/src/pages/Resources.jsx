@@ -20,6 +20,31 @@ function getYouTubeThumbnail(videoId) {
     return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
 }
 
+function isYouTubeUrl(url) {
+    return typeof url === 'string' && /(?:youtube\.com|youtu\.be)/i.test(url);
+}
+
+function getYouTubePlaylistId(url) {
+    if (!url || !isYouTubeUrl(url)) return '';
+    try {
+        const parsed = new URL(url);
+        const list = parsed.searchParams.get('list');
+        if (list) return list;
+    } catch {
+        /* ignore */
+    }
+    const match = url.match(/[?&]list=([a-zA-Z0-9_-]+)/i);
+    return match ? match[1] : '';
+}
+
+function getYouTubePlaylistEmbedUrl(playlistId) {
+    return `https://www.youtube.com/embed?listType=playlist&list=${encodeURIComponent(playlistId)}&autoplay=1&rel=0`;
+}
+
+function isEmbeddableYouTubePlaylistUrl(url) {
+    return Boolean(getYouTubePlaylistId(url));
+}
+
 let youtubeApiPromise = null;
 function loadYouTubeApi() {
     if (typeof window === 'undefined') return Promise.resolve();
@@ -48,7 +73,8 @@ function PlaylistPlayer({
     playlistDuration,
     onBack,
     resumeVideoIndex = 0,
-    resumeSeconds = 0
+    resumeSeconds = 0,
+    sourceMeta = {}
 }) {
     const { updateUser } = useAuth();
     const [activeIndex, setActiveIndex] = useState(resumeVideoIndex);
@@ -56,6 +82,8 @@ function PlaylistPlayer({
     const playerMountId = useMemo(() => `ytp-${Math.random().toString(36).slice(2, 11)}`, []);
     const ytPlayerRef = useRef(null);
     const tickRef = useRef(null);
+    const playlistSourceId = sourceMeta?.playlistSourceId || null;
+    const playlistSourceUrl = sourceMeta?.playlistSourceUrl || null;
 
     const flushProgress = useCallback(async (extra = {}) => {
         const item = playlist[activeIndex];
@@ -75,6 +103,8 @@ function PlaylistPlayer({
                 type: 'resource',
                 title: playlistTitle,
                 path: '/resources',
+                playlistSourceId,
+                playlistSourceUrl,
                 videoId: item.videoId,
                 videoTitle: item.title,
                 videoIndex: activeIndex,
@@ -86,7 +116,7 @@ function PlaylistPlayer({
         } catch {
             /* ignore */
         }
-    }, [activeIndex, playlist, playlistTitle, updateUser]);
+    }, [activeIndex, playlist, playlistTitle, playlistSourceId, playlistSourceUrl, updateUser]);
 
     useEffect(() => {
         let cancelled = false;
@@ -205,9 +235,47 @@ function PlaylistPlayer({
     );
 }
 
+function ExternalYouTubePlaylistPlayer({
+    title,
+    description,
+    playlistId,
+    onBack
+}) {
+    return (
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}>
+            <button
+                type="button"
+                onClick={onBack}
+                className="flex items-center gap-2 text-[11px] font-black text-white/30 uppercase tracking-widest mb-6 hover:text-white transition-colors group shrink-0"
+            >
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="group-hover:-translate-x-1 transition-transform"><path d="M19 12H5M5 12l7 7M5 12l7-7" /></svg>
+                Back to Playlists
+            </button>
+
+            <div className="overflow-hidden border border-white/5 rounded-[32px]" style={{ background: 'linear-gradient(145deg, #121217 0%, #0e0b18 100%)' }}>
+                <div className="p-6 border-b border-white/5">
+                    <h2 className="text-xl font-black text-white uppercase tracking-tight mb-2">{title}</h2>
+                    <p className="text-sm text-white/40 leading-relaxed">{description}</p>
+                </div>
+                <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
+                    <iframe
+                        title={title}
+                        src={getYouTubePlaylistEmbedUrl(playlistId)}
+                        className="absolute inset-0 w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                    />
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
 const ResourceCard = memo(function ResourceCard({ item, isSaved, savingId, onToggleSaved, onOpen }) {
     const playable = item.hasVideos;
     const external = Boolean(item.externalUrl);
+    const youtubePlaylistId = getYouTubePlaylistId(item.externalUrl);
+    const embeddableExternalPlaylist = Boolean(external && youtubePlaylistId);
 
     return (
         <div
@@ -249,7 +317,7 @@ const ResourceCard = memo(function ResourceCard({ item, isSaved, savingId, onTog
                         {savingId === String(item._id) ? '...' : isSaved ? 'Saved' : 'Save'}
                     </button>
                     <span className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.05)', color: '#7c3aed' }}>
-                        {playable && !external ? (
+                        {playable || embeddableExternalPlaylist ? (
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z" /></svg>
                         ) : (
                             '->'
@@ -281,6 +349,7 @@ export default function Resources() {
     const [catalogError, setCatalogError] = useState(null);
     const [activeSection, setActiveSection] = useState('All Domains');
     const [openPlaylist, setOpenPlaylist] = useState(null);
+    const [openEmbeddedPlaylist, setOpenEmbeddedPlaylist] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [resourceTypeFilter, setResourceTypeFilter] = useState('All Types');
     const [savingId, setSavingId] = useState(null);
@@ -322,7 +391,7 @@ export default function Resources() {
         };
     }, []);
 
-    const applyPlaylistDetail = useCallback((detail, resumeIdx = 0, resumeSec = 0) => {
+    const applyPlaylistDetail = useCallback((detail, resumeIdx = 0, resumeSec = 0, sourceMeta = {}) => {
         const normalized = mapVideosForPlayer(detail.videos);
         if (!normalized.length) return;
         setOpenPlaylist({
@@ -334,13 +403,58 @@ export default function Resources() {
                 playlist: normalized
             },
             resumeVideoIndex: Math.max(0, Number(resumeIdx) || 0),
-            resumeSeconds: Math.max(0, Number(resumeSec) || 0)
+            resumeSeconds: Math.max(0, Number(resumeSec) || 0),
+            sourceMeta
         });
     }, []);
 
     useEffect(() => {
-        if (!location.state?.resumeResource || !user?.lastActivity || catalogLoading || playlists.length === 0) return;
-        const match = playlists.find((playlist) => playlist.title === user.lastActivity.title && playlist.hasVideos);
+        if (!location.state?.resumeResource || catalogLoading || playlists.length === 0) return;
+        const resumeTitle = location.state?.resumePlaylistTitle || user?.lastActivity?.title;
+        const resumeVideoIndex = Number(location.state?.resumeVideoIndex ?? user?.lastActivity?.videoIndex ?? 0);
+        const resumeSeconds = Number(location.state?.resumeSeconds ?? user?.lastActivity?.seconds ?? 0);
+        const resumePlaylistSourceId = location.state?.resumePlaylistSourceId || user?.lastActivity?.playlistSourceId || '';
+        const resumePlaylistSourceUrl = location.state?.resumePlaylistSourceUrl || user?.lastActivity?.playlistSourceUrl || '';
+
+        if (resumePlaylistSourceId) {
+            let cancelled = false;
+            (async () => {
+                try {
+                    const detail = await playlistAPI.getYouTubePlaylist(resumePlaylistSourceId, {
+                        title: resumeTitle || '',
+                        description: ''
+                    });
+                    if (!cancelled && detail?.success && Array.isArray(detail.videos) && detail.videos.length > 0) {
+                        applyPlaylistDetail(
+                            {
+                                ...detail,
+                                _id: detail._id || `youtube:${resumePlaylistSourceId}`
+                            },
+                            resumeVideoIndex,
+                            resumeSeconds,
+                            {
+                                playlistSourceId: resumePlaylistSourceId,
+                                playlistSourceUrl: resumePlaylistSourceUrl || `https://www.youtube.com/playlist?list=${resumePlaylistSourceId}`
+                            }
+                        );
+                    } else if (!cancelled) {
+                        setOpenEmbeddedPlaylist({
+                            title: resumeTitle || 'YouTube Playlist',
+                            description: '',
+                            playlistId: resumePlaylistSourceId
+                        });
+                    }
+                } finally {
+                    if (!cancelled) navigate(location.pathname, { replace: true, state: {} });
+                }
+            })();
+
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        const match = playlists.find((playlist) => playlist.title === resumeTitle && playlist.hasVideos);
         if (!match) {
             navigate(location.pathname, { replace: true, state: {} });
             return;
@@ -352,7 +466,7 @@ export default function Resources() {
                 const detail = await playlistAPI.getById(match._id);
                 if (!cancelled && detail?.success) {
                     setActiveSection(detail.domain || 'All Domains');
-                    applyPlaylistDetail(detail, user.lastActivity.videoIndex, user.lastActivity.seconds);
+                    applyPlaylistDetail(detail, resumeVideoIndex, resumeSeconds);
                 }
             } finally {
                 if (!cancelled) navigate(location.pathname, { replace: true, state: {} });
@@ -365,6 +479,42 @@ export default function Resources() {
     }, [applyPlaylistDetail, catalogLoading, location.pathname, location.state, navigate, playlists, user]);
 
     const handleCardClick = async (item) => {
+        const externalPlaylistId = getYouTubePlaylistId(item.externalUrl);
+        const canEmbedExternalPlaylist = isEmbeddableYouTubePlaylistUrl(item.externalUrl);
+
+        if (canEmbedExternalPlaylist) {
+            try {
+                const detail = await playlistAPI.getYouTubePlaylist(externalPlaylistId, {
+                    title: item.title,
+                    description: item.description
+                });
+                if (detail?.success && Array.isArray(detail.videos) && detail.videos.length > 0) {
+                    applyPlaylistDetail(
+                        {
+                            ...detail,
+                            _id: detail._id || `youtube:${externalPlaylistId}`
+                        },
+                        0,
+                        0,
+                        {
+                            playlistSourceId: externalPlaylistId,
+                            playlistSourceUrl: item.externalUrl
+                        }
+                    );
+                    return;
+                }
+            } catch {
+                /* fall through to embedded player */
+            }
+
+            setOpenEmbeddedPlaylist({
+                title: item.title,
+                description: item.description,
+                playlistId: externalPlaylistId
+            });
+            return;
+        }
+
         if (item.externalUrl) {
             window.open(item.externalUrl, '_blank', 'noopener,noreferrer');
             return;
@@ -449,7 +599,24 @@ export default function Resources() {
                         playlistDuration={openPlaylist.link.duration}
                         resumeVideoIndex={openPlaylist.resumeVideoIndex}
                         resumeSeconds={openPlaylist.resumeSeconds}
+                        sourceMeta={openPlaylist.sourceMeta}
                         onBack={() => setOpenPlaylist(null)}
+                    />
+                </AnimatePresence>
+            </div>
+        );
+    }
+
+    if (openEmbeddedPlaylist) {
+        return (
+            <div className="w-full max-w-[1200px] mx-auto px-4 md:px-10">
+                <AnimatePresence mode="wait">
+                    <ExternalYouTubePlaylistPlayer
+                        key={`${openEmbeddedPlaylist.playlistId}-${openEmbeddedPlaylist.title}`}
+                        title={openEmbeddedPlaylist.title}
+                        description={openEmbeddedPlaylist.description}
+                        playlistId={openEmbeddedPlaylist.playlistId}
+                        onBack={() => setOpenEmbeddedPlaylist(null)}
                     />
                 </AnimatePresence>
             </div>

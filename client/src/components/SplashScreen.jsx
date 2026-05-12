@@ -5,47 +5,41 @@ import { motion } from 'framer-motion';
 import { newsAPI, hackathonAPI } from '../config/api';
 
 const TILE_URLS_1 = [
-  'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=300&q=70',
-  'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=300&q=70',
-  'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=300&q=70',
-  'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300&q=70',
-  'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=300&q=70',
-  'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=300&q=70',
+  'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=200&q=50',
+  'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=200&q=50',
+  'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=200&q=50',
+  'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=200&q=50',
 ];
 const TILE_URLS_2 = [
-  'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=300&q=70',
-  'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=300&q=70',
-  'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300&q=70',
-  'https://images.unsplash.com/photo-1568952433726-3896e3881c65?w=300&q=70',
-  'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=300&q=70',
-  'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=300&q=70',
+  'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=200&q=50',
+  'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=200&q=50',
+  'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=200&q=50',
+  'https://images.unsplash.com/photo-1568952433726-3896e3881c65?w=200&q=50',
 ];
 const TILE_URLS_3 = [
-  'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=300&q=70',
-  'https://images.unsplash.com/photo-1518770660439-4636190af475?w=300&q=70',
-  'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300&q=70',
-  'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=300&q=70',
-  'https://images.unsplash.com/photo-1547658719-da2b51169166?w=300&q=70',
-  'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=300&q=70',
+  'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=200&q=50',
+  'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=50',
+  'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=200&q=50',
+  'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=200&q=50',
 ];
 
 const FALLBACK =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%230b0b0f'/%3E%3C/svg%3E";
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='266'%3E%3Crect width='200' height='266' fill='%230b0b0f'/%3E%3C/svg%3E";
 
 export default function SplashScreen() {
   // Prefetch news + hackathons while the splash is visible
   useEffect(() => {
     const prefetch = async () => {
       try {
-        await Promise.allSettled([
-          newsAPI.getAllNews(1, null, false),
-          hackathonAPI.getAll({}),
-        ]);
+        // Reduced prefetch scope to only most critical data
+        await newsAPI.getAllNews(1, null, false);
       } catch {
-        // non-fatal — just warming the cache
+        // non-fatal
       }
     };
-    prefetch();
+    // Delay prefetch slightly to let critical auth request breathe
+    const timer = setTimeout(prefetch, 500);
+    return () => clearTimeout(timer);
   }, []);
 
   const imgProps = (url, i, col) => ({
@@ -55,7 +49,7 @@ export default function SplashScreen() {
     onError: (e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK; },
     className: 'w-full object-cover rounded-lg',
     style: { aspectRatio: '3/4' },
-    loading: 'eager',
+    loading: i < 2 ? 'eager' : 'lazy',
   });
 
   return (

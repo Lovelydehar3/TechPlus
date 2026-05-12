@@ -1,11 +1,12 @@
 import express from "express"
-import { getPlaylistById, getPlaylists } from "../controllers/playlistController.js"
+import { getPlaylistById, getPlaylists, getYouTubePlaylist } from "../controllers/playlistController.js"
 import { seedPlaylistsFromCatalog } from "../services/playlistCatalogSeed.js"
 import { protect } from "../middleware/authMiddleware.js"
 
 const router = express.Router()
 
 router.get("/", getPlaylists)
+router.get("/youtube/:playlistId", getYouTubePlaylist)
 router.get("/:id", getPlaylistById)
 
 // Admin-only: reset and re-seed playlists with latest catalog

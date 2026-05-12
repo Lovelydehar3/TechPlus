@@ -36,6 +36,8 @@ const userSchema = new mongoose.Schema({
     path: String,
     roadmapId: String,
     itemId: String,
+    playlistSourceId: String,
+    playlistSourceUrl: String,
     videoId: String,
     videoTitle: String,
     videoIndex: Number,
@@ -64,6 +66,7 @@ const userSchema = new mongoose.Schema({
   downloadedRoadmaps: [{
     title: String,
     roadmapId: String,
+    pdfPath: String,
     timestamp: { type: Date, default: Date.now }
   }],
   stats: {
@@ -79,6 +82,8 @@ const userSchema = new mongoose.Schema({
     title: { type: String, default: null },
     path: { type: String, default: null },
     timestamp: { type: Number, default: null },
+    playlistSourceId: { type: String, default: null },
+    playlistSourceUrl: { type: String, default: null },
     videoId: { type: String, default: null },
     videoTitle: { type: String, default: null },
     videoIndex: { type: Number, default: null },

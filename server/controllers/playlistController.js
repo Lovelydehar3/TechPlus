@@ -1,6 +1,7 @@
 import mongoose from "mongoose"
 import { Playlist } from "../models/playlistModel.js"
 import { PlaylistVideo } from "../models/playlistVideoModel.js"
+import { resolveYouTubePlaylistFeed } from "../services/youtubePlaylistService.js"
 
 export const getPlaylists = async (req, res) => {
   try {
@@ -82,5 +83,45 @@ export const getPlaylistById = async (req, res) => {
     })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+export const getYouTubePlaylist = async (req, res) => {
+  try {
+    const { playlistId } = req.params
+    const { title: fallbackTitle = "", description: fallbackDescription = "" } = req.query
+    const feed = await resolveYouTubePlaylistFeed(playlistId)
+
+    const videos = (feed.videos || []).map((video, index) => ({
+      _id: `${feed.playlistId}-${video.videoId}-${index}`,
+      title: video.title,
+      videoUrl: video.videoUrl,
+      duration: video.duration || "",
+      order: index,
+      thumbnail: video.thumbnail || ""
+    }))
+
+    res.status(200).json({
+      success: true,
+      _id: `youtube:${feed.playlistId}`,
+      title: feed.title || fallbackTitle || "YouTube Playlist",
+      platform: "YouTube",
+      resourceType: "YouTube Playlist",
+      description: feed.description || fallbackDescription || "",
+      thumbnail: videos[0]?.thumbnail || "",
+      category: "YouTube Playlist",
+      group: "",
+      domain: "YouTube Playlist",
+      totalDuration: `${videos.length} videos`,
+      difficulty: "Beginner to Intermediate",
+      externalUrl: `https://www.youtube.com/playlist?list=${feed.playlistId}`,
+      tags: ["youtube", "playlist"],
+      videos
+    })
+  } catch (error) {
+    res.status(502).json({
+      success: false,
+      message: error.message || "Unable to resolve YouTube playlist"
+    })
   }
 }

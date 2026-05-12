@@ -74,15 +74,15 @@ const NewsListCard = memo(function NewsListCard({ item, index, onOpen }) {
     >
       <div className="w-full md:w-[280px] lg:w-[320px] aspect-video md:aspect-auto shrink-0 relative overflow-hidden">
         <img
-          src={item.image || NEWS_IMG_FALLBACK}
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = NEWS_IMG_FALLBACK;
-          }}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          alt=""
-        />
-        <div className="absolute top-4 left-4 px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-[9px] font-black text-[#a855f7] uppercase tracking-widest">
+        src={item.image || NEWS_IMG_FALLBACK}
+        loading="lazy"
+        onError={(e) => {
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = NEWS_IMG_FALLBACK;
+        }}
+        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+        alt=""
+        />        <div className="absolute top-4 left-4 px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-[9px] font-black text-[#a855f7] uppercase tracking-widest">
           {item.category}
         </div>
       </div>

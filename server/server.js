@@ -111,10 +111,17 @@ const __dirname = path.dirname(__filename)
 if (process.env.NODE_ENV === "production") {
   if (process.env.SERVE_STATIC === "true") {
     const staticDir = path.join(__dirname, "../client/dist")
-    app.use(express.static(staticDir))
+    // Serve static files with 1 year cache for hashed assets
+    app.use(express.static(staticDir, {
+      maxAge: '1y',
+      immutable: true,
+      index: false
+    }))
 
     app.get("*", (req, res) => {
-      res.sendFile(path.join(staticDir, "index.html"))
+      res.sendFile(path.join(staticDir, "index.html"), {
+        maxAge: '1h' // Cache index.html for only 1 hour
+      })
     })
   } else {
     // Production API-only mode (frontend on Vercel, backend on Render)

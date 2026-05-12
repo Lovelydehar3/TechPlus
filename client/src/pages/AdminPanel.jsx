@@ -22,10 +22,7 @@ export default function AdminPanel() {
             
             // Mock data for demonstration
             setUsers([
-                { _id: '1', username: 'alex_dev', email: 'alex@techplus.com', role: 'admin', isVerified: true, createdAt: '2024-01-15' },
-                { _id: '2', username: 'sarah_code', email: 'sarah@gmail.com', role: 'user', isVerified: true, createdAt: '2024-02-10' },
-                { _id: '3', username: 'mike_stack', email: 'mike@outlook.com', role: 'user', isVerified: false, createdAt: '2024-03-05' },
-                { _id: '4', username: 'emma_logic', email: 'emma@techplus.com', role: 'user', isVerified: true, createdAt: '2024-03-12' },
+          { _id: '1', username: 'Karan Sharma', email:'Karansharma202005@gmail.com', role: 'admin', isVerified: true, createdAt: '2026-03-15' },
             ]);
         } catch (error) {
             addToast('Failed to fetch users', 'error');

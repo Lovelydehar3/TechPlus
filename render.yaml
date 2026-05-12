@@ -16,6 +16,8 @@ services:
         value: 10000
       - key: MONGO_URI
         sync: false
+      - key: MONGO_URI_FALLBACK
+        sync: false
       - key: JWT_SECRET
         sync: false
       - key: JWT_REFRESH_SECRET
@@ -28,6 +30,8 @@ services:
         sync: false
       - key: EMAIL_RELAY_SECRET
         sync: false
+      - key: EMAIL_FORCE_RELAY
+        value: true
       - key: EMAIL_TIMEOUT_MS
         value: 25000
       - key: EMAIL_STRATEGY_TIMEOUT_MS
@@ -36,6 +40,14 @@ services:
         sync: false
       - key: GNEWS_API_KEY
         sync: false
+      - key: NEWSAPI_URL
+        value: https://newsapi.org/v2/top-headlines
+      - key: GNEWS_API_URL
+        value: https://gnews.io/api/v4/search
+      - key: DEVFOLIO_HACKATHON_FEEDS
+        value: https://devfolio.co/hackathons,https://devfolio.co/explore
+      - key: HACKATHON_SYNC_ON_BOOT
+        value: true
       - key: CLIENT_URL
         sync: false
       - key: ALLOWED_ORIGINS

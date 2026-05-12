@@ -38,6 +38,24 @@ const playlistSeries = ({
   playlist
 });
 
+const creatorPlaylistLink = ({
+  creator,
+  variant,
+  url,
+  domain = "Software Development",
+  tags = []
+}) =>
+  course({
+    title: `${creator} - ${variant} Playlist`,
+    url,
+    desc: `${variant} playlist batch from ${creator}.`,
+    platform: "YouTube",
+    domain,
+    difficulty: "Beginner to Advanced",
+    resourceType: "YouTube Playlist",
+    tags
+  });
+
 export const LEGACY_CATALOG = [
   {
     category: "Web Engineering",
@@ -1005,7 +1023,7 @@ export const LEGACY_CATALOG = [
       }),
       course({
         title: "CodeHelp - DSA Playlist (YouTube)",
-        url: "https://www.youtube.com/@CodeHelp/playlists",
+        url: "https://www.youtube.com/playlist?list=PLDzeHZWIZsTqNW1gvXXAicBgku9uPZeOC",
         desc: "Free YouTube DSA learning playlists from Love Babbar's CodeHelp channel.",
         platform: "YouTube",
         domain: "Data Structures & Algorithms",
@@ -1015,7 +1033,7 @@ export const LEGACY_CATALOG = [
       }),
       course({
         title: "Apna College - Java + DSA Playlists",
-        url: "https://www.youtube.com/@ApnaCollegeOfficial/playlists",
+        url: "https://www.youtube.com/playlist?list=PLfqMhTWNBTe137I_EPQd34TsgV6IO55pt",
         desc: "Free domain playlists for Java, DSA, web development, and interview prep by Apna College.",
         platform: "YouTube",
         domain: "Java",
@@ -1025,7 +1043,7 @@ export const LEGACY_CATALOG = [
       }),
       course({
         title: "Sheryians Coding School - Web Dev Playlists",
-        url: "https://www.youtube.com/@sheryians/playlists",
+        url: "https://www.youtube.com/playlist?list=PLbtI3_MArDOm777bemDCy1abP1t1Rnnbx",
         desc: "Free YouTube playlists for frontend, backend, JavaScript projects, and web fundamentals.",
         platform: "YouTube",
         domain: "Frontend Development",
@@ -1035,7 +1053,7 @@ export const LEGACY_CATALOG = [
       }),
       course({
         title: "CampusX - Data Science & ML Playlists",
-        url: "https://www.youtube.com/@campusx-official/playlists",
+        url: "https://www.youtube.com/playlist?list=PLKnIA16_RmvaYH3poI0oJvbDF4zEvpq8W",
         desc: "Free playlists for machine learning, statistics, SQL, and end-to-end data science workflows.",
         platform: "YouTube",
         domain: "Data Science",
@@ -1101,6 +1119,445 @@ export const LEGACY_CATALOG = [
           { title: "Machine Learning for Everybody", videoId: "i_LwzRVP7bg", duration: "1:55:00" },
           { title: "Data Analysis with Pandas", videoId: "vmEHCJofslg", duration: "1:30:00" }
         ]
+      })
+    ]
+  },
+  {
+    category: "Creator Playlist Batches (Latest + Famous)",
+    links: [
+      creatorPlaylistLink({
+        creator: "Sheriyans Coding School",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLbtI3_MArDOkVW2ShXXJmKUFEd_ZvV3Ar",
+        domain: "Full Stack Development",
+        tags: ["sheryians", "latest", "batch", "web dev"]
+      }),
+      creatorPlaylistLink({
+        creator: "Sheriyans Coding School",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLbtI3_MArDOm777bemDCy1abP1t1Rnnbx",
+        domain: "Full Stack Development",
+        tags: ["sheryians", "famous", "batch", "react"]
+      }),
+      creatorPlaylistLink({
+        creator: "Sheriyans AI Coding School",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLaldQ9PzZd9pj6zB9scSgP6Mzo38qixsS",
+        domain: "Business Intelligence",
+        tags: ["sheryians ai", "latest", "batch", "power bi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Sheriyans AI Coding School",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLaldQ9PzZd9qT0KsKJ7yCq70iFFP3MFJ5",
+        domain: "Machine Learning",
+        tags: ["sheryians ai", "famous", "batch", "ml"]
+      }),
+      creatorPlaylistLink({
+        creator: "Traversy Media",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLillGF-RfqbaP31HeMz1kMZMX0M_NFDn7",
+        domain: "Software Development",
+        tags: ["traversy media", "latest", "playlist"]
+      }),
+      creatorPlaylistLink({
+        creator: "Traversy Media",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLillGF-RfqbbRA-CIUxlxkUpbq0IFkX60",
+        domain: "Full Stack Development",
+        tags: ["traversy media", "famous", "full stack"]
+      }),
+      creatorPlaylistLink({
+        creator: "The Net Ninja",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PL4cUxeGkcC9hXL99yOeCcUrdUee8u36s3",
+        domain: "Frontend Development",
+        tags: ["net ninja", "latest", "astro"]
+      }),
+      creatorPlaylistLink({
+        creator: "The Net Ninja",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PL4cUxeGkcC9iDBeA8IyR1IE1kl4w5IDEG",
+        domain: "AI Development",
+        tags: ["net ninja", "famous", "openai"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeWithHarry",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLu0W_9lII9ahaRLzpAeXYPpjlb58rpR7E",
+        domain: "Web Development",
+        tags: ["codewithharry", "latest", "projects"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeWithHarry",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLu0W_9lII9agq5TrH9XLIKQvv0iaF2X3w",
+        domain: "Full Stack Development",
+        tags: ["codewithharry", "famous", "batch"]
+      }),
+      creatorPlaylistLink({
+        creator: "Apna College",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLfqMhTWNBTe2C_dQAP1UoemcgAxBTlItp",
+        domain: "Data Structures & Algorithms",
+        tags: ["apna college", "latest", "recursion"]
+      }),
+      creatorPlaylistLink({
+        creator: "Apna College",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLfqMhTWNBTe137I_EPQd34TsgV6IO55pt",
+        domain: "Data Structures & Algorithms",
+        tags: ["apna college", "famous", "dsa"]
+      }),
+      creatorPlaylistLink({
+        creator: "Hitesh Choudhary",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLRAV69dS1uWQxSxY2LsDERqvtk7pb-zhS",
+        domain: "Full Stack Development",
+        tags: ["hitesh choudhary", "latest", "saas"]
+      }),
+      creatorPlaylistLink({
+        creator: "Hitesh Choudhary",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLRAV69dS1uWRH0QDzQaKLQEYD26YCQ5eS",
+        domain: "Full Stack Development",
+        tags: ["hitesh choudhary", "famous", "nextjs"]
+      }),
+      creatorPlaylistLink({
+        creator: "Chai aur Code",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLu71SKxNbfoBNeobqT02-KBtgYqFecO19",
+        domain: "JavaScript",
+        tags: ["chai aur code", "latest", "javascript"]
+      }),
+      creatorPlaylistLink({
+        creator: "Chai aur Code",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLu71SKxNbfoCFwFuOqIOG8iM1JeOLq3Wv",
+        domain: "Software Development",
+        tags: ["chai aur code", "famous", "crash course"]
+      }),
+      creatorPlaylistLink({
+        creator: "Programming with Mosh",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLTjRvDozrdlx82aIrsHY_Ndr3mKGK4tgq",
+        domain: "Career Development",
+        tags: ["programming with mosh", "latest", "roadmaps"]
+      }),
+      creatorPlaylistLink({
+        creator: "Programming with Mosh",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLTjRvDozrdlyjm_nKyYt4b5C1zx4Xdaut",
+        domain: "Java",
+        tags: ["programming with mosh", "famous", "java"]
+      }),
+      creatorPlaylistLink({
+        creator: "Fireship",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PL0vfts4VzfNh4huPTppuH0FZ0-a_qCMe-",
+        domain: "Technology Trends",
+        tags: ["fireship", "latest", "tech"]
+      }),
+      creatorPlaylistLink({
+        creator: "Fireship",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PL0vfts4VzfNhyuLwMtD1_f1hSWo6V_kIY",
+        domain: "AI Development",
+        tags: ["fireship", "famous", "openai"]
+      }),
+      creatorPlaylistLink({
+        creator: "Web Dev Simplified",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLZlA0Gpn_vH98uzFzak6aFNKinB-lrE9X",
+        domain: "Web Development",
+        tags: ["web dev simplified", "latest", "projects"]
+      }),
+      creatorPlaylistLink({
+        creator: "Web Dev Simplified",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLZlA0Gpn_vH8jbFkBjOuFjhxANC63OmXM",
+        domain: "Full Stack Development",
+        tags: ["web dev simplified", "famous", "full stack"]
+      }),
+      creatorPlaylistLink({
+        creator: "Academind",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PL55RiY5tL51rudermnWTq1LlGC1BL1g3l",
+        domain: "Cloud",
+        tags: ["academind", "latest", "aws"]
+      }),
+      creatorPlaylistLink({
+        creator: "Academind",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PL55RiY5tL51pk1RvaQOxI6sJ-yZzExzJn",
+        domain: "Frontend Development",
+        tags: ["academind", "famous", "nuxt"]
+      }),
+      creatorPlaylistLink({
+        creator: "Codevolution",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLC3y8-rFHvwg9D7EOSEBabuutIdKZN5V3",
+        domain: "React",
+        tags: ["codevolution", "latest", "react"]
+      }),
+      creatorPlaylistLink({
+        creator: "Codevolution",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLC3y8-rFHvwg9D7EOSEBabuutIdKZN5V3",
+        domain: "React",
+        tags: ["codevolution", "famous", "react"]
+      }),
+      creatorPlaylistLink({
+        creator: "Telusko",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLsyeobzWxl7qLhYxmToB0UYDMuMT67-DD",
+        domain: "AI Development",
+        tags: ["telusko", "latest", "spring ai"]
+      }),
+      creatorPlaylistLink({
+        creator: "Telusko",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLsyeobzWxl7poIe1tqwR9CuBy3mhlg-mB",
+        domain: "System Design",
+        tags: ["telusko", "famous", "system design"]
+      }),
+      creatorPlaylistLink({
+        creator: "Kunal Kushwaha",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PL9gnSGHSqcnrXmJowUSGYuexakVFIRH7S",
+        domain: "Software Engineering",
+        tags: ["kunal kushwaha", "latest", "production"]
+      }),
+      creatorPlaylistLink({
+        creator: "Kunal Kushwaha",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PL9gnSGHSqcnoqBXdMwUTRod4Gi3eac2Ak",
+        domain: "DevOps",
+        tags: ["kunal kushwaha", "famous", "devops"]
+      }),
+      creatorPlaylistLink({
+        creator: "Take U Forward (Striver)",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLgUwDviBIf0pOd5zvVVSzgpo6BaCpHT9c",
+        domain: "Data Structures & Algorithms",
+        tags: ["striver", "latest", "stack", "queue"]
+      }),
+      creatorPlaylistLink({
+        creator: "Take U Forward (Striver)",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLgUwDviBIf0oF6QL8m22w1hIDC1vJ_BHz",
+        domain: "Data Structures & Algorithms",
+        tags: ["striver", "famous", "dsa"]
+      }),
+      creatorPlaylistLink({
+        creator: "Love Babbar",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLDzeHZWIZsTqNW1gvXXAicBgku9uPZeOC",
+        domain: "Data Structures & Algorithms",
+        tags: ["love babbar", "latest", "java", "dsa"]
+      }),
+      creatorPlaylistLink({
+        creator: "Love Babbar",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLDzeHZWIZsTqNW1gvXXAicBgku9uPZeOC",
+        domain: "Data Structures & Algorithms",
+        tags: ["love babbar", "famous", "java", "dsa"]
+      }),
+      creatorPlaylistLink({
+        creator: "Anuj Bhaiya",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLUcsbZa0qzu3x9t2lSmF6DhNO5oDUa981",
+        domain: "System Design",
+        tags: ["anuj bhaiya", "latest", "system design"]
+      }),
+      creatorPlaylistLink({
+        creator: "Anuj Bhaiya",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLUcsbZa0qzu18zPz3EatehQJ5K1jP4IO2",
+        domain: "Java",
+        tags: ["anuj bhaiya", "famous", "java"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeHelp by Babbar",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLDzeHZWIZsTqNW1gvXXAicBgku9uPZeOC",
+        domain: "Data Structures & Algorithms",
+        tags: ["codehelp", "latest", "java", "dsa"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeHelp by Babbar",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLDzeHZWIZsTqNW1gvXXAicBgku9uPZeOC",
+        domain: "Data Structures & Algorithms",
+        tags: ["codehelp", "famous", "java", "dsa"]
+      }),
+      creatorPlaylistLink({
+        creator: "Tech With Tim",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLzMcBGfZo4-lKuOp1lq_OToZloZEtXJuE",
+        domain: "Python",
+        tags: ["tech with tim", "latest", "python", "web3"]
+      }),
+      creatorPlaylistLink({
+        creator: "Tech With Tim",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLzMcBGfZo4-nX-NCYorkatzBxjqRlPkKB",
+        domain: "Python",
+        tags: ["tech with tim", "famous", "mongodb", "python"]
+      }),
+      creatorPlaylistLink({
+        creator: "Bro Code",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLZPZq0r_RZONpa_Xg1MmyjmctJjL4l3Ay",
+        domain: "Data Visualization",
+        tags: ["bro code", "latest", "matplotlib"]
+      }),
+      creatorPlaylistLink({
+        creator: "Bro Code",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLZPZq0r_RZOOj_NOZYq_R2PECIMglLemc",
+        domain: "Java",
+        tags: ["bro code", "famous", "java"]
+      }),
+      creatorPlaylistLink({
+        creator: "Kevin Powell",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PL4-IK0AVhVjN3obXWgffWXEGiObQh_ffU",
+        domain: "Frontend Development",
+        tags: ["kevin powell", "latest", "web components", "css"]
+      }),
+      creatorPlaylistLink({
+        creator: "Kevin Powell",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PL4-IK0AVhVjN3obXWgffWXEGiObQh_ffU",
+        domain: "Frontend Development",
+        tags: ["kevin powell", "famous", "web components", "css"]
+      }),
+      creatorPlaylistLink({
+        creator: "CS Dojo",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLBZBJbE_rGRXZqVtNsdkGA-p3reCAk5AP",
+        domain: "Career Development",
+        tags: ["cs dojo", "latest", "podcast"]
+      }),
+      creatorPlaylistLink({
+        creator: "CS Dojo",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLBZBJbE_rGRWeh5mIBhD-hhDwSEDxogDg",
+        domain: "Python",
+        tags: ["cs dojo", "famous", "python"]
+      }),
+      creatorPlaylistLink({
+        creator: "Clever Programmer",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PL-J2q3Ga50oOgdzt5-Jv1_VbImg03b-8t",
+        domain: "AI Development",
+        tags: ["clever programmer", "latest", "agents"]
+      }),
+      creatorPlaylistLink({
+        creator: "Clever Programmer",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PL-J2q3Ga50oPE59ufy88MlzURR2CT8SKm",
+        domain: "Python",
+        tags: ["clever programmer", "famous", "python"]
+      }),
+      creatorPlaylistLink({
+        creator: "NeetCode",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLot-Xpze53ld6C5ziLbkJBx-Hmf3irgvw",
+        domain: "Interview Preparation",
+        tags: ["neetcode", "latest", "podcast"]
+      }),
+      creatorPlaylistLink({
+        creator: "NeetCode",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLot-Xpze53le35rQuIbRET3YwEtrcJfdt",
+        domain: "System Design",
+        tags: ["neetcode", "famous", "system design"]
+      }),
+      creatorPlaylistLink({
+        creator: "MIT OpenCourseWare",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLUl4u3cNGP62NmnKzljcNJDduJNUeHrZ8",
+        domain: "Computer Science",
+        tags: ["mit ocw", "latest", "open education"]
+      }),
+      creatorPlaylistLink({
+        creator: "MIT OpenCourseWare",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLUl4u3cNGP61TqXrdKbZtb59uXsy5tCXN",
+        domain: "Artificial Intelligence",
+        tags: ["mit ocw", "famous", "ai"]
+      }),
+      creatorPlaylistLink({
+        creator: "CS50",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLhQjrBD2T382Wq04FMMtIoEnLGtqrj45x",
+        domain: "Computer Science",
+        tags: ["cs50", "latest", "tech talks"]
+      }),
+      creatorPlaylistLink({
+        creator: "CS50",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLhQjrBD2T381ntVU8FtSBx_N3WZCYOZvE",
+        domain: "Computer Science",
+        tags: ["cs50", "famous", "projects"]
+      }),
+      creatorPlaylistLink({
+        creator: "TechWorld with Nana",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLy7NrYWoggjzWeggYOnCigkyu4feE_ADd",
+        domain: "Career Development",
+        tags: ["techworld with nana", "latest", "interviews"]
+      }),
+      creatorPlaylistLink({
+        creator: "TechWorld with Nana",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLy7NrYWoggjwaatYXUpRgJSVvT1cmHuct",
+        domain: "AI Development",
+        tags: ["techworld with nana", "famous", "ai"]
+      }),
+      creatorPlaylistLink({
+        creator: "ByteByteGo",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLCRMIe5FDPse83estfxg_d6bF5ALh77Yq",
+        domain: "Artificial Intelligence",
+        tags: ["bytebytego", "latest", "ai"]
+      }),
+      creatorPlaylistLink({
+        creator: "ByteByteGo",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLCRMIe5FDPse83estfxg_d6bF5ALh77Yq",
+        domain: "Artificial Intelligence",
+        tags: ["bytebytego", "famous", "ai"]
+      }),
+      creatorPlaylistLink({
+        creator: "Simplilearn",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=PLEiEAq2VkUUIqj8BuLkk7ssQvLiTmBjEp",
+        domain: "Data Science",
+        tags: ["simplilearn", "latest", "data science"]
+      }),
+      creatorPlaylistLink({
+        creator: "Simplilearn",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=PLEiEAq2VkUUK17PHbFzOrl-I4jQydjib_",
+        domain: "Automation Testing",
+        tags: ["simplilearn", "famous", "selenium"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeAesthetic",
+        variant: "Latest",
+        url: "https://www.youtube.com/playlist?list=UU0SNGrU20N1Q0SPWimGu7gQ",
+        domain: "Software Engineering",
+        tags: ["codeaesthetic", "latest", "software design"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeAesthetic",
+        variant: "Famous",
+        url: "https://www.youtube.com/playlist?list=UU0SNGrU20N1Q0SPWimGu7gQ",
+        domain: "Software Engineering",
+        tags: ["codeaesthetic", "famous", "software design"]
       })
     ]
   }

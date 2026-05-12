@@ -1,6 +1,23 @@
 import mongoose from "mongoose";
 
 const hackathonSchema = new mongoose.Schema({
+  sourceKey: {
+    type: String,
+    index: true,
+    sparse: true,
+    unique: true
+  },
+  sourcePlatform: {
+    type: String,
+    enum: ['Devfolio', 'Devpost', 'MLH', 'HackClub', 'Manual', 'Other', 'GoogleCalendar', 'Unstop'],
+    default: 'Other',
+    index: true
+  },
+  sourceUrl: {
+    type: String,
+    index: true,
+    sparse: true
+  },
   externalId: {
     type: String,
     index: true,
@@ -22,13 +39,25 @@ const hackathonSchema = new mongoose.Schema({
   description: String,
   platform: {
     type: String,
-    enum: ['MLH', 'HackClub', 'Devpost', 'Manual', 'Other', 'GoogleCalendar', 'Unstop'],
+    enum: ['MLH', 'HackClub', 'Devpost', 'Devfolio', 'Manual', 'Other', 'GoogleCalendar', 'Unstop'],
     default: 'Other'
   },
   mode: {
     type: String,
     enum: ['Online', 'Offline', 'Hybrid'],
     default: 'Online'
+  },
+  country: {
+    type: String,
+    index: true
+  },
+  state: {
+    type: String,
+    index: true
+  },
+  city: {
+    type: String,
+    index: true
   },
   location: String,
   organizer: String,
@@ -58,6 +87,7 @@ const hackathonSchema = new mongoose.Schema({
 
 hackathonSchema.index({ title: 'text', description: 'text' });
 hackathonSchema.index({ startDate: 1, endDate: 1 });
+hackathonSchema.index({ sourcePlatform: 1, country: 1, startDate: 1 });
 hackathonSchema.index({ mode: 1 });
 hackathonSchema.index({ tags: 1 });
 hackathonSchema.index({ titleKey: 1, dateKey: 1 }, { unique: true, sparse: true });

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { apiCache } from '../services/cacheService';
 
 const cleanBase = (value) =>
   String(value || '')
@@ -7,9 +8,14 @@ const cleanBase = (value) =>
     .replace(/\/$/, '');
 
 const isProd = import.meta.env.PROD;
+const useSameOriginApi =
+  String(import.meta.env.VITE_USE_SAME_ORIGIN_API || '').toLowerCase() === 'true';
 const configuredBase = cleanBase(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL);
-const renderBase = cleanBase(import.meta.env.VITE_RENDER_API_URL || 'https://techplus-gaya.onrender.com');
+const renderBase = cleanBase(import.meta.env.VITE_RENDER_API_URL);
+const sameOriginBase =
+  useSameOriginApi && typeof window !== 'undefined' ? cleanBase(window.location.origin) : '';
 const CANDIDATE_BASES = [
+  sameOriginBase,
   isProd ? configuredBase || renderBase : '',
   isProd ? renderBase : '',
   !isProd ? 'http://localhost:5000' : ''
@@ -91,8 +97,10 @@ export const authAPI = {
     apiClient.post('/api/auth/resend-otp', { email }),
   login: (email, password) =>
     apiClient.post('/api/auth/login', { email, password }),
-  logout: () =>
-    apiClient.post('/api/auth/logout'),
+  logout: () => {
+    apiCache.clear();
+    return apiClient.post('/api/auth/logout');
+  },
   forgotPassword: (email, clientOrigin) =>
     apiClient.post('/api/auth/forgot-password', { email, clientOrigin }),
   resetPassword: (token, password, confirmPassword) =>
@@ -135,38 +143,84 @@ export const newsAPI = {
     apiClient.get('/api/news/newsapi', { params: { page } }),
   getGTechNews: (query = 'technology', page = 1) =>
     apiClient.get('/api/news/gnews', { params: { query, page } }),
-  getAllNews: (page = 1, category = null, refresh = false) =>
-    apiClient.get('/api/news/all', {
+  getAllNews: async (page = 1, category = null, refresh = false) => {
+    const cacheKey = `news-${page}-${category || 'all'}`;
+    if (!refresh) {
+      const cached = apiCache.get(cacheKey);
+      if (cached) return cached;
+    }
+    const res = await apiClient.get('/api/news/all', {
       params: {
         page,
         ...(category ? { category } : {}),
         ...(refresh ? { refresh: '1' } : {})
       }
-    }),
+    });
+    apiCache.set(cacheKey, res, 1000 * 60 * 15); // 15 mins
+    return res;
+  },
   searchNews: (query) =>
     apiClient.get('/api/news/search', { params: { q: query } }),
-  getById: (id) =>
-    apiClient.get('/api/news/' + id),
+  getById: async (id) => {
+    const cacheKey = `news-detail-${id}`;
+    const cached = apiCache.get(cacheKey);
+    if (cached) return cached;
+
+    const res = await apiClient.get('/api/news/' + encodeURIComponent(String(id || '')));
+    apiCache.set(cacheKey, res, 1000 * 60 * 60); // 1 hour
+    return res;
+  },
   refreshNews: () =>
     apiClient.post('/api/news/refresh')
 };
 
 export const playlistAPI = {
-  getAll: () => apiClient.get('/api/playlists'),
+  getAll: async () => {
+    const cacheKey = 'playlists-all';
+    const cached = apiCache.get(cacheKey);
+    if (cached) return cached;
+
+    const res = await apiClient.get('/api/playlists');
+    apiCache.set(cacheKey, res, 1000 * 60 * 60 * 2); // 2 hours
+    return res;
+  },
   getById: (id) => apiClient.get(`/api/playlists/${id}`),
+  getYouTubePlaylist: (playlistId, payload = {}) =>
+    apiClient.get(`/api/playlists/youtube/${encodeURIComponent(String(playlistId || ''))}`, {
+      params: {
+        ...(payload.title ? { title: payload.title } : {}),
+        ...(payload.description ? { description: payload.description } : {})
+      }
+    }),
   reseed: () => apiClient.post('/api/playlists/reseed')
 };
 
 export const roadmapAPI = {
-  getAll: () => apiClient.get('/api/roadmaps'),
+  getAll: async () => {
+    const cacheKey = 'roadmaps-all';
+    const cached = apiCache.get(cacheKey);
+    if (cached) return cached;
+
+    const res = await apiClient.get('/api/roadmaps');
+    apiCache.set(cacheKey, res, 1000 * 60 * 60 * 24); // 24 hours
+    return res;
+  },
   getById: (id) => apiClient.get(`/api/roadmaps/${id}`)
 };
 
 export const hackathonAPI = {
-  getAll: (filters = {}) =>
-    apiClient.get('/api/hackathons', { params: filters }),
+  getAll: async (filters = {}) => {
+    const cacheKey = `hackathons-${JSON.stringify(filters)}`;
+    if (!filters.refresh) {
+      const cached = apiCache.get(cacheKey);
+      if (cached) return cached;
+    }
+    const res = await apiClient.get('/api/hackathons', { params: filters });
+    apiCache.set(cacheKey, res, 1000 * 60 * 30); // 30 mins
+    return res;
+  },
   getById: (id) =>
-    apiClient.get(`/api/hackathons/${id}`),
+    apiClient.get(`/hackathons/${id}`),
   addBookmark: (hackathonId) =>
     apiClient.post('/api/hackathons/bookmark', { hackathonId }),
   removeBookmark: (hackathonId) =>
@@ -178,3 +232,4 @@ export const hackathonAPI = {
 };
 
 export default apiClient;
+

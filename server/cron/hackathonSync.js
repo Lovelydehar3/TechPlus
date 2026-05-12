@@ -12,8 +12,9 @@ export const startHackathonSyncJob = () => {
     }
   });
 
-  const shouldRunImmediateSync =
-    process.env.HACKATHON_SYNC_ON_BOOT === "true" && process.env.NODE_ENV !== "production";
+  const shouldRunImmediateSync = ["1", "true", "yes", "on"].includes(
+    String(process.env.HACKATHON_SYNC_ON_BOOT || "").trim().toLowerCase()
+  );
 
   if (shouldRunImmediateSync) {
     syncHackathonsFromAPI().catch(() => {});

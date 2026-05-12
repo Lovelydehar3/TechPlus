@@ -1,11 +1,25 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import ProfileEdit from './ProfileEdit';
-import { userAPI } from '../config/api';
+import { userAPI, roadmapAPI } from '../config/api';
 
 const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%237c3aed' rx='16'/%3E%3Ccircle cx='40' cy='30' r='14' fill='%23ffffff40'/%3E%3Cellipse cx='40' cy='68' rx='24' ry='18' fill='%23ffffff30'/%3E%3C/svg%3E";
+
+function normalizeLookupKey(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function buildDownloadKey(item) {
+    return [
+        item?.roadmapId || '',
+        item?.pdfPath || '',
+        item?.title || '',
+        item?.timestamp || ''
+    ].join('::');
+}
 
 // â”€â”€ ICONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const IconProfile = () => (
@@ -105,7 +119,7 @@ function ProfilePanel({ user, createdDate, onEdit, savedHackathons = [] }) {
     const name = user?.username || user?.name || user?.email?.split('@')[0] || 'Member';
     const email = user?.email || 'â€”';
     const profileImageSrc = user?.profileImage || user?.avatar || null;
-    const watchCount   = user?.watchHistory?.length    || 0;
+    const watchCount   = user?.watchHistory?.filter((item) => item?.type === 'resource').length || 0;
     const downloadCount= user?.downloadedRoadmaps?.length || 0;
     const hackathonCount = savedHackathons?.length || 0;
     const bookmarkCount = user?.bookmarks?.length || 0;
@@ -225,14 +239,14 @@ function ProfilePanel({ user, createdDate, onEdit, savedHackathons = [] }) {
 }
 
 // â”€â”€ WATCH HISTORY PANEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function HistoryPanel({ watchHistory = [] }) {
+function HistoryPanel({ watchHistory = [], onResume }) {
     if (watchHistory.length === 0) return (
         <motion.div key="history" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
             <div className="mb-8">
                 <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Watch History</h2>
-                <p className="text-white/30 text-sm">Your recently watched videos and lessons</p>
+                <p className="text-white/30 text-sm">Your recently watched resources</p>
             </div>
-            <EmptyState icon={<IconHistory />} message="No videos watched yet" sub="Start a roadmap or resource to track your watch history here." />
+            <EmptyState icon={<IconHistory />} message="No resources watched yet" sub="Start a resource to track your watch history here." />
         </motion.div>
     );
 
@@ -240,7 +254,7 @@ function HistoryPanel({ watchHistory = [] }) {
         <motion.div key="history" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
             <div className="mb-8">
                 <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Watch History</h2>
-                <p className="text-white/30 text-sm">{watchHistory.length} item{watchHistory.length !== 1 ? 's' : ''} in your history</p>
+                <p className="text-white/30 text-sm">{watchHistory.length} resource{watchHistory.length !== 1 ? 's' : ''} in your history</p>
             </div>
             <div className="flex flex-col gap-3">
                 {[...watchHistory].reverse().map((item, idx) => {
@@ -254,10 +268,14 @@ function HistoryPanel({ watchHistory = [] }) {
                             transition={{ delay: idx * 0.04 }}
                             className="group flex items-center gap-4 p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-[#7c3aed]/25 transition-all"
                         >
-                            {/* Thumbnail placeholder */}
-                            <div className="w-14 h-10 shrink-0 rounded-xl bg-[#7c3aed]/15 border border-[#7c3aed]/20 flex items-center justify-center text-[#a855f7] group-hover:bg-[#7c3aed]/25 transition-all">
+                            <button
+                                type="button"
+                                onClick={() => onResume?.(item)}
+                                title={item.type === 'roadmap' ? 'Open roadmap' : 'Resume video'}
+                                className="w-14 h-10 shrink-0 rounded-xl bg-[#7c3aed]/15 border border-[#7c3aed]/20 flex items-center justify-center text-[#a855f7] group-hover:bg-[#7c3aed]/25 transition-all hover:text-white hover:border-[#7c3aed]/40"
+                            >
                                 <IconPlay />
-                            </div>
+                            </button>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-bold text-white group-hover:text-[#a855f7] transition-colors line-clamp-1 mb-1.5">
                                     {item.title || item.videoTitle || `Lesson ${idx + 1}`}
@@ -281,7 +299,6 @@ function HistoryPanel({ watchHistory = [] }) {
     );
 }
 
-// â”€â”€ SAVED PANEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SavedPanel({ savedHackathons = [], savedResources = [], bookmarks = [] }) {
     const items = [
         ...savedHackathons.map((item) => ({ ...item, itemType: 'Hackathon' })),
@@ -361,7 +378,7 @@ function SavedPanel({ savedHackathons = [], savedResources = [], bookmarks = [] 
 }
 
 // â”€â”€ DOWNLOADS PANEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function DownloadsPanel({ downloads = [] }) {
+function DownloadsPanel({ downloads = [], onOpenDownload, resolveDownloadPdfPath, missingDownloads = {} }) {
     if (downloads.length === 0) return (
         <motion.div key="downloads" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
             <div className="mb-8">
@@ -381,6 +398,9 @@ function DownloadsPanel({ downloads = [] }) {
             <div className="flex flex-col gap-3">
                 {[...downloads].reverse().map((item, idx) => {
                     const ts = item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+                    const downloadKey = buildDownloadKey(item);
+                    const pdfPath = resolveDownloadPdfPath?.(item) || item.pdfPath || '';
+                    const isMissing = Boolean(missingDownloads?.[downloadKey]);
                     return (
                         <motion.div
                             key={idx}
@@ -389,7 +409,6 @@ function DownloadsPanel({ downloads = [] }) {
                             transition={{ delay: idx * 0.04 }}
                             className="group flex items-center gap-4 p-4 pr-5 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-[#7c3aed]/25 transition-all"
                         >
-                            {/* PDF Icon */}
                             <div className="w-11 h-11 shrink-0 rounded-xl bg-[#7c3aed]/15 border border-[#7c3aed]/20 flex items-center justify-center text-[#a855f7] group-hover:bg-[#7c3aed]/25 transition-all">
                                 <IconDownload />
                             </div>
@@ -404,12 +423,21 @@ function DownloadsPanel({ downloads = [] }) {
                                     {ts && <span className="text-[10px] text-white/20">{ts}</span>}
                                 </div>
                             </div>
-                            <button
-                                title="Open roadmap"
-                                className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white/40 text-[10px] font-black uppercase tracking-widest hover:bg-[#7c3aed] hover:text-white hover:border-[#7c3aed] transition-all active:scale-95"
-                            >
-                                <IconOpen /> Open
-                            </button>
+                            <div className="flex flex-col items-end gap-1 shrink-0 text-right">
+                                <button
+                                    type="button"
+                                    onClick={() => onOpenDownload?.(item)}
+                                    title="Open roadmap"
+                                    className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white/40 text-[10px] font-black uppercase tracking-widest hover:bg-[#7c3aed] hover:text-white hover:border-[#7c3aed] transition-all active:scale-95"
+                                >
+                                    <IconOpen /> Open
+                                </button>
+                                {isMissing && pdfPath && (
+                                    <p className="text-[10px] leading-tight text-white/30 max-w-[160px]">
+                                        File not found. <a href={pdfPath} download className="underline text-[#a855f7] hover:text-white">download</a> again
+                                    </p>
+                                )}
+                            </div>
                         </motion.div>
                     );
                 })}
@@ -418,7 +446,6 @@ function DownloadsPanel({ downloads = [] }) {
     );
 }
 
-// â”€â”€ MAIN COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function Profile() {
     const { user: authUser, updateUser } = useAuth();
     const { addToast } = useToast();
@@ -427,6 +454,10 @@ export default function Profile() {
     const [loading, setLoading] = useState(true);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [selectedTab, setSelectedTab] = useState('profile');
+    const navigate = useNavigate();
+    const [roadmapPdfMap, setRoadmapPdfMap] = useState({});
+    const [missingDownloads, setMissingDownloads] = useState({});
+    const roadmapLookupLoadedRef = useRef(false);
 
     useEffect(() => {
         const loadProfile = async () => {
@@ -448,6 +479,142 @@ export default function Profile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const currentUser   = user || authUser;
+    const createdDate   = currentUser?.memberSince || (currentUser?.createdAt
+        ? new Date(currentUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        : 'Recently');
+    const profileImageSrc = currentUser?.profileImage || currentUser?.avatar || null;
+    const name          = currentUser?.username || currentUser?.name || currentUser?.email?.split('@')[0] || 'Member';
+    const email         = currentUser?.email || '—';
+    const watchHistory  = currentUser?.watchHistory  || [];
+    const resourceWatchHistory = watchHistory.filter((item) => item?.type === 'resource');
+    const downloads     = currentUser?.downloadedRoadmaps || [];
+    const savedResources = currentUser?.savedResources || [];
+    const bookmarks = currentUser?.bookmarks || [];
+
+    const loadRoadmapPdfLookup = useCallback(async () => {
+        try {
+            const response = await roadmapAPI.getAll();
+            if (response.success && Array.isArray(response.roadmaps)) {
+                const nextMap = {};
+                response.roadmaps.forEach((roadmap) => {
+                    const pdfPath = roadmap?.pdfPath ? String(roadmap.pdfPath) : '';
+                    if (!pdfPath) return;
+                    if (roadmap?.id) nextMap[String(roadmap.id)] = pdfPath;
+                    if (roadmap?.title) nextMap[normalizeLookupKey(roadmap.title)] = pdfPath;
+                });
+                setRoadmapPdfMap(nextMap);
+                return nextMap;
+            }
+        } catch {
+            /* ignore */
+        }
+        return {};
+    }, []);
+
+    useEffect(() => {
+        if (!downloads.length || roadmapLookupLoadedRef.current) return;
+        let cancelled = false;
+        (async () => {
+            await loadRoadmapPdfLookup();
+            if (!cancelled) roadmapLookupLoadedRef.current = true;
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [downloads.length, loadRoadmapPdfLookup]);
+
+    const resolveDownloadPdfPath = useCallback((item, lookup = roadmapPdfMap) => {
+        if (!item) return '';
+        if (item.pdfPath) return item.pdfPath;
+        const roadmapId = item.roadmapId ? String(item.roadmapId) : '';
+        if (roadmapId && lookup[roadmapId]) return lookup[roadmapId];
+        const titleKey = normalizeLookupKey(item.title);
+        if (titleKey && lookup[titleKey]) return lookup[titleKey];
+        const fallbackSlug = normalizeLookupKey(item.roadmapId || item.title).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        return fallbackSlug ? `/pdfs/${fallbackSlug}-roadmap.pdf` : '';
+    }, [roadmapPdfMap]);
+
+    const handleHistoryResume = useCallback((item) => {
+        if (!item) return;
+        const itemPath = String(item.path || '');
+        if (item.type === 'roadmap' || itemPath.includes('/roadmaps')) {
+            navigate(itemPath || '/roadmaps');
+            return;
+        }
+
+        const resumeVideoIndex = Number.isFinite(Number(item.videoIndex)) ? Number(item.videoIndex) : 0;
+        const resumeSeconds = Math.max(0, Number(item.seconds) || 0);
+        const resumeTitle = item.title || item.videoTitle || 'Resource';
+        const hasPlaylistSource = Boolean(item.playlistSourceId);
+        const nextActivity = {
+            type: 'resource',
+            title: resumeTitle,
+            path: '/resources',
+            playlistSourceId: item.playlistSourceId || null,
+            playlistSourceUrl: item.playlistSourceUrl || null,
+            videoId: item.videoId || null,
+            videoTitle: item.videoTitle || resumeTitle,
+            videoIndex: resumeVideoIndex,
+            seconds: resumeSeconds,
+            playbackStarted: true,
+            timestamp: Date.now()
+        };
+
+        userAPI.updateLastActivity(nextActivity)
+            .then((response) => {
+                if (response?.lastActivity) {
+                    updateUser?.({ lastActivity: response.lastActivity });
+                } else {
+                    updateUser?.({ lastActivity: nextActivity });
+                }
+            })
+            .catch(() => {
+                /* ignore */
+            });
+
+        navigate('/resources', {
+            state: {
+                resumeResource: true,
+                resumePlaylistTitle: resumeTitle,
+                resumeVideoIndex,
+                resumeSeconds,
+                videoId: item.videoId || null,
+                ...(hasPlaylistSource ? {
+                    resumePlaylistSourceId: item.playlistSourceId || null,
+                    resumePlaylistSourceUrl: item.playlistSourceUrl || null
+                } : {})
+            }
+        });
+    }, [navigate, updateUser]);
+
+    const handleOpenDownload = useCallback((item) => {
+        if (!item) return;
+        const downloadKey = buildDownloadKey(item);
+        const pdfPath = resolveDownloadPdfPath(item);
+
+        if (!pdfPath) {
+            setMissingDownloads((prev) => ({ ...prev, [downloadKey]: true }));
+            addToast('File not found. Use the download link below to fetch it again.', 'error');
+            return;
+        }
+
+        const anchor = document.createElement('a');
+        anchor.href = pdfPath;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        anchor.style.display = 'none';
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setMissingDownloads((prev) => {
+            if (!prev[downloadKey]) return prev;
+            const next = { ...prev };
+            delete next[downloadKey];
+            return next;
+        });
+    }, [addToast, resolveDownloadPdfPath]);
+
     if (loading) {
         return (
             <div className="h-screen flex items-center justify-center">
@@ -458,18 +625,6 @@ export default function Profile() {
             </div>
         );
     }
-
-    const currentUser   = user || authUser;
-    const createdDate   = currentUser?.memberSince || (currentUser?.createdAt
-        ? new Date(currentUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-        : 'Recently');
-    const profileImageSrc = currentUser?.profileImage || currentUser?.avatar || null;
-    const name          = currentUser?.username || currentUser?.name || currentUser?.email?.split('@')[0] || 'Member';
-    const email         = currentUser?.email || 'â€”';
-    const watchHistory  = currentUser?.watchHistory  || [];
-    const downloads     = currentUser?.downloadedRoadmaps || [];
-    const savedResources = currentUser?.savedResources || [];
-    const bookmarks = currentUser?.bookmarks || [];
 
     return (
         <motion.div
@@ -575,13 +730,13 @@ export default function Profile() {
                             />
                         )}
                         {selectedTab === 'history' && (
-                            <HistoryPanel key="history" watchHistory={watchHistory} />
+                            <HistoryPanel key="history" watchHistory={resourceWatchHistory} onResume={handleHistoryResume} />
                         )}
                         {selectedTab === 'saved' && (
                             <SavedPanel key="saved" savedHackathons={savedHackathons} savedResources={savedResources} bookmarks={bookmarks} />
                         )}
                         {selectedTab === 'downloads' && (
-                            <DownloadsPanel key="downloads" downloads={downloads} />
+                            <DownloadsPanel key="downloads" downloads={downloads} onOpenDownload={handleOpenDownload} resolveDownloadPdfPath={resolveDownloadPdfPath} missingDownloads={missingDownloads} />
                         )}
                     </AnimatePresence>
                 </div>
@@ -601,3 +756,6 @@ export default function Profile() {
         </motion.div>
     );
 }
+
+
+
