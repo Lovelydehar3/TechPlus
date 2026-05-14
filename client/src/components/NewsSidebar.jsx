@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { newsAPI } from '../config/api';
+import { getFallbackImage } from '../utils/imageUtils';
 
-const NEWS_IMG_FALLBACK = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=200&q=60';
+function getSourceName(source, apiSource) {
+  if (typeof source === 'string') return source;
+  return source?.name || apiSource || 'News';
+}
 
 export default function NewsSidebar({ isOpen, onClose }) {
   const [articles, setArticles] = useState([]);
@@ -114,17 +118,18 @@ export default function NewsSidebar({ isOpen, onClose }) {
                     >
                       <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden border border-white/10 bg-white/5">
                         <img
-                          src={item.image || NEWS_IMG_FALLBACK}
+                          src={item.image || getFallbackImage(item.category, item.title)}
                           alt=""
+                          loading="lazy"
                           className="w-full h-full object-cover"
-                          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = NEWS_IMG_FALLBACK; }}
+                          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallbackImage(item.category, item.title); }}
                         />
                       </div>
                       <div className="flex flex-col gap-1 flex-1 min-w-0">
                         <h4 className="text-[13px] font-bold text-white/70 group-hover:text-white transition-colors leading-snug uppercase tracking-tight line-clamp-2">
                           {item.title}
                         </h4>
-                        <p className="text-[11px] text-white/40 line-clamp-1">{item.source?.name || 'News'}</p>
+                        <p className="text-[11px] text-white/40 line-clamp-1">{getSourceName(item.source, item.apiSource)}</p>
                         <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">
                           {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
                         </p>

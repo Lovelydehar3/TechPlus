@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Trash2, ShieldCheck, UserCheck, Activity, Search } from 'lucide-react';
+import ClubEventManager from '../components/ClubEventManager';
 
 export default function AdminPanel() {
     const { user } = useAuth();
@@ -214,6 +215,16 @@ export default function AdminPanel() {
                             </div>
                         )}
                     </div>
+                </motion.div>
+
+                {/* ─── Club Event Manager Section ────────────────────── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                    className="mt-12"
+                >
+                    <ClubEventManager />
                 </motion.div>
             </div>
         </div>

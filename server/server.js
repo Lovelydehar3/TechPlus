@@ -12,10 +12,12 @@ import newsRoute from "./routes/newsRoute.js"
 import hackathonRoute from "./routes/hackathonRoute.js"
 import playlistRoute from "./routes/playlistRoute.js"
 import roadmapRoute from "./routes/roadmapRoute.js"
+import clubRoute from "./routes/clubRoute.js"
 import { authLimiter, newsLimiter } from "./middleware/rateLimiter.js"
 import { startHackathonSyncJob } from "./cron/hackathonSync.js"
 import { ensurePlaylistsSeeded } from "./services/playlistCatalogSeed.js"
 import { ensureRoadmapsSeeded } from "./services/roadmapSeedService.js"
+import { ensureClubsSeeded } from "./controllers/clubController.js"
 import { fetchAndCacheNews } from "./services/newsService.js"
 import cookieParser from "cookie-parser"
 
@@ -100,6 +102,7 @@ app.use("/api/news", newsLimiter, newsRoute)
 app.use("/api/hackathons", hackathonRoute)
 app.use("/api/playlists", playlistRoute)
 app.use("/api/roadmaps", roadmapRoute)
+app.use("/api/clubs", clubRoute)
 
 app.get("/api/health", (req, res) => {
   res.json({ success: true, status: "ok" })
@@ -150,8 +153,11 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000
 
-connectDB()
-  .then(() => {
+// Initialize server first, then run non-blocking startup tasks
+const initializeServer = async () => {
+  try {
+    await connectDB()
+    
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`)
       const rawEmail = clean(process.env.EMAIL) || "MISSING"
@@ -159,19 +165,35 @@ connectDB()
       console.log(`Email Service Status: ${clean(process.env.EMAIL) && clean(process.env.EMAIL_PASS) ? "CONFIGURED" : "NOT CONFIGURED"} (${maskedEmail})`)
     })
 
+    // Start background jobs immediately (non-blocking)
     startHackathonSyncJob()
 
+    // Always seed clubs (required for the Clubs feature to work)
+    setImmediate(() => {
+      ensureClubsSeeded().catch(() => {})
+    })
+
+    // Defer non-critical warmup tasks to background (don't block server startup)
+    // These run in parallel after a short delay to let server handle initial requests
     if (process.env.ENABLE_STARTUP_WARMUPS === "true") {
-      setTimeout(() => {
+      setImmediate(() => {
+        // Run in background without blocking
         Promise.allSettled([
           ensurePlaylistsSeeded(),
           ensureRoadmapsSeeded(),
           fetchAndCacheNews()
-        ]).catch(() => {})
-      }, 12000)
+        ])
+          .then((results) => {
+            const successful = results.filter(r => r.status === 'fulfilled').length
+            console.log(`Startup warmups completed: ${successful}/${results.length} successful`)
+          })
+          .catch(() => {})
+      })
     }
-  })
-  .catch((err) => {
+  } catch (err) {
     console.error("Failed to connect to database:", err.message)
     process.exit(1)
-  })
+  }
+}
+
+initializeServer()

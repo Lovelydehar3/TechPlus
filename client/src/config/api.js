@@ -231,5 +231,19 @@ export const hackathonAPI = {
     apiClient.post('/api/hackathons/sync')
 };
 
+export const clubAPI = {
+  // Public
+  getClubs: () => apiClient.get('/api/clubs'),
+  getClubBySlug: (slug) => apiClient.get(`/api/clubs/${slug}`),
+  getClubEvents: (slug) => apiClient.get(`/api/clubs/${slug}/events`),
+
+  // Admin
+  getAllEvents: (clubId) =>
+    apiClient.get('/api/clubs/admin/events', clubId ? { params: { clubId } } : {}),
+  createEvent: (data) => apiClient.post('/api/clubs/admin/events', data),
+  updateEvent: (id, data) => apiClient.put(`/api/clubs/admin/events/${id}`, data),
+  deleteEvent: (id) => apiClient.delete(`/api/clubs/admin/events/${id}`),
+};
+
 export default apiClient;
 

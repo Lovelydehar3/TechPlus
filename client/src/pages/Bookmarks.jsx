@@ -2,9 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { userAPI } from '../config/api';
 import { useToast } from '../context/ToastContext';
-
-const IMG_FALLBACK =
-  'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=60';
+import { getFallbackImage } from '../utils/imageUtils';
 
 const CATEGORIES = ['All', 'AI', 'ML', 'React', 'Web Development', 'Cybersecurity', 'Data Science', 'Cloud', 'General'];
 
@@ -145,10 +143,10 @@ export default function Bookmarks() {
                 {/* Thumbnail */}
                 <div className="relative h-40 sm:h-44 overflow-hidden bg-black/30 shrink-0">
                   <img
-                    src={bookmark.articleImage || IMG_FALLBACK}
+                    src={bookmark.articleImage || getFallbackImage(bookmark.category, bookmark.articleTitle)}
                     alt={bookmark.articleTitle}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    onError={(e) => { e.currentTarget.src = IMG_FALLBACK; }}
+                    onError={(e) => { e.currentTarget.src = getFallbackImage(bookmark.category, bookmark.articleTitle); }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   {bookmark.category && (

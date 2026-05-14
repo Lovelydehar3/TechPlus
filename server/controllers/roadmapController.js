@@ -1,10 +1,17 @@
 import { Roadmap } from "../models/roadmapModel.js"
+import cacheService from "../services/cacheService.js"
 
 export const getRoadmaps = async (req, res) => {
   try {
-    const roadmaps = await Roadmap.find({})
-      .sort({ title: 1 })
-      .lean()
+    // Use cache with 30 minute TTL (roadmaps rarely change)
+    const roadmaps = await cacheService.getOrCompute(
+      'roadmaps-all',
+      () => Roadmap.find({})
+        .select('roadmapId title badge description color pdfPath')
+        .sort({ title: 1 })
+        .lean(),
+      30 * 60 * 1000 // 30 minutes
+    );
 
     res.status(200).json({
       success: true,

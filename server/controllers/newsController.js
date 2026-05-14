@@ -4,6 +4,7 @@
   fetchAndCacheNews,
   getNewsById
 } from "../services/newsService.js";
+import cacheService from "../services/cacheService.js";
 
 function parseCategory(category) {
   if (!category || String(category).toLowerCase() === "all") return null;
@@ -15,7 +16,23 @@ export const getTechNews = async (req, res) => {
     const { category = null, refresh } = req.query;
     const forceLive = refresh === "1" || refresh === "true";
     const cat = parseCategory(category);
-    const result = await getNewsWithFallback(cat, 40, forceLive);
+    
+    // Use cache key based on category
+    const cacheKey = `news-${cat || 'all'}`;
+    
+    // If forced refresh, skip cache
+    let result;
+    if (forceLive) {
+      result = await getNewsWithFallback(cat, 40, forceLive);
+      cacheService.set(cacheKey, result, 5 * 60 * 1000); // Cache for 5 mins
+    } else {
+      // Try cache first, fallback to fetch
+      result = await cacheService.getOrCompute(
+        cacheKey,
+        () => getNewsWithFallback(cat, 40, false),
+        5 * 60 * 1000 // 5 minutes TTL
+      );
+    }
 
     // Cache for 5 mins in browser, 30 mins in CDN
     res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=1800');

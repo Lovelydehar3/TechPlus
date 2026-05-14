@@ -28,7 +28,7 @@ const newsSchema = new mongoose.Schema({
   publishedAt: Date,
   apiSource: {
     type: String,
-    enum: ['GNews', 'NewsAPI', 'Mock', 'Cached'],
+    enum: ['GNews', 'NewsAPI', 'Hacker News', 'TechCrunch', 'Mock', 'Cached'],
     default: 'Cached'
   },
   savedBy: [{

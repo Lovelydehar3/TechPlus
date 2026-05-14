@@ -2,9 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, useDeferredValue } fr
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '../context/ToastContext'
 import { hackathonAPI } from '../config/api'
-
-const FALLBACK_IMAGE =
-  'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80'
+import { getFallbackImage } from '../utils/imageUtils'
 
 const normalizeKey = (value) =>
   String(value || '')
@@ -409,14 +407,14 @@ export default function Hackathons() {
                 >
                   <div className="h-40 sm:h-44 overflow-hidden bg-gradient-to-br from-[#7c3aed]/20 to-[#3b82f6]/20">
                     <img
-                      src={hackathon.image || FALLBACK_IMAGE}
+                      src={hackathon.image || getFallbackImage('Startups', hackathon.title)}
                       alt={hackathon.title}
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
                         e.currentTarget.onerror = null
-                        e.currentTarget.src = FALLBACK_IMAGE
+                        e.currentTarget.src = getFallbackImage('Startups', hackathon.title)
                       }}
                     />
                   </div>
@@ -579,12 +577,12 @@ export default function Hackathons() {
             >
               <div className="h-48 overflow-hidden">
                 <img
-                  src={selectedHackathon.image || FALLBACK_IMAGE}
+                  src={selectedHackathon.image || getFallbackImage('Startups', selectedHackathon.title)}
                   alt={selectedHackathon.title}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.currentTarget.onerror = null
-                    e.currentTarget.src = FALLBACK_IMAGE
+                    e.currentTarget.src = getFallbackImage('Startups', selectedHackathon.title)
                   }}
                 />
               </div>

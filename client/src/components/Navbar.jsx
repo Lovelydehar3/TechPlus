@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useState, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import NewsSidebar from './NewsSidebar';
+import ClubsPanel from './ClubsPanel';
 
 /* SVG Icons */
 const Icons = {
@@ -51,6 +52,7 @@ export default function Navbar() {
     const location = useLocation();
     const navigate = useNavigate();
     const [newsOpen, setNewsOpen] = useState(false);
+    const [clubsOpen, setClubsOpen] = useState(false);
  
     const handleLogout = () => {
         logout();
@@ -105,6 +107,28 @@ export default function Navbar() {
                             >
                                 <Icons.Fire />
                                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#a855f7] rounded-full animate-ping" />
+                            </button>
+
+                            <button
+                                onClick={() => setClubsOpen(true)}
+                                className="p-2 rounded-xl bg-purple-500/10 text-[#a855f7] hover:bg-purple-500/20 transition-all group relative"
+                                title="College Clubs & Updates"
+                            >
+                                <motion.svg
+                                    width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                                >
+                                    <motion.g
+                                        animate={{
+                                            scale: [1, 1.05, 1],
+                                        }}
+                                        transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+                                    >
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                    </motion.g>
+                                </motion.svg>
                             </button>
 
                         </div>
@@ -230,6 +254,7 @@ export default function Navbar() {
                 </div>
             </nav>
             <NewsSidebar isOpen={newsOpen} onClose={() => setNewsOpen(false)} />
+            <ClubsPanel isOpen={clubsOpen} onClose={() => setClubsOpen(false)} />
         </>
     );
 }

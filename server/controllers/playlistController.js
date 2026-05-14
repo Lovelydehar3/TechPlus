@@ -56,7 +56,10 @@ export const getPlaylistById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Playlist not found" })
     }
 
-    const videos = await PlaylistVideo.find({ playlistId: id }).sort({ order: 1 }).lean()
+    const videos = await PlaylistVideo.find({ playlistId: id })
+      .select('title videoUrl duration order -_id')
+      .sort({ order: 1 })
+      .lean()
 
     res.status(200).json({
       success: true,

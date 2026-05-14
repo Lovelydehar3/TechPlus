@@ -16,6 +16,7 @@ const Profile      = lazy(() => import('./pages/Profile'));
 const Bookmarks    = lazy(() => import('./pages/Bookmarks'));
 const PasswordReset = lazy(() => import('./pages/PasswordReset'));
 const AdminPanel   = lazy(() => import('./pages/AdminPanel'));
+const ClubDetail   = lazy(() => import('./pages/ClubDetail'));
 const NotFound     = lazy(() => import('./pages/NotFound'));
 const NewsDetail   = lazy(() => import('./pages/NewsDetail'));
 
@@ -69,6 +70,7 @@ function AppContent() {
                     <Route path="/news/:id" element={<ProtectedRoute><NewsDetail /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile user={user} /></ProtectedRoute>} />
                     <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+                    <Route path="/clubs/:slug" element={<ClubDetail />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </Suspense>

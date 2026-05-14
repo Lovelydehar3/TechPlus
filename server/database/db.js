@@ -3,8 +3,16 @@ import mongoose from 'mongoose';
 export const connectDB = async () => {
   const connect = async (uri) => {
     await mongoose.connect(uri, {
+      // Connection pooling settings for better performance
+      maxPoolSize: 10,
+      minPoolSize: 5,
+      maxIdleTimeMS: 45000,
       serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000
+      socketTimeoutMS: 45000,
+      retryWrites: true,
+      retryReads: true,
+      // Optimizations
+      family: 4 // Use IPv4, more stable than IPv6
     });
   };
 

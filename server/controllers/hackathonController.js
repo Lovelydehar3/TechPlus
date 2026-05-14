@@ -6,6 +6,7 @@ import {
   getUserBookmarkedHackathons,
   syncHackathonsFromAPI
 } from "../services/hackathonService.js";
+import cacheService from "../services/cacheService.js";
 
 // ============ GET ALL HACKATHONS (with filters) ============
 export const getHackathons = async (req, res) => {
@@ -19,7 +20,22 @@ export const getHackathons = async (req, res) => {
     if (upcoming === 'true') filters.upcoming = true;
     if (refresh === 'true') filters.refresh = true;
 
-    const hackathons = await getAllHackathons(filters);
+    // Create cache key from filters
+    const cacheKey = `hackathons-${JSON.stringify(filters)}`;
+    
+    let hackathons;
+    if (filters.refresh) {
+      // Skip cache if explicitly requested
+      hackathons = await getAllHackathons(filters);
+      cacheService.set(cacheKey, hackathons, 10 * 60 * 1000); // Cache for 10 mins
+    } else {
+      // Use cache with 10 minute TTL
+      hackathons = await cacheService.getOrCompute(
+        cacheKey,
+        () => getAllHackathons(filters),
+        10 * 60 * 1000 // 10 minutes
+      );
+    }
 
     // Cache for 10 mins in browser, 1 hour in CDN (hackathons change even less frequently)
     res.setHeader('Cache-Control', 'public, max-age=600, s-maxage=3600');

@@ -20,8 +20,6 @@ function buildDownloadKey(item) {
         item?.timestamp || ''
     ].join('::');
 }
-
-// â”€â”€ ICONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const IconProfile = () => (
     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
         <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
@@ -83,7 +81,6 @@ const IconEdit = () => (
     </svg>
 );
 
-// â”€â”€ TAB CONFIG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const TABS = [
     { id: 'profile',   label: 'Profile',             Icon: IconProfile  },
     { id: 'history',   label: 'Watch History',        Icon: IconHistory  },
@@ -91,7 +88,7 @@ const TABS = [
     { id: 'downloads', label: 'Downloaded Roadmaps',  Icon: IconDownload },
 ];
 
-// â”€â”€ EMPTY STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 function EmptyState({ icon, message, sub }) {
     return (
         <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
@@ -164,11 +161,6 @@ function ProfilePanel({ user, createdDate, onEdit, savedHackathons = [] }) {
                             <IconEmail />
                             <span className="truncate">{email}</span>
                         </div>
-                        {user?.role === 'admin' && (
-                            <div className="flex items-center gap-2 text-[9px] sm:text-[10px] font-black text-[#a855f7] uppercase tracking-widest">
-                                â¬¡ Administrator
-                            </div>
-                        )}
                     </div>
 
                     {/* Edit button */}
@@ -238,7 +230,6 @@ function ProfilePanel({ user, createdDate, onEdit, savedHackathons = [] }) {
     );
 }
 
-// â”€â”€ WATCH HISTORY PANEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function HistoryPanel({ watchHistory = [], onResume }) {
     if (watchHistory.length === 0) return (
         <motion.div key="history" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
@@ -377,7 +368,7 @@ function SavedPanel({ savedHackathons = [], savedResources = [], bookmarks = [] 
     );
 }
 
-// â”€â”€ DOWNLOADS PANEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 function DownloadsPanel({ downloads = [], onOpenDownload, resolveDownloadPdfPath, missingDownloads = {} }) {
     if (downloads.length === 0) return (
         <motion.div key="downloads" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
@@ -669,11 +660,6 @@ export default function Profile() {
                             <div className="min-w-0">
                                 <h2 className="text-base font-black text-white tracking-tight uppercase truncate">{name}</h2>
                                 <p className="text-[9px] font-bold text-white/25 uppercase tracking-[0.15em] truncate mt-0.5">{email}</p>
-                                {currentUser?.role === 'admin' && (
-                                    <div className="mt-1.5 text-[9px] font-black text-[#a855f7] uppercase tracking-widest">
-                                        Administrator
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </div>

@@ -5,9 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { newsAPI } from '../config/api';
 import { NEWS_DOMAIN_FILTERS } from '../config/newsDomains';
-
-const NEWS_IMG_FALLBACK =
-  'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=60';
+import { getFallbackImage } from '../utils/imageUtils';
 
 function articleKey(item, fallback) {
   if (item?._id) return String(item._id);
@@ -28,6 +26,7 @@ function normalizeArticle(raw, idx) {
     typeof raw.source === 'string'
       ? raw.source
       : raw.source?.name || raw.apiSource || 'Tech Intel';
+  const category = raw.category || 'General';
 
   return {
     ...raw,
@@ -38,10 +37,19 @@ function normalizeArticle(raw, idx) {
       year: 'numeric'
     }),
     readingTime: raw.readingTime || '2 min read',
-    category: raw.category || 'General',
-    image: raw.image || NEWS_IMG_FALLBACK,
+    category: category,
+    image: raw.image || getFallbackImage(category, raw.title),
     source: sourceName
   };
+}
+
+function getSourceBadge(source) {
+  const value = typeof source === 'string' ? source : source?.name || 'Tech Intel';
+  if (/hacker news/i.test(value)) return 'Hacker News';
+  if (/techcrunch/i.test(value)) return 'TechCrunch';
+  if (/gnews/i.test(value)) return 'GNews';
+  if (/newsapi/i.test(value)) return 'NewsAPI';
+  return value;
 }
 
 function NewsCarouselSkeleton() {
@@ -74,16 +82,22 @@ const NewsListCard = memo(function NewsListCard({ item, index, onOpen }) {
     >
       <div className="w-full md:w-[280px] lg:w-[320px] aspect-video md:aspect-auto shrink-0 relative overflow-hidden">
         <img
-        src={item.image || NEWS_IMG_FALLBACK}
+        src={item.image || getFallbackImage(item.category, item.title)}
         loading="lazy"
         onError={(e) => {
           e.currentTarget.onerror = null;
-          e.currentTarget.src = NEWS_IMG_FALLBACK;
+          e.currentTarget.src = getFallbackImage(item.category, item.title);
         }}
         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         alt=""
-        />        <div className="absolute top-4 left-4 px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-[9px] font-black text-[#a855f7] uppercase tracking-widest">
-          {item.category}
+        />
+        <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+          <div className="px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-[9px] font-black text-[#a855f7] uppercase tracking-widest">
+            {item.category}
+          </div>
+          <div className="px-3 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg text-[9px] font-black text-white/70 uppercase tracking-widest">
+            {getSourceBadge(item.source)}
+          </div>
         </div>
       </div>
 
@@ -266,7 +280,9 @@ export default function Dashboard() {
     } catch {
       /* ignore */
     }
-    navigate(`/news/${safeId}`, { state: { article: item } });
+    const target = `/news/${safeId}`;
+    const opened = window.open(target, '_blank', 'noopener,noreferrer');
+    if (!opened) navigate(target, { state: { article: item } });
   };
 
   const slide = featuredNews[carouselIndex];
@@ -420,18 +436,23 @@ export default function Dashboard() {
                       className="absolute inset-0"
                     >
                       <img
-                        src={slide?.image || NEWS_IMG_FALLBACK}
+                        src={slide?.image || getFallbackImage(slide?.category, slide?.title)}
                         onError={(e) => {
                           e.currentTarget.onerror = null;
-                          e.currentTarget.src = NEWS_IMG_FALLBACK;
+                          e.currentTarget.src = getFallbackImage(slide?.category, slide?.title);
                         }}
                         className="w-full h-full object-cover"
                         alt=""
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/40 to-transparent" />
                       <div className="absolute inset-x-0 bottom-0 p-5 md:p-12 flex flex-col items-start gap-2.5 md:gap-4">
-                        <div className="px-2 py-1 bg-[#7c3aed] rounded-md text-[8px] md:text-[9px] font-black text-white uppercase tracking-[0.2em]">
-                          Featured: {slide?.category}
+                        <div className="flex flex-wrap gap-2">
+                          <div className="px-2 py-1 bg-[#7c3aed] rounded-md text-[8px] md:text-[9px] font-black text-white uppercase tracking-[0.2em]">
+                            Featured: {slide?.category}
+                          </div>
+                          <div className="px-2 py-1 bg-black/50 border border-white/10 rounded-md text-[8px] md:text-[9px] font-black text-white/80 uppercase tracking-[0.2em]">
+                            {getSourceBadge(slide?.source)}
+                          </div>
                         </div>
                         <h2 className="text-base md:text-4xl font-black text-white leading-tight uppercase tracking-tight max-w-2xl line-clamp-2 md:line-clamp-none">
                           {slide?.title}

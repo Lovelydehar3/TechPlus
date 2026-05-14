@@ -77,7 +77,7 @@ export async function seedPlaylistsFromCatalog(options = {}) {
 
 /** Run on server boot: seed only when there are no playlists yet. */
 export async function ensurePlaylistsSeeded() {
-  const existing = await Playlist.findOne().lean()
+  const existing = await Playlist.findOne().select('resourceType domain platform').lean()
   const shouldUpgradeLegacy =
     existing &&
     (!existing.resourceType || !existing.domain || !existing.platform)

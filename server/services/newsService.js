@@ -1,4 +1,5 @@
 import axios from "axios";
+import Parser from "rss-parser";
 import mongoose from "mongoose";
 import { News } from "../models/newsModel.js";
 
@@ -7,16 +8,100 @@ const clean = (value) =>
     .trim()
     .replace(/^"|"$/g, "");
 
-const NEWS_IMAGE_FALLBACK =
-  "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80";
+const CATEGORY_FALLBACK_IMAGES = {
+  "AI": [
+    "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=80",
+    "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=80",
+    "https://images.unsplash.com/photo-1655720828018-edd2daec9349?w=800&q=80"
+  ],
+  "ML": [
+    "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800&q=80",
+    "https://images.unsplash.com/photo-1527474305487-b87b222841cc?w=800&q=80",
+    "https://images.unsplash.com/photo-1515879218367-8466d910auj7?w=800&q=80"
+  ],
+  "Cybersecurity": [
+    "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80",
+    "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=800&q=80",
+    "https://images.unsplash.com/photo-1563206767-5b18f218e8de?w=800&q=80"
+  ],
+  "Cloud": [
+    "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800&q=80",
+    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80",
+    "https://images.unsplash.com/photo-1560732488-6b0df240254a?w=800&q=80"
+  ],
+  "Web Development": [
+    "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&q=80",
+    "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80",
+    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80"
+  ],
+  "Programming": [
+    "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800&q=80",
+    "https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&q=80",
+    "https://images.unsplash.com/photo-1515879218367-8466d910aeda?w=800&q=80"
+  ],
+  "Startups": [
+    "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800&q=80",
+    "https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800&q=80",
+    "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80"
+  ],
+  "Data Science": [
+    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80",
+    "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
+    "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&q=80"
+  ],
+  "Robotics": [
+    "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&q=80",
+    "https://images.unsplash.com/photo-1531746790095-e5995fece4e2?w=800&q=80",
+    "https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=800&q=80"
+  ],
+  "_default": [
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80",
+    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&q=80",
+    "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80",
+    "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80",
+    "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=80"
+  ]
+};
+
+function simpleHash(str = "") {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+function getFallbackImage(category = "", title = "") {
+  const normalizedCat = normalizeCategory(category);
+  const pool = CATEGORY_FALLBACK_IMAGES[normalizedCat] || CATEGORY_FALLBACK_IMAGES["_default"];
+  const index = simpleHash(title) % pool.length;
+  return pool[index];
+}
 const GNEWS_API_URL =
   clean(process.env.GNEWS_API_URL) || "https://gnews.io/api/v4/search";
 const NEWSAPI_URL =
   clean(process.env.NEWSAPI_URL) || "https://newsapi.org/v2/top-headlines";
+const HACKER_NEWS_TOPSTORIES_URL =
+  "https://hacker-news.firebaseio.com/v0/topstories.json";
+const HACKER_NEWS_ITEM_URL =
+  "https://hacker-news.firebaseio.com/v0/item";
+const TECHCRUNCH_RSS_URL = "https://techcrunch.com/feed/";
 
 let memoryNewsCache = [];
 let lastLiveFetchAt = 0;
-const NEWS_LIVE_COOLDOWN_MS = 30 * 60 * 1000;
+const NEWS_LIVE_COOLDOWN_MS = 10 * 60 * 1000;
+const FEED_CACHE_TTL_MS = 10 * 60 * 1000;
+const sourceFeedCache = new Map();
+
+const rssParser = new Parser({
+  customFields: {
+    item: [
+      ["media:content", "mediaContent"],
+      ["media:thumbnail", "mediaThumbnail"],
+      ["content:encoded", "contentEncoded"]
+    ]
+  }
+});
 
 const ALLOWED_TECH_CATEGORIES = new Set([
   "AI",
@@ -144,6 +229,74 @@ function cleanArticleText(text = "") {
     .replace(/\n{3,}/g, "\n\n")
     .replace(/[ \t]{2,}/g, " ")
     .trim();
+}
+
+function getCachedFeed(key) {
+  const cached = sourceFeedCache.get(key);
+  if (!cached || cached.expiresAt <= Date.now()) return null;
+  return cached.articles;
+}
+
+function setCachedFeed(key, articles) {
+  sourceFeedCache.set(key, {
+    expiresAt: Date.now() + FEED_CACHE_TTL_MS,
+    articles: Array.isArray(articles) ? articles : []
+  });
+}
+
+function getStaleFeed(key) {
+  return sourceFeedCache.get(key)?.articles || [];
+}
+
+function canonicalUrl(value = "") {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const parsed = new URL(raw);
+    [
+      "utm_source",
+      "utm_medium",
+      "utm_campaign",
+      "utm_term",
+      "utm_content",
+      "guccounter",
+      "ref",
+      "fbclid",
+      "gclid"
+    ].forEach((param) => parsed.searchParams.delete(param));
+    parsed.hash = "";
+    return parsed.toString().replace(/\/$/, "").toLowerCase();
+  } catch {
+    return raw.replace(/\/$/, "").toLowerCase();
+  }
+}
+
+function normalizeTitleForDedupe(title = "") {
+  return String(title || "")
+    .toLowerCase()
+    .replace(/&amp;/g, "&")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\b(the|a|an|and|or|to|of|for|in|on|with|from|by|at)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractImageFromRssItem(item = {}) {
+  const candidates = [
+    item.enclosure?.url,
+    item.mediaContent?.$?.url,
+    item.mediaContent?.url,
+    item.mediaThumbnail?.$?.url,
+    item.mediaThumbnail?.url
+  ].filter(Boolean);
+
+  if (candidates[0]) return candidates[0];
+
+  const html = String(item.contentEncoded || item.content || item.summary || "");
+  const imageMatch =
+    html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
+    html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  return imageMatch?.[1] || "";
 }
 
 function buildReadableContent(article = {}) {
@@ -293,12 +446,16 @@ function filterArticlesByCategory(articles, category) {
 }
 
 function dedupeByUrl(articles) {
-  const seen = new Set();
+  const seenUrls = new Set();
+  const seenTitles = new Set();
   const out = [];
   for (const a of articles) {
-    const u = a.url || `${a.title}-${a.publishedAt}`;
-    if (seen.has(u)) continue;
-    seen.add(u);
+    const u = canonicalUrl(a.url);
+    const titleKey = normalizeTitleForDedupe(a.title);
+    const titlePrefix = titleKey.split(" ").slice(0, 12).join(" ");
+    if ((u && seenUrls.has(u)) || (titlePrefix && seenTitles.has(titlePrefix))) continue;
+    if (u) seenUrls.add(u);
+    if (titlePrefix) seenTitles.add(titlePrefix);
     out.push(a);
   }
   return out;
@@ -330,10 +487,11 @@ function categorizeNews(text) {
 }
 
 function normalizeArticle(article) {
+  const category = normalizeCategory(article.category);
   return {
     ...article,
-    category: normalizeCategory(article.category),
-    image: article.image || NEWS_IMAGE_FALLBACK,
+    category,
+    image: article.image || getFallbackImage(category, article.title || ""),
     description: cleanArticleText(article.description || ""),
     content: cleanArticleText(article.content || "")
   };
@@ -423,6 +581,109 @@ export const fetchNewsAPI = async (category = "technology", page = 1) => {
   }
 };
 
+export const fetchHackerNews = async () => {
+  const cacheKey = "hacker-news";
+  const cached = getCachedFeed(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const idsResponse = await axios.get(HACKER_NEWS_TOPSTORIES_URL, {
+      timeout: 8000
+    });
+
+    const storyIds = Array.isArray(idsResponse.data)
+      ? idsResponse.data.slice(0, 20)
+      : [];
+
+    const stories = await Promise.all(
+      storyIds.map(async (id) => {
+        try {
+          const response = await axios.get(`${HACKER_NEWS_ITEM_URL}/${id}.json`, {
+            timeout: 6000
+          });
+          return response.data;
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    const articles = stories
+      .filter((story) => story?.title && story?.url && story?.time)
+      .map((story) =>
+        normalizeArticle({
+          id: `hn-${story.id}`,
+          title: story.title,
+          description: story.text
+            ? stripHtml(story.text)
+            : `Hacker News discussion with ${story.score || 0} points.`,
+          content: story.text ? stripHtml(story.text) : story.title,
+          author: story.by || "Hacker News",
+          source: {
+            name: "Hacker News",
+            id: "hacker-news"
+          },
+          image: "",
+          url: story.url,
+          category: categorizeNews(story.title),
+          publishedAt: new Date(story.time * 1000),
+          apiSource: "Hacker News"
+        })
+      )
+      .filter(isTechArticle);
+
+    setCachedFeed(cacheKey, articles);
+    return articles;
+  } catch {
+    return getStaleFeed(cacheKey);
+  }
+};
+
+export const fetchTechCrunchRSS = async () => {
+  const cacheKey = "techcrunch-rss";
+  const cached = getCachedFeed(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const feed = await rssParser.parseURL(TECHCRUNCH_RSS_URL);
+    const articles = (feed.items || [])
+      .slice(0, 15)
+      .filter((item) => item?.title && item?.link && (item.pubDate || item.isoDate))
+      .map((item) => {
+        const rawDescription =
+          item.contentSnippet ||
+          item.summary ||
+          item.content ||
+          item.contentEncoded ||
+          "";
+        const description = cleanArticleText(stripHtml(rawDescription));
+        const publishedAt = new Date(item.isoDate || item.pubDate);
+        return normalizeArticle({
+          id: `techcrunch-${encodeURIComponent(item.guid || item.link)}`,
+          title: item.title,
+          description,
+          content: description,
+          author: item.creator || item.author || "TechCrunch",
+          source: {
+            name: "TechCrunch",
+            id: "techcrunch"
+          },
+          image: extractImageFromRssItem(item) || NEWS_IMAGE_FALLBACK,
+          url: item.link,
+          category: categorizeNews(`${item.title} ${description}`),
+          publishedAt: Number.isNaN(publishedAt.getTime()) ? new Date() : publishedAt,
+          apiSource: "TechCrunch"
+        });
+      })
+      .filter(isTechArticle);
+
+    setCachedFeed(cacheKey, articles);
+    return articles;
+  } catch {
+    return getStaleFeed(cacheKey);
+  }
+};
+
 export const cacheNewsInDB = async (articles) => {
   if (!articles?.length) return;
   try {
@@ -454,6 +715,7 @@ export const getAllNews = async (category = null, limit = 20) => {
     }
 
     const articles = await News.find(query)
+      .select('title description content author source image url category publishedAt apiSource')
       .sort({ publishedAt: -1 })
       .limit(limit)
       .lean();
@@ -466,7 +728,11 @@ export const getAllNews = async (category = null, limit = 20) => {
       if (category && String(category).toLowerCase() !== "all") {
         relaxedQuery.category = normalizeCategory(category);
       }
-      const relaxed = await News.find(relaxedQuery).sort({ publishedAt: -1 }).limit(limit).lean();
+      const relaxed = await News.find(relaxedQuery)
+        .select('title description content author source image url category publishedAt apiSource')
+        .sort({ publishedAt: -1 })
+        .limit(limit)
+        .lean();
       return filterArticlesByCategory(relaxed.map(normalizeArticle), category).slice(0, limit);
     }
 
@@ -484,6 +750,7 @@ export const searchNews = async (searchQuery) => {
         { description: { $regex: searchQuery, $options: "i" } }
       ]
     })
+      .select('title description content author source image url category publishedAt apiSource')
       .sort({ publishedAt: -1 })
       .limit(30)
       .lean();
@@ -522,13 +789,22 @@ export const getNewsById = async (id) => {
   }
 };
 
-async function fetchLiveNewsMerged() {
-  const [gNews, apiNews] = await Promise.all([
+export const mergeNewsFeeds = async (limit = 40) => {
+  const [gNews, apiNews, hackerNews, techCrunch] = await Promise.all([
     fetchGTechNews("technology"),
-    fetchNewsAPI("technology")
+    fetchNewsAPI("technology"),
+    fetchHackerNews(),
+    fetchTechCrunchRSS()
   ]);
 
-  return dedupeByUrl([...gNews, ...apiNews]).filter((a) => a.title && a.url);
+  return dedupeByUrl([...gNews, ...apiNews, ...hackerNews, ...techCrunch])
+    .filter((a) => a.title && a.url && a.publishedAt)
+    .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+    .slice(0, limit);
+};
+
+async function fetchLiveNewsMerged() {
+  return mergeNewsFeeds(40);
 }
 
 export const getNewsWithFallback = async (

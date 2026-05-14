@@ -3,9 +3,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { newsAPI } from '../config/api';
 import { useToast } from '../context/ToastContext';
-
-const FALLBACK_IMAGE =
-  'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&q=70';
+import { getFallbackImage } from '../utils/imageUtils';
 
 function normalizeSource(source, apiSource) {
   if (typeof source === 'string') return source;
@@ -144,12 +142,12 @@ export default function NewsDetail() {
       <article className="rounded-[32px] border border-white/10 bg-white/[0.02] overflow-hidden">
         <div className="aspect-[21/9] w-full bg-black/30">
           <img
-            src={article.image || FALLBACK_IMAGE}
+            src={article.image || getFallbackImage(article.category, article.title)}
             alt={article.title}
             className="w-full h-full object-cover"
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = FALLBACK_IMAGE;
+              e.currentTarget.src = getFallbackImage(article.category, article.title);
             }}
           />
         </div>
