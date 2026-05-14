@@ -46,19 +46,26 @@ export const CATEGORY_FALLBACK_IMAGES = {
   ]
 };
 
-// Hash function to generate consistent, pseudo-random values
-export function simpleHash(str = '') {
-  let hash = 0;
+// Hash function to generate consistent, pseudo-random values with better distribution
+export function simpleHash(str = '', seed = 0) {
+  let hash = seed;
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
   }
   return Math.abs(hash);
 }
 
-// Get a unique fallback image based on category and title
-export function getFallbackImage(category = '', title = '') {
+// Get a unique fallback image based on category, title, and URL for better variety
+export function getFallbackImage(category = '', title = '', url = '') {
   const pool = CATEGORY_FALLBACK_IMAGES[category] || CATEGORY_FALLBACK_IMAGES._default;
-  return pool[simpleHash(title) % pool.length];
+  
+  // Use combination of title and URL for better distribution
+  const combinedKey = `${title}|${url}`;
+  const hashValue = simpleHash(combinedKey, 7);
+  
+  return pool[hashValue % pool.length];
 }
 
 // Get fallback with responsive width parameter

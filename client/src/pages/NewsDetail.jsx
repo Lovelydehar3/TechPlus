@@ -142,12 +142,12 @@ export default function NewsDetail() {
       <article className="rounded-[32px] border border-white/10 bg-white/[0.02] overflow-hidden">
         <div className="aspect-[21/9] w-full bg-black/30">
           <img
-            src={article.image || getFallbackImage(article.category, article.title)}
+            src={article.image || getFallbackImage(article.category, article.title, article.url)}
             alt={article.title}
             className="w-full h-full object-cover"
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = getFallbackImage(article.category, article.title);
+              e.currentTarget.src = getFallbackImage(article.category, article.title, article.url);
             }}
           />
         </div>

@@ -407,14 +407,14 @@ export default function Hackathons() {
                 >
                   <div className="h-40 sm:h-44 overflow-hidden bg-gradient-to-br from-[#7c3aed]/20 to-[#3b82f6]/20">
                     <img
-                      src={hackathon.image || getFallbackImage('Startups', hackathon.title)}
+                      src={hackathon.image || getFallbackImage('Startups', hackathon.title, hackathon.url)}
                       alt={hackathon.title}
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
                         e.currentTarget.onerror = null
-                        e.currentTarget.src = getFallbackImage('Startups', hackathon.title)
+                        e.currentTarget.src = getFallbackImage('Startups', hackathon.title, hackathon.url)
                       }}
                     />
                   </div>
@@ -577,12 +577,12 @@ export default function Hackathons() {
             >
               <div className="h-48 overflow-hidden">
                 <img
-                  src={selectedHackathon.image || getFallbackImage('Startups', selectedHackathon.title)}
+                  src={selectedHackathon.image || getFallbackImage('Startups', selectedHackathon.title, selectedHackathon.url)}
                   alt={selectedHackathon.title}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.currentTarget.onerror = null
-                    e.currentTarget.src = getFallbackImage('Startups', selectedHackathon.title)
+                    e.currentTarget.src = getFallbackImage('Startups', selectedHackathon.title, selectedHackathon.url)
                   }}
                 />
               </div>

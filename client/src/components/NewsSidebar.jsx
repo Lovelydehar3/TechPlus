@@ -118,11 +118,11 @@ export default function NewsSidebar({ isOpen, onClose }) {
                     >
                       <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden border border-white/10 bg-white/5">
                         <img
-                          src={item.image || getFallbackImage(item.category, item.title)}
+                          src={item.image || getFallbackImage(item.category, item.title, item.url)}
                           alt=""
                           loading="lazy"
                           className="w-full h-full object-cover"
-                          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallbackImage(item.category, item.title); }}
+                          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallbackImage(item.category, item.title, item.url); }}
                         />
                       </div>
                       <div className="flex flex-col gap-1 flex-1 min-w-0">

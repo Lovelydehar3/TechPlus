@@ -38,7 +38,7 @@ function normalizeArticle(raw, idx) {
     }),
     readingTime: raw.readingTime || '2 min read',
     category: category,
-    image: raw.image || getFallbackImage(category, raw.title),
+    image: raw.image || getFallbackImage(category, raw.title, raw.url),
     source: sourceName
   };
 }
@@ -82,11 +82,11 @@ const NewsListCard = memo(function NewsListCard({ item, index, onOpen }) {
     >
       <div className="w-full md:w-[280px] lg:w-[320px] aspect-video md:aspect-auto shrink-0 relative overflow-hidden">
         <img
-        src={item.image || getFallbackImage(item.category, item.title)}
+        src={item.image || getFallbackImage(item.category, item.title, item.url)}
         loading="lazy"
         onError={(e) => {
           e.currentTarget.onerror = null;
-          e.currentTarget.src = getFallbackImage(item.category, item.title);
+          e.currentTarget.src = getFallbackImage(item.category, item.title, item.url);
         }}
         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         alt=""
@@ -436,10 +436,10 @@ export default function Dashboard() {
                       className="absolute inset-0"
                     >
                       <img
-                        src={slide?.image || getFallbackImage(slide?.category, slide?.title)}
+                        src={slide?.image || getFallbackImage(slide?.category, slide?.title, slide?.url)}
                         onError={(e) => {
                           e.currentTarget.onerror = null;
-                          e.currentTarget.src = getFallbackImage(slide?.category, slide?.title);
+                          e.currentTarget.src = getFallbackImage(slide?.category, slide?.title, slide?.url);
                         }}
                         className="w-full h-full object-cover"
                         alt=""
