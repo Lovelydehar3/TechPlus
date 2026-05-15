@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useToast } from '../context/ToastContext'
 import { hackathonAPI } from '../config/api'
 import { getFallbackImage } from '../utils/imageUtils'
@@ -156,7 +156,7 @@ export default function Hackathons() {
   }
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -185,7 +185,7 @@ export default function Hackathons() {
                   }`}
                 >
                   {modeFilter === mode && (
-                    <motion.div
+                    <m.div
                       layoutId="mode-pill"
                       className="absolute inset-0 bg-[#7c3aed] shadow-[0_4px_20px_rgba(124,58,237,0.4)]"
                       transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
@@ -210,7 +210,7 @@ export default function Hackathons() {
                 }`}
               >
                 {viewMode === 'browse' && (
-                  <motion.div
+                  <m.div
                     layoutId="view-pill"
                     className="absolute inset-0 bg-[#7c3aed] shadow-[0_4px_20px_rgba(124,58,237,0.4)]"
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
@@ -228,7 +228,7 @@ export default function Hackathons() {
                 }`}
               >
                 {viewMode === 'saved' && (
-                  <motion.div
+                  <m.div
                     layoutId="view-pill"
                     className="absolute inset-0 bg-[#7c3aed] shadow-[0_4px_20px_rgba(124,58,237,0.4)]"
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
@@ -241,7 +241,7 @@ export default function Hackathons() {
         </div>
 
         <div className="flex-1 w-full min-h-[500px]">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -303,17 +303,17 @@ export default function Hackathons() {
                     <span className="text-white/40 uppercase text-[10px] font-black tracking-widest mr-2">Mode</span>
                     <span className="text-[#a855f7] px-2 py-0.5 bg-[#a855f7]/10 rounded-lg">{modeFilter}</span>
                   </div>
-                  <motion.div
+                  <m.div
                     animate={{ rotate: isModeDropdownOpen ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
                   >
                     <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
-                  </motion.div>
+                  </m.div>
                 </button>
 
                 <AnimatePresence>
                   {isModeDropdownOpen && (
-                    <motion.div
+                    <m.div
                       initial={{ opacity: 0, y: -10, height: 0 }}
                       animate={{ opacity: 1, y: 0, height: 'auto' }}
                       exit={{ opacity: 0, y: -10, height: 0 }}
@@ -335,7 +335,7 @@ export default function Hackathons() {
                           {mode}
                         </button>
                       ))}
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
               </div>
@@ -393,7 +393,7 @@ export default function Hackathons() {
               const isBookmarked = bookmarkedSet.has(hackathon._id)
 
               return (
-                <motion.div
+                <m.div
                   key={hackathon.sourceKey || hackathon.sourceUrl || hackathon._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -407,14 +407,14 @@ export default function Hackathons() {
                 >
                   <div className="h-40 sm:h-44 overflow-hidden bg-gradient-to-br from-[#7c3aed]/20 to-[#3b82f6]/20">
                     <img
-                      src={hackathon.image || getFallbackImage('Startups', hackathon.title, hackathon.url)}
+                      src={hackathon.image || getFallbackImage('Startups', hackathon.title, hackathon.url, idx)}
                       alt={hackathon.title}
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
                         e.currentTarget.onerror = null
-                        e.currentTarget.src = getFallbackImage('Startups', hackathon.title, hackathon.url)
+                        e.currentTarget.src = getFallbackImage('Startups', hackathon.title, hackathon.url, idx)
                       }}
                     />
                   </div>
@@ -502,14 +502,14 @@ export default function Hackathons() {
                       </div>
                     )}
                   </div>
-                </motion.div>
+                </m.div>
               )
             })}
           </div>
         )}
 
         <div className={`mt-16 grid grid-cols-1 md:grid-cols-3 gap-6`}>
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             className={`p-6 rounded-2xl border ${isDark ? 'bg-white/[0.03] border-white/10' : 'bg-white border-gray-200'}`}
@@ -521,9 +521,9 @@ export default function Hackathons() {
             <p className={isDark ? 'text-slate-400' : 'text-gray-600'}>
               Discover hackathons happening worldwide with different modes
             </p>
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -536,9 +536,9 @@ export default function Hackathons() {
             <p className={isDark ? 'text-slate-400' : 'text-gray-600'}>
               Compete for amazing prizes and recognition
             </p>
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -551,22 +551,22 @@ export default function Hackathons() {
             <p className={isDark ? 'text-slate-400' : 'text-gray-600'}>
               Bookmark hackathons and access them anytime
             </p>
-          </motion.div>
+          </m.div>
         </div>
-          </motion.div>
+          </m.div>
         </div>
       </div>
 
       {selectedHackathon && (
         <>
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedHackathon(null)}
             className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm"
           />
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className={`fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none`}
@@ -651,10 +651,10 @@ export default function Hackathons() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </>
       )}
-    </motion.div>
+    </m.div>
   )
 }
 

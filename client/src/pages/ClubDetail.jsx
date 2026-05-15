@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { clubAPI } from '../config/api';
 
 /* ─── Status badge colors ──────────────────────────────────────────────────── */
@@ -47,7 +47,7 @@ function EventCard({ event, index }) {
     const [imgError, setImgError] = useState(false);
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.08, duration: 0.5 }}
@@ -147,7 +147,7 @@ function EventCard({ event, index }) {
                     </a>
                 )}
             </div>
-        </motion.div>
+        </m.div>
     );
 }
 
@@ -228,7 +228,7 @@ export default function ClubDetail() {
             <div className="max-w-7xl mx-auto relative z-10">
                 {/* Header */}
                 <header className="mb-12">
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                     >
@@ -241,28 +241,28 @@ export default function ClubDetail() {
                             </svg>
                             Back to Home
                         </Link>
-                    </motion.div>
+                    </m.div>
 
-                    <motion.h1
+                    <m.h1
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.1 }}
                         className="text-4xl lg:text-5xl font-black text-white uppercase tracking-tighter mb-3"
                     >
                         {club.name}
-                    </motion.h1>
+                    </m.h1>
 
-                    <motion.p
+                    <m.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2 }}
                         className="text-white/40 max-w-2xl text-sm leading-relaxed"
                     >
                         {club.description || club.tagline}
-                    </motion.p>
+                    </m.p>
 
                     {/* Event count badge */}
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
@@ -271,12 +271,12 @@ export default function ClubDetail() {
                         <span className="tag">
                             {events.length} {events.length === 1 ? 'Event' : 'Events'}
                         </span>
-                    </motion.div>
+                    </m.div>
                 </header>
 
                 {/* Events Grid */}
                 {events.length === 0 ? (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="glass py-20 text-center"
@@ -291,7 +291,7 @@ export default function ClubDetail() {
                             No events posted yet
                         </p>
                         <p className="text-white/10 text-xs mt-2">Check back soon for updates!</p>
-                    </motion.div>
+                    </m.div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <AnimatePresence>

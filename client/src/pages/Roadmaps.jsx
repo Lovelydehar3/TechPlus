@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useDeferredValue } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { userAPI, roadmapAPI } from '../config/api';
 import { useToast } from '../context/ToastContext';
@@ -207,7 +207,7 @@ export default function Roadmaps() {
     }
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -226,12 +226,12 @@ export default function Roadmaps() {
                             </span>
                             <span className="text-sm font-black text-white uppercase tracking-tight line-clamp-1">{selectedDomain.title}</span>
                         </div>
-                        <motion.div
+                        <m.div
                             animate={{ rotate: isMobileMenuOpen ? 180 : 0 }}
                             className="text-white/30"
                         >
                             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
-                        </motion.div>
+                        </m.div>
                     </button>
 
                     <style dangerouslySetInnerHTML={{ __html: `
@@ -253,7 +253,7 @@ export default function Roadmaps() {
 
                     <AnimatePresence>
                         {(isMobileMenuOpen || isDesktop) && (
-                            <motion.div
+                            <m.div
                                 initial={!isDesktop ? { height: 0, opacity: 0 } : false}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
@@ -264,33 +264,23 @@ export default function Roadmaps() {
                                     <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Domains</span>
                                 </div>
                                 {visibleDomains.map((domain) => {
-                                    const Icon = DOMAIN_ICONS[domain.id] || DOMAIN_ICONS.frontend;
                                     const isActive = selectedDomain.id === domain.id;
                                     return (
-                                        <motion.button
+                                        <button
                                             key={domain.id}
-                                            layout
                                             type="button"
                                             onClick={() => {
                                                 setSelectedDomain(domain);
                                                 setExpandedStep(null);
                                                 if (!isDesktop) setIsMobileMenuOpen(false);
                                             }}
-                                            className={`group flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 text-left font-bold text-sm relative overflow-hidden ${isActive ? 'text-white' : 'text-white/40 hover:bg-white/5 hover:text-white'}`}
+                                            className={`group px-5 py-3.5 rounded-2xl transition-all duration-200 text-left font-bold text-sm ${isActive ? 'bg-[#7c3aed] text-white shadow-[0_4px_20px_rgba(124,58,237,0.4)]' : 'text-white/40 hover:bg-white/5 hover:text-white'}`}
                                         >
-                                            {isActive && (
-                                                <motion.div
-                                                    layoutId="roadmap-pill"
-                                                    className="absolute inset-0 bg-[#7c3aed] shadow-[0_4px_20px_rgba(124,58,237,0.4)]"
-                                                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                                                />
-                                            )}
-                                            <span className="relative z-10 shrink-0"><Icon /></span>
-                                            <span className="relative z-10 truncate">{domain.title}</span>
-                                        </motion.button>
+                                            {domain.title}
+                                        </button>
                                     );
                                 })}
-                            </motion.div>
+                            </m.div>
                         )}
                     </AnimatePresence>
                 </div>
@@ -308,20 +298,12 @@ export default function Roadmaps() {
                         <line x1="21" y1="21" x2="16.65" y2="16.65" />
                     </svg>
                 </div>
-
-                <div className="hidden lg:block p-5 rounded-3xl border border-white/5 bg-white/[0.02]">
-                    <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-3">Your Progress</h4>
-                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#7c3aed] transition-all duration-1000" style={{ width: `${progressPercent}%` }} />
-                    </div>
-                    <p className="mt-3 text-[10px] font-black text-white/40 uppercase tracking-widest">{progressPercent}% completed</p>
-                </div>
             </div>
 
             <div className="flex-1">
                 <AnimatePresence mode="wait">
                     {deferredSearchQuery ? (
-                        <motion.div
+                        <m.div
                             key="search-results"
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -373,9 +355,9 @@ export default function Roadmaps() {
                                     </div>
                                 )}
                             </div>
-                        </motion.div>
+                        </m.div>
                     ) : (
-                        <motion.div
+                        <m.div
                             key={selectedDomain.id}
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -393,7 +375,7 @@ export default function Roadmaps() {
                                 <p className="text-base lg:text-lg text-white/70 leading-relaxed max-w-2xl mb-8">
                                     {selectedDomain.description}
                                 </p>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-4 flex-wrap">
                                     <button
                                         onClick={downloadPDF}
                                         disabled={isDownloading}
@@ -405,15 +387,26 @@ export default function Roadmaps() {
                                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                                         {selectedDomain.steps?.length || 0} Strategic Steps
                                     </div>
+                                    <div className="hidden sm:flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-white/5 bg-white/[0.02] min-w-[180px]">
+                                        <div className="flex-1 flex flex-col gap-1">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.15em]">Progress</span>
+                                                <span className="text-[10px] font-black text-[#a855f7] uppercase tracking-widest">{progressPercent}%</span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                                <div className="h-full bg-[#7c3aed] rounded-full transition-all duration-1000" style={{ width: `${progressPercent}%` }} />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
-                                {selectedDomain.steps.map((step, idx) => {
+                                {(selectedDomain.steps || []).map((step, idx) => {
                                     const isExpanded = expandedStep === idx;
                                     const isCompleted = roadmapProgress.some((p) => p.itemId === String(idx) && p.completed);
                                     return (
-                                        <motion.div
+                                        <m.div
                                             key={idx}
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
@@ -440,7 +433,7 @@ export default function Roadmaps() {
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className={`text-sm sm:text-base lg:text-xl font-black uppercase tracking-tight leading-snug transition-colors ${isExpanded ? '!text-white' : '!text-[#c4b5fd]/60 group-hover:!text-[#6d28d9]'}`}>
+                                                    <h3 className={`text-sm sm:text-base lg:text-xl font-black uppercase tracking-tight leading-snug transition-colors ${isExpanded ? '!text-[#6d28d9]' : '!text-[#c4b5fd]/60 group-hover:!text-[#6d28d9]'}`}>
                                                         {step.title}
                                                     </h3>
                                                     <div className="flex items-center gap-4 mt-1">
@@ -455,7 +448,7 @@ export default function Roadmaps() {
 
                                             <AnimatePresence>
                                                 {isExpanded && (
-                                                    <motion.div
+                                                    <m.div
                                                         initial={{ height: 0, opacity: 0 }}
                                                         animate={{ height: 'auto', opacity: 1 }}
                                                         exit={{ height: 0, opacity: 0 }}
@@ -495,17 +488,17 @@ export default function Roadmaps() {
                                                                 )}
                                                             </div>
                                                         </div>
-                                                    </motion.div>
+                                                    </m.div>
                                                 )}
                                             </AnimatePresence>
-                                        </motion.div>
+                                        </m.div>
                                     );
                                 })}
                             </div>
-                        </motion.div>
+                        </m.div>
                     )}
                 </AnimatePresence>
             </div>
-        </motion.div>
+        </m.div>
     );
 }

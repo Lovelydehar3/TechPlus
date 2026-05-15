@@ -153,17 +153,33 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000
 
+const logStartupStatus = () => {
+  const rawEmail = clean(process.env.EMAIL) || "MISSING"
+  const maskedEmail = rawEmail !== "MISSING" ? rawEmail.replace(/(.{2}).+(@.+)/, "$1***$2") : "MISSING"
+  console.log(`Email Service Status: ${clean(process.env.EMAIL) && clean(process.env.EMAIL_PASS) ? "CONFIGURED" : "NOT CONFIGURED"} (${maskedEmail})`)
+}
+
+const startHttpServer = () =>
+  new Promise((resolve, reject) => {
+    const server = app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`)
+      logStartupStatus()
+      resolve(server)
+    })
+
+    server.on("error", (err) => {
+      if (err.code === "EADDRINUSE") {
+        console.error(`Port ${PORT} is already in use. Stop the existing server, or set PORT to a free port and point the client at that port.`)
+      }
+      reject(err)
+    })
+  })
+
 // Initialize server first, then run non-blocking startup tasks
 const initializeServer = async () => {
   try {
     await connectDB()
-    
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`)
-      const rawEmail = clean(process.env.EMAIL) || "MISSING"
-      const maskedEmail = rawEmail !== "MISSING" ? rawEmail.replace(/(.{2}).+(@.+)/, "$1***$2") : "MISSING"
-      console.log(`Email Service Status: ${clean(process.env.EMAIL) && clean(process.env.EMAIL_PASS) ? "CONFIGURED" : "NOT CONFIGURED"} (${maskedEmail})`)
-    })
+    await startHttpServer()
 
     // Start background jobs immediately (non-blocking)
     startHackathonSyncJob()
@@ -191,7 +207,7 @@ const initializeServer = async () => {
       })
     }
   } catch (err) {
-    console.error("Failed to connect to database:", err.message)
+    console.error("Failed to start server:", err.message)
     process.exit(1)
   }
 }

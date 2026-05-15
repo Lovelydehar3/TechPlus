@@ -5,9 +5,9 @@ export const getRoadmaps = async (req, res) => {
   try {
     // Use cache with 30 minute TTL (roadmaps rarely change)
     const roadmaps = await cacheService.getOrCompute(
-      'roadmaps-all',
+      'roadmaps-all-v2',
       () => Roadmap.find({})
-        .select('roadmapId title badge description color pdfPath')
+        .select('roadmapId title badge description color pdfPath steps')
         .sort({ title: 1 })
         .lean(),
       30 * 60 * 1000 // 30 minutes

@@ -1,5 +1,5 @@
 import { memo, useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { playlistAPI, userAPI } from '../config/api';
 import { useAuth } from '../context/AuthContext';
@@ -170,7 +170,7 @@ function PlaylistPlayer({
     const currentVideo = playlist[activeIndex];
 
     return (
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}>
+        <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}>
             <button
                 type="button"
                 onClick={onBack}
@@ -231,7 +231,7 @@ function PlaylistPlayer({
                     </div>
                 </div>
             </div>
-        </motion.div>
+        </m.div>
     );
 }
 
@@ -242,7 +242,7 @@ function ExternalYouTubePlaylistPlayer({
     onBack
 }) {
     return (
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}>
+        <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}>
             <button
                 type="button"
                 onClick={onBack}
@@ -267,7 +267,7 @@ function ExternalYouTubePlaylistPlayer({
                     />
                 </div>
             </div>
-        </motion.div>
+        </m.div>
     );
 }
 
@@ -637,17 +637,17 @@ export default function Resources() {
                                 <span className="text-white/40 uppercase text-[10px] font-black tracking-widest mr-2">Domain</span>
                                 <span className="text-[#a855f7] px-2 py-0.5 bg-[#a855f7]/10 rounded-lg">{activeSection}</span>
                             </div>
-                            <motion.div
+                            <m.div
                                 animate={{ rotate: isCategoryMenuOpen ? 180 : 0 }}
                                 transition={{ duration: 0.3 }}
                             >
                                 <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
-                            </motion.div>
+                            </m.div>
                         </button>
 
                         <AnimatePresence>
                             {isCategoryMenuOpen && (
-                                <motion.div
+                                <m.div
                                     initial={{ opacity: 0, y: -10, height: 0 }}
                                     animate={{ opacity: 1, y: 0, height: 'auto' }}
                                     exit={{ opacity: 0, y: -10, height: 0 }}
@@ -670,7 +670,7 @@ export default function Resources() {
                                             {category}
                                         </button>
                                     ))}
-                                </motion.div>
+                                </m.div>
                             )}
                         </AnimatePresence>
                     </div>
@@ -696,7 +696,7 @@ export default function Resources() {
                 </div>
 
                 <div className="flex-1 w-full min-h-[500px] transition-all duration-300 ease-in-out">
-                    <motion.div key={activeSection} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: 'easeInOut' }}>
+                    <m.div key={activeSection} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: 'easeInOut' }}>
                         <div className="mb-6 pb-6 md:mb-10 md:pb-8 border-b border-white/5">
                             <h1 className="text-xl sm:text-3xl font-black text-white uppercase tracking-tighter mb-3 sm:mb-4">{activeSection}</h1>
                             <p className="text-base text-white/70 leading-relaxed max-w-2xl mb-8">High-quality developer courses, trusted certifications, and curated YouTube learning paths.</p>
@@ -745,17 +745,17 @@ export default function Resources() {
                                             <span className="text-white/40 uppercase text-[10px] font-black tracking-widest mr-2">Type</span>
                                             <span className="text-[#a855f7] px-2 py-0.5 bg-[#a855f7]/10 rounded-lg">{resourceTypeFilter}</span>
                                         </div>
-                                        <motion.div
+                                        <m.div
                                             animate={{ rotate: isTypeMenuOpen ? 180 : 0 }}
                                             transition={{ duration: 0.3 }}
                                         >
                                             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
-                                        </motion.div>
+                                        </m.div>
                                     </button>
 
                                     <AnimatePresence>
                                         {isTypeMenuOpen && (
-                                            <motion.div
+                                            <m.div
                                                 initial={{ opacity: 0, y: -10, height: 0 }}
                                                 animate={{ opacity: 1, y: 0, height: 'auto' }}
                                                 exit={{ opacity: 0, y: -10, height: 0 }}
@@ -777,7 +777,7 @@ export default function Resources() {
                                                         {type}
                                                     </button>
                                                 ))}
-                                            </motion.div>
+                                            </m.div>
                                         )}
                                     </AnimatePresence>
                                 </div>
@@ -804,7 +804,7 @@ export default function Resources() {
                                 ))}
                             </div>
                         )}
-                    </motion.div>
+                    </m.div>
                 </div>
             </div>
         </div>

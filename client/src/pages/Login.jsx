@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
@@ -59,20 +59,47 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!form.email || !form.password) {
+    const email = form.email.trim().toLowerCase();
+
+    if (!email || !form.password) {
       addToast('Please fill all fields', 'error');
       return;
     }
 
     setLoading(true);
     try {
-      const response = await loginWithCredentials(form.email, form.password);
+      const response = await loginWithCredentials(email, form.password);
       if (response.success) {
         addToast('Login successful!', 'success');
         setTimeout(() => navigate('/'), 500);
       }
     } catch (error) {
-      addToast(error.message || 'Login failed', 'error');
+      const message = error?.message || 'Login failed';
+      const needsVerification =
+        error?.code === 'EMAIL_NOT_VERIFIED' ||
+        error?.requiresVerification ||
+        /verify your email/i.test(message);
+
+      if (needsVerification) {
+        setForm((prev) => ({ ...prev, email, otp: '' }));
+
+        try {
+          const response = await resendOtp(email);
+          addToast(
+            response?.devOtp
+              ? `Development OTP: ${response.devOtp}`
+              : 'Please verify your email. We sent a new OTP.',
+            'info'
+          );
+        } catch (resendError) {
+          addToast(resendError?.message || message, 'error');
+        }
+
+        setStep('verify-otp');
+        return;
+      }
+
+      addToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -80,7 +107,10 @@ export default function Login() {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    if (!form.email || !form.username || !form.password || !form.confirmPassword) {
+    const email = form.email.trim().toLowerCase();
+    const username = form.username.trim();
+
+    if (!email || !username || !form.password || !form.confirmPassword) {
       addToast('Please fill all fields', 'error');
       return;
     }
@@ -96,7 +126,8 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const response = await register(form.email, form.username, form.password, form.confirmPassword);
+      const response = await register(email, username, form.password, form.confirmPassword);
+      setForm((prev) => ({ ...prev, email, username }));
       addToast(
         response?.devOtp
           ? `Development OTP: ${response.devOtp}`
@@ -105,6 +136,19 @@ export default function Login() {
       );
       setStep('verify-otp');
     } catch (error) {
+      if (error?.code === 'EMAIL_ALREADY_REGISTERED') {
+        setForm((prev) => ({
+          ...prev,
+          email,
+          username,
+          confirmPassword: '',
+          otp: ''
+        }));
+        setStep('login');
+        addToast('This email already has an account. Log in or use Forgot Password.', 'info');
+        return;
+      }
+
       addToast(error?.message || 'Registration failed', 'error');
     } finally {
       setLoading(false);
@@ -133,9 +177,16 @@ export default function Login() {
   };
 
   const handleResendOtp = async () => {
+    const email = form.email.trim().toLowerCase();
+    if (!email) {
+      addToast('Please enter your email first', 'error');
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await resendOtp(form.email);
+      const response = await resendOtp(email);
+      setForm((prev) => ({ ...prev, email }));
       addToast(
         response?.devOtp ? `Development OTP: ${response.devOtp}` : 'OTP resent to your email',
         'success'
@@ -203,7 +254,7 @@ export default function Login() {
 
       {/* RIGHT: LOGIN FORM */}
       <div className="w-full lg:w-[55%] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-        <motion.div
+        <m.div
           className="w-full max-w-[380px]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -473,7 +524,7 @@ export default function Login() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       </div>
 
       <style>{`

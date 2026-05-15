@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { roadmapAPI } from '../config/api';
 
 export default function RoadmapDetail() {
@@ -72,7 +72,7 @@ export default function RoadmapDetail() {
                     {roadmap.steps.map((step, idx) => {
                         const isOpen = openStep === idx;
                         return (
-                            <motion.div
+                            <m.div
                                 key={`${roadmap.id}-${idx}`}
                                 initial={{ opacity: 0, x: -8 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -103,7 +103,7 @@ export default function RoadmapDetail() {
 
                                 <AnimatePresence>
                                     {isOpen && (
-                                        <motion.div
+                                        <m.div
                                             initial={{ height: 0, opacity: 0 }}
                                             animate={{ height: 'auto', opacity: 1 }}
                                             exit={{ height: 0, opacity: 0 }}
@@ -128,10 +128,10 @@ export default function RoadmapDetail() {
                                                     ) : null}
                                                 </div>
                                             </div>
-                                        </motion.div>
+                                        </m.div>
                                     )}
                                 </AnimatePresence>
-                            </motion.div>
+                            </m.div>
                         );
                     })}
                 </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useToast } from '../context/ToastContext';
 import { userAPI } from '../config/api';
 import { useAuth } from '../context/AuthContext';
@@ -142,7 +142,7 @@ export default function ProfileEdit({ user, isOpen, onClose, onSuccess }) {
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -150,7 +150,7 @@ export default function ProfileEdit({ user, isOpen, onClose, onSuccess }) {
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
           />
 
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -293,7 +293,7 @@ export default function ProfileEdit({ user, isOpen, onClose, onSuccess }) {
                 </div>
               )}
             </div>
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

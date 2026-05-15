@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { clubAPI } from '../config/api';
 import { useToast } from '../context/ToastContext';
 
@@ -218,7 +218,7 @@ export default function ClubEventManager() {
             {/* ─── Form Modal ──────────────────────────────────────────────── */}
             <AnimatePresence>
                 {showForm && (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -370,12 +370,12 @@ export default function ClubEventManager() {
                                 Cancel
                             </button>
                         </div>
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
 
             {/* ─── Events Table ─────────────────────────────────────────────── */}
-            <motion.div
+            <m.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -412,7 +412,7 @@ export default function ClubEventManager() {
                             <tbody className="divide-y divide-white/5">
                                 <AnimatePresence>
                                     {events.map((event, idx) => (
-                                        <motion.tr
+                                        <m.tr
                                             key={event._id}
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
@@ -482,14 +482,14 @@ export default function ClubEventManager() {
                                                     )}
                                                 </div>
                                             </td>
-                                        </motion.tr>
+                                        </m.tr>
                                     ))}
                                 </AnimatePresence>
                             </tbody>
                         </table>
                     </div>
                 )}
-            </motion.div>
+            </m.div>
         </div>
     );
 }

@@ -1,7 +1,7 @@
 // SplashScreen — shows ONLY during initial auth check
 // Optimized to reduce network load during the critical auth check phase.
 import { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { newsAPI } from '../config/api';
 
 const TILE_URLS_1 = [
@@ -78,14 +78,14 @@ export default function SplashScreen() {
       <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-6">
         <div className="relative flex items-center justify-center">
           {/* Pulse rings */}
-          <motion.div
+          <m.div
             className="absolute w-24 h-24 rounded-full border border-[#7c3aed]/30"
             animate={{ scale: [1, 1.35, 1], opacity: [0.5, 0, 0.5] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           />
           {/* Spinning arc */}
           <svg className="absolute w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-            <motion.circle
+            <m.circle
               cx="40" cy="40" r="34"
               fill="none" stroke="#7c3aed" strokeWidth="2.5"
               strokeLinecap="round" strokeDasharray="40 173"
@@ -94,16 +94,16 @@ export default function SplashScreen() {
             />
           </svg>
           {/* Logo */}
-          <motion.div
+          <m.div
             className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-black text-lg bg-white shadow-[0_0_30px_rgba(255,255,255,0.25)] relative z-10"
             animate={{ scale: [1, 1.04, 1] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           >
             T+
-          </motion.div>
+          </m.div>
         </div>
 
-        <motion.div
+        <m.div
           className="flex flex-col items-center gap-1.5"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -112,15 +112,15 @@ export default function SplashScreen() {
           <span className="text-2xl font-black tracking-tighter text-white uppercase">TECHPLUS</span>
           <div className="flex items-center gap-2">
             <div className="w-1 h-1 rounded-full bg-[#7c3aed] animate-ping" />
-            <motion.span
+            <m.span
               className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]"
               animate={{ opacity: [0.3, 0.7, 0.3] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
               Initializing Systems
-            </motion.span>
+            </m.span>
           </div>
-        </motion.div>
+        </m.div>
       </div>
 
       <style>{`

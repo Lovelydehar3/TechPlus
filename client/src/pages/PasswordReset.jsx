@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -159,7 +159,7 @@ export default function PasswordReset() {
 
       {/* RIGHT: FORM MODAL */}
       <div className="w-full lg:w-[55%] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-        <motion.div
+        <m.div
           className="w-full max-w-[380px]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -325,10 +325,9 @@ export default function PasswordReset() {
               )}
 
             </div>
-          </div>
-        </motion.div>
-      </div>
-
+            </div>
+            </m.div>
+            </div>
       <style>{`
         @keyframes scroll-up {
           0% { transform: translateY(0); }

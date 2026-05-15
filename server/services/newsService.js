@@ -8,23 +8,23 @@ const clean = (value) =>
     .trim()
     .replace(/^"|"$/g, "");
 
-const CATEGORY_FALLBACK_IMAGES = {
-  "AI": [
+const NEWS_FALLBACK_IMAGES = {
+  AI: [
     "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=80",
     "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=80",
     "https://images.unsplash.com/photo-1655720828018-edd2daec9349?w=800&q=80"
   ],
-  "ML": [
+  ML: [
     "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800&q=80",
     "https://images.unsplash.com/photo-1527474305487-b87b222841cc?w=800&q=80",
-    "https://images.unsplash.com/photo-1515879218367-8466d910auj7?w=800&q=80"
+    "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800&q=80"
   ],
-  "Cybersecurity": [
+  Cybersecurity: [
     "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80",
     "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?w=800&q=80",
     "https://images.unsplash.com/photo-1563206767-5b18f218e8de?w=800&q=80"
   ],
-  "Cloud": [
+  Cloud: [
     "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800&q=80",
     "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80",
     "https://images.unsplash.com/photo-1560732488-6b0df240254a?w=800&q=80"
@@ -32,14 +32,14 @@ const CATEGORY_FALLBACK_IMAGES = {
   "Web Development": [
     "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&q=80",
     "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80",
-    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80"
+    "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80"
   ],
-  "Programming": [
+  Programming: [
     "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800&q=80",
     "https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&q=80",
-    "https://images.unsplash.com/photo-1515879218367-8466d910aeda?w=800&q=80"
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80"
   ],
-  "Startups": [
+  Startups: [
     "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800&q=80",
     "https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800&q=80",
     "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80"
@@ -49,12 +49,12 @@ const CATEGORY_FALLBACK_IMAGES = {
     "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
     "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&q=80"
   ],
-  "Robotics": [
+  Robotics: [
     "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&q=80",
-    "https://images.unsplash.com/photo-1531746790095-e5995fece4e2?w=800&q=80",
-    "https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=800&q=80"
+    "https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=800&q=80",
+    "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&q=80"
   ],
-  "_default": [
+  _default: [
     "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80",
     "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&q=80",
     "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80",
@@ -63,20 +63,21 @@ const CATEGORY_FALLBACK_IMAGES = {
   ]
 };
 
-function simpleHash(str = "") {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
+function simpleHash(str = "", seed = 0) {
+  let hash = seed;
+  for (let i = 0; i < str.length; i += 1) {
     hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
   }
   return Math.abs(hash);
 }
 
-function getFallbackImage(category = "", title = "") {
-  const normalizedCat = normalizeCategory(category);
-  const pool = CATEGORY_FALLBACK_IMAGES[normalizedCat] || CATEGORY_FALLBACK_IMAGES["_default"];
-  const index = simpleHash(title) % pool.length;
-  return pool[index];
+function getFallbackImage(category = "", title = "", url = "", index = 0) {
+  const normalizedCategory = normalizeCategory(category);
+  const pool = NEWS_FALLBACK_IMAGES[normalizedCategory] || NEWS_FALLBACK_IMAGES._default;
+  const seed = `${normalizedCategory}|${title}|${url}|${index}`;
+  return pool[simpleHash(seed, index) % pool.length];
 }
+
 const GNEWS_API_URL =
   clean(process.env.GNEWS_API_URL) || "https://gnews.io/api/v4/search";
 const NEWSAPI_URL =
@@ -491,7 +492,7 @@ function normalizeArticle(article) {
   return {
     ...article,
     category,
-    image: article.image || getFallbackImage(category, article.title || ""),
+    image: article.image || getFallbackImage(category, article.title || "", article.url || ""),
     description: cleanArticleText(article.description || ""),
     content: cleanArticleText(article.content || "")
   };
@@ -526,7 +527,7 @@ export const fetchGTechNews = async (query = "technology", page = 1) => {
             name: article.source?.name || "GNews",
             id: article.source?.name?.toLowerCase().replace(/\s+/g, "-")
           },
-          image: article.image || NEWS_IMAGE_FALLBACK,
+          image: article.image,
           url: article.url,
           category: categorizeNews(`${article.title} ${article.description || ""}`),
           publishedAt: new Date(article.publishedAt),
@@ -568,7 +569,7 @@ export const fetchNewsAPI = async (category = "technology", page = 1) => {
             name: article.source?.name || "NewsAPI",
             id: article.source?.id || ""
           },
-          image: article.urlToImage || NEWS_IMAGE_FALLBACK,
+          image: article.urlToImage,
           url: article.url,
           category: categorizeNews(`${article.title} ${article.description || ""}`),
           publishedAt: new Date(article.publishedAt),
@@ -610,13 +611,14 @@ export const fetchHackerNews = async () => {
 
     const articles = stories
       .filter((story) => story?.title && story?.url && story?.time)
-      .map((story) =>
-        normalizeArticle({
+      .map((story) => {
+        const category = categorizeNews(story.title);
+        const hnArticle = {
           id: `hn-${story.id}`,
           title: story.title,
           description: story.text
             ? stripHtml(story.text)
-            : `Hacker News discussion with ${story.score || 0} points.`,
+            : `Hacker News: ${story.title}. Discussion with ${story.score || 0} points and ${story.descendants || 0} comments.`,
           content: story.text ? stripHtml(story.text) : story.title,
           author: story.by || "Hacker News",
           source: {
@@ -625,11 +627,13 @@ export const fetchHackerNews = async () => {
           },
           image: "",
           url: story.url,
-          category: categorizeNews(story.title),
+          category,
           publishedAt: new Date(story.time * 1000),
           apiSource: "Hacker News"
-        })
-      )
+        };
+        
+        return normalizeArticle(hnArticle);
+      })
       .filter(isTechArticle);
 
     setCachedFeed(cacheKey, articles);
@@ -668,7 +672,7 @@ export const fetchTechCrunchRSS = async () => {
             name: "TechCrunch",
             id: "techcrunch"
           },
-          image: extractImageFromRssItem(item) || NEWS_IMAGE_FALLBACK,
+          image: extractImageFromRssItem(item),
           url: item.link,
           category: categorizeNews(`${item.title} ${description}`),
           publishedAt: Number.isNaN(publishedAt.getTime()) ? new Date() : publishedAt,
@@ -705,7 +709,7 @@ export const cacheNewsInDB = async (articles) => {
   }
 };
 
-export const getAllNews = async (category = null, limit = 20) => {
+export const getAllNews = async (category = null, limit = 40, skip = 0) => {
   try {
     const query = {};
     // Only show articles from the last 7 days to keep content fresh
@@ -717,13 +721,14 @@ export const getAllNews = async (category = null, limit = 20) => {
     const articles = await News.find(query)
       .select('title description content author source image url category publishedAt apiSource')
       .sort({ publishedAt: -1 })
-      .limit(limit)
+      .skip(skip)
+      .limit(limit * 2) // Fetch more to allow for filtering
       .lean();
 
-    const filtered = filterArticlesByCategory(articles.map(normalizeArticle), category).slice(0, limit);
+    let filtered = filterArticlesByCategory(articles.map(normalizeArticle), category).slice(0, limit);
 
-    // If fewer than 5 fresh articles, relax the date filter to 30 days as fallback
-    if (filtered.length < 5) {
+    // If fewer than 10 articles, relax the date filter to 30 days as fallback
+    if (filtered.length < 10) {
       const relaxedQuery = { publishedAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } };
       if (category && String(category).toLowerCase() !== "all") {
         relaxedQuery.category = normalizeCategory(category);
@@ -731,9 +736,10 @@ export const getAllNews = async (category = null, limit = 20) => {
       const relaxed = await News.find(relaxedQuery)
         .select('title description content author source image url category publishedAt apiSource')
         .sort({ publishedAt: -1 })
-        .limit(limit)
+        .skip(skip)
+        .limit(limit * 2)
         .lean();
-      return filterArticlesByCategory(relaxed.map(normalizeArticle), category).slice(0, limit);
+      filtered = filterArticlesByCategory(relaxed.map(normalizeArticle), category).slice(0, limit);
     }
 
     return filtered;
@@ -769,6 +775,40 @@ export const getNewsById = async (id) => {
     if (String(id).startsWith("url-")) {
       const decodedUrl = decodeURIComponent(String(id).slice(4));
       article = await News.findOne({ url: decodedUrl }).lean();
+    } else if (String(id).startsWith("hn-")) {
+      const hnId = String(id).slice(3);
+      // For Hacker News, we might not have it in DB, so we should fetch it if missing
+      article = await News.findOne({ id: id }).lean();
+      if (!article) {
+        try {
+          const response = await axios.get(`${HACKER_NEWS_ITEM_URL}/${hnId}.json`, {
+            timeout: 6000
+          });
+          const story = response.data;
+          if (story && story.title) {
+            article = normalizeArticle({
+              id: `hn-${story.id}`,
+              title: story.title,
+              description: story.text
+                ? stripHtml(story.text)
+                : `Hacker News discussion with ${story.score || 0} points.`,
+              content: story.text ? stripHtml(story.text) : story.title,
+              author: story.by || "Hacker News",
+              source: {
+                name: "Hacker News",
+                id: "hacker-news"
+              },
+              image: "",
+              url: story.url || `https://news.ycombinator.com/item?id=${hnId}`,
+              category: categorizeNews(story.title),
+              publishedAt: new Date(story.time * 1000),
+              apiSource: "Hacker News"
+            });
+          }
+        } catch {
+          /* fail through */
+        }
+      }
     } else if (mongoose.Types.ObjectId.isValid(String(id))) {
       article = await News.findById(id).lean();
     }
@@ -789,28 +829,28 @@ export const getNewsById = async (id) => {
   }
 };
 
-export const mergeNewsFeeds = async (limit = 40) => {
-  const [gNews, apiNews, hackerNews, techCrunch] = await Promise.all([
+export const mergeNewsFeeds = async (limit = 80) => {
+  const [gNews, apiNews, techCrunch] = await Promise.all([
     fetchGTechNews("technology"),
     fetchNewsAPI("technology"),
-    fetchHackerNews(),
     fetchTechCrunchRSS()
   ]);
 
-  return dedupeByUrl([...gNews, ...apiNews, ...hackerNews, ...techCrunch])
+  return dedupeByUrl([...gNews, ...apiNews, ...techCrunch])
     .filter((a) => a.title && a.url && a.publishedAt)
     .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
     .slice(0, limit);
 };
 
 async function fetchLiveNewsMerged() {
-  return mergeNewsFeeds(40);
+  return mergeNewsFeeds(60);
 }
 
 export const getNewsWithFallback = async (
   category = null,
   limit = 40,
-  forceLive = false
+  forceLive = false,
+  skip = 0
 ) => {
   const normalizedCat =
     category && String(category).toLowerCase() !== "all"
@@ -821,13 +861,13 @@ export const getNewsWithFallback = async (
   const withinCooldown =
     !forceLive &&
     now - lastLiveFetchAt < NEWS_LIVE_COOLDOWN_MS &&
-    memoryNewsCache.length >= 3;
+    memoryNewsCache.length >= 10;
 
   if (withinCooldown) {
     const filtered = filterArticlesByCategory(memoryNewsCache, normalizedCat);
-    if (filtered.length > 0) {
+    if (filtered.length >= Math.min(limit, 5)) {
       return {
-        articles: filtered.slice(0, limit),
+        articles: filtered.slice(skip, skip + limit),
         source: "memory",
         rateLimited: false,
         message: null,
@@ -842,10 +882,10 @@ export const getNewsWithFallback = async (
     if (live.length > 0) {
       lastLiveFetchAt = now;
       await cacheNewsInDB(live);
-      memoryNewsCache = live.slice(0, 160);
+      memoryNewsCache = live.slice(0, 200);
       const filtered = filterArticlesByCategory(live, normalizedCat);
       return {
-        articles: filtered.slice(0, limit),
+        articles: filtered.slice(skip, skip + limit),
         source: "live",
         rateLimited: false,
         message: null,
@@ -856,9 +896,9 @@ export const getNewsWithFallback = async (
     /* fall through to cache */
   }
 
-  const dbArticles = await getAllNews(normalizedCat, limit * 3);
+  const dbArticles = await getAllNews(normalizedCat, limit * 3, skip);
   if (dbArticles.length > 0) {
-    memoryNewsCache = dbArticles.slice(0, 160);
+    memoryNewsCache = dbArticles.slice(0, 200);
     return {
       articles: dbArticles.slice(0, limit),
       source: "mongodb",
@@ -872,7 +912,7 @@ export const getNewsWithFallback = async (
     const filtered = filterArticlesByCategory(memoryNewsCache, normalizedCat);
     if (filtered.length > 0) {
       return {
-        articles: filtered.slice(0, limit),
+        articles: filtered.slice(skip, skip + limit),
         source: "memory",
         rateLimited: true,
         message: null,
@@ -896,7 +936,7 @@ export const fetchAndCacheNews = async () => {
     if (live.length > 0) {
       lastLiveFetchAt = Date.now();
       await cacheNewsInDB(live);
-      memoryNewsCache = live.slice(0, 160);
+      memoryNewsCache = live.slice(0, 200);
     }
     return { success: true, total: live.length };
   } catch (error) {

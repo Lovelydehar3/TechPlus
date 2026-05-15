@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { clubAPI } from '../config/api';
 
@@ -115,7 +115,7 @@ export default function ClubsPanel({ isOpen, onClose }) {
             {isOpen && (
                 <>
                     {/* Backdrop */}
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -126,7 +126,7 @@ export default function ClubsPanel({ isOpen, onClose }) {
 
                     {/* Floating Panel Wrapper */}
                     <div className="fixed inset-0 z-[91] pointer-events-none flex justify-center items-start pt-20 px-4">
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0, y: -20, scale: 0.97 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -20, scale: 0.97 }}
@@ -186,7 +186,7 @@ export default function ClubsPanel({ isOpen, onClose }) {
                                         {clubs.map((club, idx) => {
                                             const Logo = CLUB_LOGOS[club.slug];
                                             return (
-                                                <motion.button
+                                                <m.button
                                                     key={club._id}
                                                     initial={{ opacity: 0, y: 16 }}
                                                     animate={{ opacity: 1, y: 0 }}
@@ -220,14 +220,14 @@ export default function ClubsPanel({ isOpen, onClose }) {
                                                             <h3 className="text-base font-black text-white uppercase tracking-tight group-hover:text-[#a855f7] transition-colors">
                                                                 {club.name}
                                                             </h3>
-                                                            <motion.p
+                                                            <m.p
                                                                 initial={{ opacity: 0 }}
                                                                 animate={{ opacity: 1 }}
                                                                 transition={{ delay: 0.3 + idx * 0.1 }}
                                                                 className="text-xs text-white/40 mt-1 font-semibold"
                                                             >
                                                                 {club.tagline}
-                                                            </motion.p>
+                                                            </m.p>
                                                         </div>
 
                                                         {/* Arrow */}
@@ -237,14 +237,14 @@ export default function ClubsPanel({ isOpen, onClose }) {
                                                             </svg>
                                                         </div>
                                                     </div>
-                                                </motion.button>
+                                                </m.button>
                                             );
                                         })}
                                     </div>
                                 )}
                             </div>
                         </div>
-                    </motion.div>
+                    </m.div>
                     </div>
                 </>
             )}

@@ -16,18 +16,18 @@ const sameOriginBase =
   useSameOriginApi && typeof window !== 'undefined' ? cleanBase(window.location.origin) : '';
 const CANDIDATE_BASES = [
   sameOriginBase,
-  isProd ? configuredBase || renderBase : '',
+  isProd ? configuredBase : '',
   isProd ? renderBase : '',
   !isProd ? 'http://localhost:5000' : ''
 ].filter(Boolean).filter((base, index, bases) => bases.indexOf(base) === index);
 
-const API_BASE_URL = CANDIDATE_BASES[0];
+const API_BASE_URL = CANDIDATE_BASES[0] || 'http://localhost:5000';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
-  timeout: 60000
+  timeout: 15000 // Reduced from 60s to 15s to fix 4-minute startup delay
 });
 
 let activeBaseIndex = 0;
@@ -143,8 +143,8 @@ export const newsAPI = {
     apiClient.get('/api/news/newsapi', { params: { page } }),
   getGTechNews: (query = 'technology', page = 1) =>
     apiClient.get('/api/news/gnews', { params: { query, page } }),
-  getAllNews: async (page = 1, category = null, refresh = false) => {
-    const cacheKey = `news-${page}-${category || 'all'}`;
+  getAllNews: async (page = 1, category = null, refresh = false, limit = null) => {
+    const cacheKey = `news-${page}-${category || 'all'}${limit ? `-${limit}` : ''}`;
     if (!refresh) {
       const cached = apiCache.get(cacheKey);
       if (cached) return cached;
@@ -153,7 +153,8 @@ export const newsAPI = {
       params: {
         page,
         ...(category ? { category } : {}),
-        ...(refresh ? { refresh: '1' } : {})
+        ...(refresh ? { refresh: '1' } : {}),
+        ...(limit ? { limit } : {})
       }
     });
     apiCache.set(cacheKey, res, 1000 * 60 * 15); // 15 mins
@@ -197,7 +198,7 @@ export const playlistAPI = {
 
 export const roadmapAPI = {
   getAll: async () => {
-    const cacheKey = 'roadmaps-all';
+    const cacheKey = 'roadmaps-all-v2';
     const cached = apiCache.get(cacheKey);
     if (cached) return cached;
 

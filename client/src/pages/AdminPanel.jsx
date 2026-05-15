@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Users, Trash2, ShieldCheck, UserCheck, Activity, Search } from 'lucide-react';
 import ClubEventManager from '../components/ClubEventManager';
 
@@ -79,36 +79,36 @@ export default function AdminPanel() {
 
             <div className="max-w-6xl mx-auto relative z-10">
                 <header className="mb-12">
-                    <motion.div 
+                    <m.div 
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="flex items-center gap-3 text-[10px] font-black text-[#a855f7] uppercase tracking-[0.3em] mb-4"
                     >
                         <ShieldCheck size={14} />
                         System Administration
-                    </motion.div>
-                    <motion.h1 
+                    </m.div>
+                    <m.h1 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.1 }}
                         className="text-4xl lg:text-5xl font-black text-white uppercase tracking-tighter mb-4"
                     >
                         Admin Control Center
-                    </motion.h1>
-                    <motion.p 
+                    </m.h1>
+                    <m.p 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2 }}
                         className="text-white/40 max-w-xl"
                     >
                         Monitor user activity, manage permissions, and oversee the TechPlus ecosystem from a unified command interface.
-                    </motion.p>
+                    </m.p>
                 </header>
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                     {stats.map((stat, idx) => (
-                        <motion.div
+                        <m.div
                             key={idx}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -123,12 +123,12 @@ export default function AdminPanel() {
                             </div>
                             <h3 className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-1">{stat.label}</h3>
                             <p className="text-3xl font-black text-white tracking-tighter">{stat.value}</p>
-                        </motion.div>
+                        </m.div>
                     ))}
                 </div>
 
                 {/* Management Section */}
-                <motion.div
+                <m.div
                     initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.6 }}
@@ -165,7 +165,7 @@ export default function AdminPanel() {
                             <tbody className="divide-y divide-white/5">
                                 <AnimatePresence>
                                     {filteredUsers.map((u, idx) => (
-                                        <motion.tr 
+                                        <m.tr 
                                             key={u._id}
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
@@ -204,7 +204,7 @@ export default function AdminPanel() {
                                                     <Trash2 size={16} />
                                                 </button>
                                             </td>
-                                        </motion.tr>
+                                        </m.tr>
                                     ))}
                                 </AnimatePresence>
                             </tbody>
@@ -215,17 +215,17 @@ export default function AdminPanel() {
                             </div>
                         )}
                     </div>
-                </motion.div>
+                </m.div>
 
                 {/* ─── Club Event Manager Section ────────────────────── */}
-                <motion.div
+                <m.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.8 }}
                     className="mt-12"
                 >
                     <ClubEventManager />
-                </motion.div>
+                </m.div>
             </div>
         </div>
     );

@@ -137,11 +137,14 @@ export const getGTechNews = async (req, res) => {
 
 export const getAllTechNews = async (req, res) => {
   try {
-    const { page = 1, category = null, refresh } = req.query;
+    const { page = 1, category = null, refresh, limit } = req.query;
     const normalized = parseCategory(category);
     const forceLive = refresh === "1" || refresh === "true";
+    const pageSize = limit ? parseInt(limit, 10) : 12;
+    const pageNum = parseInt(page, 10) || 1;
+    const skip = Math.max(0, (pageNum - 1) * pageSize);
 
-    const result = await getNewsWithFallback(normalized, 40, forceLive);
+    const result = await getNewsWithFallback(normalized, pageSize * 2, forceLive, skip);
 
     // Cache for 5 mins in browser, 30 mins in CDN
     res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=1800');
@@ -150,12 +153,14 @@ export const getAllTechNews = async (req, res) => {
       success: true,
       combined: {
         total: result.articles.length,
-        articles: result.articles.slice(0, 60)
+        articles: result.articles.slice(0, pageSize)
       },
       source: result.source,
       rateLimited: result.rateLimited,
       message: result.message,
-      usedFallback: result.usedFallback
+      usedFallback: result.usedFallback,
+      page: pageNum,
+      pageSize: pageSize
     });
   } catch (error) {
     res.status(200).json({
@@ -165,7 +170,9 @@ export const getAllTechNews = async (req, res) => {
       rateLimited: true,
       message:
         "News temporarily unavailable due to API limit. Please try later.",
-      usedFallback: false
+      usedFallback: false,
+      page: 1,
+      pageSize: 12
     });
   }
 };

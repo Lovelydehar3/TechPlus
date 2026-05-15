@@ -93,7 +93,11 @@ export const register = async (req, res) => {
     }
 
     if (existingByEmail?.isVerified) {
-      return res.status(400).json({ success: false, message: "Email already registered. Please log in." })
+      return res.status(400).json({
+        success: false,
+        code: "EMAIL_ALREADY_REGISTERED",
+        message: "Email already registered. Please log in or reset your password."
+      })
     }
 
     if (!hasEmailConfig() && isProduction) {
@@ -200,7 +204,8 @@ export const verifyOtp = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role
+        role: user.role,
+        isVerified: user.isVerified
       }
     })
 
@@ -266,12 +271,24 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email })
     if (!user) return res.status(404).json({ success: false, message: "User not found" })
 
-    if (!user.isVerified) {
-      return res.status(401).json({ success: false, message: "Please verify your email first" })
+    const isMatch = await bcrypt.compare(password, user.password)
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        code: "WRONG_PASSWORD",
+        message: "Wrong password"
+      })
     }
 
-    const isMatch = await bcrypt.compare(password, user.password)
-    if (!isMatch) return res.status(401).json({ success: false, message: "Wrong password" })
+    if (!user.isVerified) {
+      return res.status(401).json({
+        success: false,
+        code: "EMAIL_NOT_VERIFIED",
+        message: "Please verify your email first",
+        requiresVerification: true,
+        email: user.email
+      })
+    }
 
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
@@ -288,7 +305,8 @@ export const login = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role
+        role: user.role,
+        isVerified: user.isVerified
       }
     })
 

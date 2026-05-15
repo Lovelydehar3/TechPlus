@@ -1,4 +1,4 @@
-﻿import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 const fadeUp = {
   initial: { opacity: 0, y: 18 },
@@ -61,48 +61,48 @@ const cardStyle = {
 
 function Surface({ title, children }) {
   return (
-    <motion.section {...fadeUp} className="rounded-[2rem] border p-6 sm:p-8 mb-6 overflow-hidden" style={cardStyle}>
+    <m.section {...fadeUp} className="rounded-[2rem] border p-6 sm:p-8 mb-6 overflow-hidden" style={cardStyle}>
       <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-4">{title}</h2>
       {children}
-    </motion.section>
+    </m.section>
   );
 }
 
 function HoverCard({ children, className = '' }) {
   return (
-    <motion.div
+    <m.div
       whileHover={{ y: -3, borderColor: 'rgba(168,85,247,0.52)', backgroundColor: 'rgba(4,4,8,0.98)' }}
       transition={{ duration: 0.2 }}
       className={`rounded-2xl border bg-[#090910] hover:bg-[#05050a] transition-colors duration-200 overflow-hidden ${className}`}
       style={{ borderColor: 'rgba(255,255,255,0.1)' }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
 export default function About() {
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} className="max-w-[1100px] mx-auto w-full px-4 sm:px-6 lg:px-8 pb-14 pt-10">
-      <motion.section {...fadeUp} className="relative overflow-hidden rounded-[2rem] border p-6 sm:p-8 lg:p-10 mb-6" style={{ background: 'linear-gradient(145deg, #040409 0%, #06060c 55%, #090910 100%)', borderColor: 'rgba(255,255,255,0.1)', boxShadow: '0 14px 44px rgba(0,0,0,0.44)' }}>
+    <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} className="max-w-[1100px] mx-auto min-h-[calc(100vh-140px)] relative z-10 px-4 sm:px-6 lg:px-8 pb-28 md:pb-12 pt-8">
+      <m.section {...fadeUp} className="relative overflow-hidden rounded-[2rem] border p-6 sm:p-8 lg:p-10 mb-6" style={{ background: 'linear-gradient(145deg, #040409 0%, #06060c 55%, #090910 100%)', borderColor: 'rgba(255,255,255,0.1)', boxShadow: '0 14px 44px rgba(0,0,0,0.44)' }}>
         <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px, 24px 24px' }} />
-        <motion.div animate={{ x: [0, 14, 0], y: [0, -8, 0] }} transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }} className="absolute -top-28 right-0 w-80 h-80 rounded-full blur-3xl bg-[#7c3aed]/10" />
-        <div className="relative z-10 max-w-[920px]">
+        <m.div animate={{ x: [0, 14, 0], y: [0, -8, 0] }} transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }} className="absolute -top-28 right-0 w-80 h-80 rounded-full blur-3xl bg-[#7c3aed]/10" />
+        <div className="relative z-10">
           <p className="text-[11px] font-black uppercase tracking-[0.25em] text-[#d8b4fe] mb-4">ABOUT TECHPLUS</p>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl leading-[0.98] font-black text-white tracking-tight mb-6 break-words">The Intelligence Layer<br className="hidden sm:block" /> for Modern Developers</h1>
-          <p className="text-base sm:text-lg text-white/80 leading-relaxed mb-4 break-words max-w-[88ch]">Tech moves faster than ever.</p>
-          <p className="text-base sm:text-lg text-white/80 leading-relaxed mb-4 break-words max-w-[88ch]">New frameworks launch overnight. Hackathons disappear before most students even hear about them. Research papers, tools, and opportunities are scattered across dozens of websites.</p>
-          <p className="text-base sm:text-lg text-white/80 leading-relaxed mb-4 break-words max-w-[88ch]">TechPlus exists to solve this problem.</p>
-          <p className="text-base sm:text-lg text-white/80 leading-relaxed mb-4 break-words max-w-[88ch]">We built a centralized ecosystem where developers can discover meaningful technology updates, real hackathons, curated learning resources, structured roadmaps, and emerging innovations, all in one place.</p>
-          <p className="text-base sm:text-lg text-white/80 leading-relaxed break-words max-w-[88ch]">Instead of wasting hours searching across platforms, developers can focus on learning, building, and growing. TechPlus is designed to reduce noise and maximize signal.</p>
+          <p className="text-base sm:text-lg text-white/80 leading-relaxed mb-4 break-words">Tech moves faster than ever.</p>
+          <p className="text-base sm:text-lg text-white/80 leading-relaxed mb-4 break-words">New frameworks launch overnight. Hackathons disappear before most students even hear about them. Research papers, tools, and opportunities are scattered across dozens of websites.</p>
+          <p className="text-base sm:text-lg text-white/80 leading-relaxed mb-4 break-words">TechPlus exists to solve this problem.</p>
+          <p className="text-base sm:text-lg text-white/80 leading-relaxed mb-4 break-words">We built a centralized ecosystem where developers can discover meaningful technology updates, real hackathons, curated learning resources, structured roadmaps, and emerging innovations, all in one place.</p>
+          <p className="text-base sm:text-lg text-white/80 leading-relaxed break-words">Instead of wasting hours searching across platforms, developers can focus on learning, building, and growing. TechPlus is designed to reduce noise and maximize signal.</p>
           <div className="flex flex-wrap gap-3 mt-8">
             <a href="/" className="px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest bg-[#7c3aed] hover:bg-[#6d28d9] text-white transition-all shadow-[0_4px_20px_rgba(124,58,237,0.28)]">Explore Platform</a>
             
           </div>
         </div>
-      </motion.section>
+      </m.section>
 
-      <motion.section {...fadeUp} className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+      <m.section {...fadeUp} className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
         <HoverCard className="p-6 sm:p-8 overflow-hidden">
           <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-4">Why We Started TechPlus</h2>
           <p className="text-white/80 text-base leading-relaxed mb-4">Developers miss opportunities every day.</p>
@@ -116,15 +116,15 @@ export default function About() {
             </HoverCard>
           ))}
         </div>
-      </motion.section>
+      </m.section>
 
       <Surface title="Our Story"><p className="text-white/80 leading-relaxed mb-4">Hackathons were hidden across multiple platforms. Tech news was filled with irrelevant content. Good learning resources were difficult to find. Roadmaps felt fragmented and outdated.</p><p className="text-white/75 leading-relaxed mb-4">Instead of one reliable place, developers had to jump between:</p><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-4">{STORY_SOURCES.map((item) => (<HoverCard key={item} className="px-3 py-2 text-xs font-bold text-white/80">{item}</HoverCard>))}</div><p className="text-white/80">The result was information overload. We created TechPlus to simplify that experience into a single platform where developers can discover what actually matters.</p></Surface>
 
-      <motion.section {...fadeUp} className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6"><HoverCard className="p-6 sm:p-8 overflow-hidden"><h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-4">Our Mission</h2><p className="text-white/80 leading-relaxed">Our mission is simple: help developers stop missing opportunities.</p></HoverCard><div className="grid grid-cols-1 sm:grid-cols-2 gap-3 auto-rows-fr">{MISSION_POINTS.map((point) => (<HoverCard key={point} className="px-4 py-4 text-sm font-semibold text-white/90"><span className="text-[#a855f7] mr-2">✓</span>{point}</HoverCard>))}</div></motion.section>
+      <m.section {...fadeUp} className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6"><HoverCard className="p-6 sm:p-8 overflow-hidden"><h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-4">Our Mission</h2><p className="text-white/80 leading-relaxed">Our mission is simple: help developers stop missing opportunities.</p></HoverCard><div className="grid grid-cols-1 sm:grid-cols-2 gap-3 auto-rows-fr">{MISSION_POINTS.map((point) => (<HoverCard key={point} className="px-4 py-4 text-sm font-semibold text-white/90"><span className="text-[#a855f7] mr-2">✓</span>{point}</HoverCard>))}</div></m.section>
 
       <Surface title="What Makes Us Different"><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{DIFFERENT_CARDS.map((card) => (<HoverCard key={card.title} className="p-4"><p className="text-sm font-black text-white mb-2">{card.title}</p>{card.lines.map((line) => (<p key={line} className="text-xs text-white/75 leading-relaxed">{line}</p>))}</HoverCard>))}</div></Surface>
 
-      <Surface title="What We Cover"><div className="flex flex-wrap gap-2.5">{COVERAGE.map((item, idx) => (<motion.span key={item} whileHover={{ y: -1, scale: 1.02, backgroundColor: 'rgba(124,58,237,0.18)' }} className="px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider border text-white/90" style={{ borderColor: 'rgba(168,85,247,0.38)', background: idx % 3 === 0 ? 'rgba(124,58,237,0.10)' : idx % 3 === 1 ? 'rgba(99,102,241,0.10)' : 'rgba(139,92,246,0.10)', boxShadow: '0 0 10px rgba(124,58,237,0.10)' }}>{item}</motion.span>))}</div></Surface>
+      <Surface title="What We Cover"><div className="flex flex-wrap gap-2.5">{COVERAGE.map((item, idx) => (<m.span key={item} whileHover={{ y: -1, scale: 1.02, backgroundColor: 'rgba(124,58,237,0.18)' }} className="px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider border text-white/90" style={{ borderColor: 'rgba(168,85,247,0.38)', background: idx % 3 === 0 ? 'rgba(124,58,237,0.10)' : idx % 3 === 1 ? 'rgba(99,102,241,0.10)' : 'rgba(139,92,246,0.10)', boxShadow: '0 0 10px rgba(124,58,237,0.10)' }}>{item}</m.span>))}</div></Surface>
 
       <Surface title="Platform Features"><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{FEATURES.map((feature) => (<HoverCard key={feature.title} className="p-4"><p className="text-sm font-black tracking-wide text-[#d8b4fe] mb-2">{feature.title}</p><p className="text-sm text-white/75 leading-relaxed">{feature.description}</p></HoverCard>))}</div></Surface>
 
@@ -132,14 +132,14 @@ export default function About() {
 
       <Surface title="Our Philosophy"><h3 className="text-lg sm:text-xl font-black text-white mb-2">Signal Over Noise</h3><p className="text-white/80 leading-relaxed">We believe developers should spend less time searching and more time building. TechPlus exists to organize, filter, and surface the information that genuinely matters to developers.</p></Surface>
 
-      <Surface title="Built By Developers"><p className="text-white/80 leading-relaxed mb-5">TechPlus was created by developers who experienced the same struggles: missing opportunities, fragmented resources, and scattered information.</p><div className="grid grid-cols-1 lg:grid-cols-2 gap-5">{BUILDERS.map((builder) => (<motion.div key={builder.name} whileHover={{ y: -3, borderColor: 'rgba(168,85,247,0.52)', backgroundColor: 'rgba(4,4,8,0.98)' }} transition={{ duration: 0.2 }} className="relative overflow-hidden rounded-[2rem] border p-6 sm:p-7 group bg-[#090910] transition-colors duration-200" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'radial-gradient(460px circle at 15% 0%, rgba(124,58,237,0.14), transparent 60%)' }} /><div className="relative z-10"><img src={builder.avatar} alt={builder.name} className="w-16 h-16 rounded-2xl mb-4 border object-cover" style={{ borderColor: 'rgba(255,255,255,0.2)' }} /><p className="text-xl font-black text-white tracking-tight">{builder.name}</p><p className="text-sm font-bold uppercase tracking-wider text-[#a855f7] mb-4">{builder.role}</p><p className="text-sm text-white/80 leading-relaxed mb-4">{builder.note}</p><div className="flex flex-wrap gap-2 mb-5">{builder.focus.map((tag) => (<span key={tag} className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border text-white/80" style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.02)' }}>{tag}</span>))}</div><div className="flex items-center gap-3"><a href={builder.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-[#7c3aed] text-white hover:bg-[#6d28d9] transition-colors"><GithubIcon />Github Profile</a></div></div></motion.div>))}</div></Surface>
+      <Surface title="Built By Developers"><p className="text-white/80 leading-relaxed mb-5">TechPlus was created by developers who experienced the same struggles: missing opportunities, fragmented resources, and scattered information.</p><div className="grid grid-cols-1 lg:grid-cols-2 gap-5">{BUILDERS.map((builder) => (<m.div key={builder.name} whileHover={{ y: -3, borderColor: 'rgba(168,85,247,0.52)', backgroundColor: 'rgba(4,4,8,0.98)' }} transition={{ duration: 0.2 }} className="relative overflow-hidden rounded-[2rem] border p-6 sm:p-7 group bg-[#090910] transition-colors duration-200" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'radial-gradient(460px circle at 15% 0%, rgba(124,58,237,0.14), transparent 60%)' }} /><div className="relative z-10"><img src={builder.avatar} alt={builder.name} className="w-16 h-16 rounded-2xl mb-4 border object-cover" style={{ borderColor: 'rgba(255,255,255,0.2)' }} /><p className="text-xl font-black text-white tracking-tight">{builder.name}</p><p className="text-sm font-bold uppercase tracking-wider text-[#a855f7] mb-4">{builder.role}</p><p className="text-sm text-white/80 leading-relaxed mb-4">{builder.note}</p><div className="flex flex-wrap gap-2 mb-5">{builder.focus.map((tag) => (<span key={tag} className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border text-white/80" style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.02)' }}>{tag}</span>))}</div><div className="flex items-center gap-3"><a href={builder.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-[#7c3aed] text-white hover:bg-[#6d28d9] transition-colors"><GithubIcon />Github Profile</a></div></div></m.div>))}</div></Surface>
 
       <Surface title="Future of TechPlus"><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">{FUTURE_GOALS.map((goal) => (<HoverCard key={goal} className="px-3 py-2 text-sm font-semibold text-white/85">• {goal}</HoverCard>))}</div><p className="text-white/75 text-sm">TechPlus is not just a website. It is being built as an ecosystem for developers.</p></Surface>
 
-      <motion.section {...fadeUp} className="rounded-[2rem] border p-6 sm:p-9 mb-7 overflow-hidden" style={{ ...cardStyle, backdropFilter: 'blur(10px)' }}><h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-3">Why TechPlus Exists</h2><p className="text-base sm:text-lg leading-relaxed text-white/80">"Developers miss opportunities not because they are lazy, but because information is fragmented. TechPlus exists to bring everything together."</p></motion.section>
+      <m.section {...fadeUp} className="rounded-[2rem] border p-6 sm:p-9 mb-7 overflow-hidden" style={{ ...cardStyle, backdropFilter: 'blur(10px)' }}><h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-3">Why TechPlus Exists</h2><p className="text-base sm:text-lg leading-relaxed text-white/80">"Developers miss opportunities not because they are lazy, but because information is fragmented. TechPlus exists to bring everything together."</p></m.section>
 
       <footer className="pt-2"><div className="border-t border-white/10 pt-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/45">TechPlus · Built for developers who refuse to stay behind.</div><p className="text-xs text-white/55 mt-2">Curated intelligence, opportunities, and learning, all in one place.</p></footer>
-    </motion.div>
+    </m.div>
   );
 }
 

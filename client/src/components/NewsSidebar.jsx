@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { newsAPI } from '../config/api';
 import { getFallbackImage } from '../utils/imageUtils';
 
@@ -21,7 +21,7 @@ export default function NewsSidebar({ isOpen, onClose }) {
       try {
         setLoading(true);
         setNotice(null);
-        const response = await newsAPI.getAllNews(1);
+        const response = await newsAPI.getAllNews(1, null, false, 20); // Fetch 20 articles for sidebar
         if (cancelled) return;
         const raw = response.combined?.articles || [];
         setArticles(raw);
@@ -48,7 +48,7 @@ export default function NewsSidebar({ isOpen, onClose }) {
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -56,7 +56,7 @@ export default function NewsSidebar({ isOpen, onClose }) {
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
           />
 
-          <motion.div
+          <m.div
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
@@ -118,11 +118,11 @@ export default function NewsSidebar({ isOpen, onClose }) {
                     >
                       <div className="w-14 h-14 shrink-0 rounded-lg overflow-hidden border border-white/10 bg-white/5">
                         <img
-                          src={item.image || getFallbackImage(item.category, item.title, item.url)}
+                          src={item.image || getFallbackImage(item.category, item.title, item.url, idx)}
                           alt=""
                           loading="lazy"
                           className="w-full h-full object-cover"
-                          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallbackImage(item.category, item.title, item.url); }}
+                          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = getFallbackImage(item.category, item.title, item.url, idx); }}
                         />
                       </div>
                       <div className="flex flex-col gap-1 flex-1 min-w-0">
@@ -143,7 +143,7 @@ export default function NewsSidebar({ isOpen, onClose }) {
                 </div>
               ) : null}
             </div>
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

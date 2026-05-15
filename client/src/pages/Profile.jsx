@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -122,7 +122,7 @@ function ProfilePanel({ user, createdDate, onEdit, savedHackathons = [] }) {
     const bookmarkCount = user?.bookmarks?.length || 0;
 
     return (
-        <motion.div key="profile" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3, ease: 'easeOut' }} className="flex flex-col gap-4 sm:gap-6">
+        <m.div key="profile" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3, ease: 'easeOut' }} className="flex flex-col gap-4 sm:gap-6">
 
             {/* Hero Card */}
             <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] border border-white/5 bg-gradient-to-br from-[#0f0f12] to-[#0a0a0c] p-4 sm:p-6 md:p-10">
@@ -226,23 +226,23 @@ function ProfilePanel({ user, createdDate, onEdit, savedHackathons = [] }) {
                     </div>
                 </div>
             </div>
-        </motion.div>
+        </m.div>
     );
 }
 
 function HistoryPanel({ watchHistory = [], onResume }) {
     if (watchHistory.length === 0) return (
-        <motion.div key="history" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
+        <m.div key="history" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
             <div className="mb-8">
                 <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Watch History</h2>
                 <p className="text-white/30 text-sm">Your recently watched resources</p>
             </div>
             <EmptyState icon={<IconHistory />} message="No resources watched yet" sub="Start a resource to track your watch history here." />
-        </motion.div>
+        </m.div>
     );
 
     return (
-        <motion.div key="history" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
+        <m.div key="history" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
             <div className="mb-8">
                 <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Watch History</h2>
                 <p className="text-white/30 text-sm">{watchHistory.length} resource{watchHistory.length !== 1 ? 's' : ''} in your history</p>
@@ -252,7 +252,7 @@ function HistoryPanel({ watchHistory = [], onResume }) {
                     const progress = typeof item.progress === 'number' ? item.progress : Math.min(90, 20 + idx * 10);
                     const ts = item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
                     return (
-                        <motion.div
+                        <m.div
                             key={idx}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -282,11 +282,11 @@ function HistoryPanel({ watchHistory = [], onResume }) {
                                 {ts && <span className="text-[10px] text-white/20 whitespace-nowrap">{ts}</span>}
                                 <span className="text-[9px] font-black uppercase tracking-widest text-white/15">{item.type || 'video'}</span>
                             </div>
-                        </motion.div>
+                        </m.div>
                     );
                 })}
             </div>
-        </motion.div>
+        </m.div>
     );
 }
 
@@ -305,24 +305,24 @@ function SavedPanel({ savedHackathons = [], savedResources = [], bookmarks = [] 
     ];
 
     if (items.length === 0) return (
-        <motion.div key="saved" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
+        <m.div key="saved" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
             <div className="mb-8">
                 <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Saved</h2>
                 <p className="text-white/30 text-sm">Your bookmarked hackathons, events and resources</p>
             </div>
             <EmptyState icon={<IconSaved />} message="Nothing saved yet" sub="Bookmark hackathons and events from the Hackathons section to see them here." />
-        </motion.div>
+        </m.div>
     );
 
     return (
-        <motion.div key="saved" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
+        <m.div key="saved" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
             <div className="mb-8">
                 <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Saved</h2>
                 <p className="text-white/30 text-sm">{items.length} saved item{items.length !== 1 ? 's' : ''}</p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
                 {items.map((item, idx) => (
-                    <motion.div
+                    <m.div
                         key={idx}
                         initial={{ opacity: 0, scale: 0.96 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -361,27 +361,27 @@ function SavedPanel({ savedHackathons = [], savedResources = [], bookmarks = [] 
                                 <p className="text-[10px] font-black text-[#a855f7]">{item.prize}</p>
                             )}
                         </div>
-                    </motion.div>
+                    </m.div>
                 ))}
             </div>
-        </motion.div>
+        </m.div>
     );
 }
 
 
 function DownloadsPanel({ downloads = [], onOpenDownload, resolveDownloadPdfPath, missingDownloads = {} }) {
     if (downloads.length === 0) return (
-        <motion.div key="downloads" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
+        <m.div key="downloads" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
             <div className="mb-8">
                 <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Downloaded Roadmaps</h2>
                 <p className="text-white/30 text-sm">Your offline roadmap collection</p>
             </div>
             <EmptyState icon={<IconDownload />} message="No roadmaps downloaded" sub="Open any roadmap and download it as a PDF to access it here." />
-        </motion.div>
+        </m.div>
     );
 
     return (
-        <motion.div key="downloads" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
+        <m.div key="downloads" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
             <div className="mb-8">
                 <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Downloaded Roadmaps</h2>
                 <p className="text-white/30 text-sm">{downloads.length} roadmap{downloads.length !== 1 ? 's' : ''} downloaded</p>
@@ -393,7 +393,7 @@ function DownloadsPanel({ downloads = [], onOpenDownload, resolveDownloadPdfPath
                     const pdfPath = resolveDownloadPdfPath?.(item) || item.pdfPath || '';
                     const isMissing = Boolean(missingDownloads?.[downloadKey]);
                     return (
-                        <motion.div
+                        <m.div
                             key={idx}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -429,11 +429,11 @@ function DownloadsPanel({ downloads = [], onOpenDownload, resolveDownloadPdfPath
                                     </p>
                                 )}
                             </div>
-                        </motion.div>
+                        </m.div>
                     );
                 })}
             </div>
-        </motion.div>
+        </m.div>
     );
 }
 
@@ -618,7 +618,7 @@ export default function Profile() {
     }
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -680,7 +680,7 @@ export default function Profile() {
                                     }`}
                                 >
                                     {isActive && (
-                                        <motion.div
+                                        <m.div
                                             layoutId="profile-tab-pill"
                                             className="absolute inset-0 bg-[#7c3aed] shadow-[0_4px_20px_rgba(124,58,237,0.4)] rounded-[1.1rem]"
                                             transition={{ type: 'spring', bounce: 0.2, duration: 0.55 }}
@@ -739,7 +739,7 @@ export default function Profile() {
                     addToast('Profile Intelligence Synced', 'success');
                 }}
             />
-        </motion.div>
+        </m.div>
     );
 }
 

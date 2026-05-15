@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { newsAPI } from '../config/api';
 import { useToast } from '../context/ToastContext';
 import { getFallbackImage } from '../utils/imageUtils';
@@ -124,7 +124,7 @@ export default function NewsDetail() {
     .filter((para) => normalizeForCompare(para) !== descriptionCompare);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
@@ -194,7 +194,8 @@ export default function NewsDetail() {
             </div>
           )}
         </div>
-      </article>
-    </motion.div>
-  );
-}
+        </article>
+        </m.div>
+        );
+        }
+

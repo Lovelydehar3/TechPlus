@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { userAPI } from '../config/api';
 import { useToast } from '../context/ToastContext';
 import { getFallbackImage } from '../utils/imageUtils';
@@ -22,7 +22,7 @@ function SkeletonCard() {
 
 function EmptyState({ filter }) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="col-span-full flex flex-col items-center justify-center py-28 gap-5 text-center"
@@ -41,7 +41,7 @@ function EmptyState({ filter }) {
           <p className="text-white/20 text-xs mt-1">Bookmark articles from the Dashboard to see them here.</p>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -85,7 +85,7 @@ export default function Bookmarks() {
     filter === 'All' ? bookmarks : bookmarks.filter((b) => b.category === filter);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -132,7 +132,7 @@ export default function Bookmarks() {
         ) : (
           <AnimatePresence>
             {filteredBookmarks.map((bookmark, i) => (
-              <motion.div
+              <m.div
                 key={bookmark._id}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -143,10 +143,10 @@ export default function Bookmarks() {
                 {/* Thumbnail */}
                 <div className="relative h-40 sm:h-44 overflow-hidden bg-black/30 shrink-0">
                   <img
-                    src={bookmark.articleImage || getFallbackImage(bookmark.category, bookmark.articleTitle)}
+                    src={bookmark.articleImage || getFallbackImage(bookmark.category, bookmark.articleTitle, '', i)}
                     alt={bookmark.articleTitle}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    onError={(e) => { e.currentTarget.src = getFallbackImage(bookmark.category, bookmark.articleTitle); }}
+                    onError={(e) => { e.currentTarget.src = getFallbackImage(bookmark.category, bookmark.articleTitle, '', i); }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   {bookmark.category && (
@@ -159,6 +159,11 @@ export default function Bookmarks() {
                   <h3 className="text-sm font-bold text-white leading-snug line-clamp-2 flex-1">
                     {bookmark.articleTitle}
                   </h3>
+                  {bookmark.articleSource && (
+                    <p className="text-[11px] text-white/30 font-semibold uppercase tracking-widest">
+                      {bookmark.articleSource}
+                    </p>
+                  )}
                   {bookmark.articleSource && (
                     <p className="text-[11px] text-white/30 font-semibold uppercase tracking-widest">
                       {bookmark.articleSource}
@@ -204,11 +209,11 @@ export default function Bookmarks() {
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }

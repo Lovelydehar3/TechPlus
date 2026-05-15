@@ -1,5 +1,5 @@
 import { useToast } from '../context/ToastContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 export default function Toast() {
     const { toasts } = useToast();
@@ -16,7 +16,7 @@ export default function Toast() {
                     const icon = isSuccess ? 'OK' : isError ? '!!' : ' i ';
 
                     return (
-                        <motion.div
+                        <m.div
                             key={toast.id}
                             initial={{ opacity: 0, y: 20, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -38,7 +38,7 @@ export default function Toast() {
                             <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>
                                 {toast.message}
                             </p>
-                        </motion.div>
+                        </m.div>
                     )
                 })}
             </AnimatePresence>

@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useState, useMemo } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import NewsSidebar from './NewsSidebar';
 import ClubsPanel from './ClubsPanel';
 
@@ -19,11 +19,11 @@ const Icons = {
     Menu: () => <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>,
     Close: () => <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>,
     Fire: () => (
-        <motion.svg 
+        <m.svg 
             width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
             initial="initial" animate="animate"
         >
-            <motion.path 
+            <m.path 
                 d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.291 1-3a2.5 2.5 0 0 0 2.5 2.5z" 
                 animate={{ 
                     scale: [1, 1.05, 1],
@@ -31,7 +31,7 @@ const Icons = {
                 }}
                 transition={{ repeat: Infinity, duration: 2 }}
             />
-        </motion.svg>
+        </m.svg>
     ),
     Flame: () => <svg width="20" height="20" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 2c0 1.66-1.34 3-3 3S6 3.66 6 2M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
     Moon: () => <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>,
@@ -114,10 +114,10 @@ export default function Navbar() {
                                 className="p-2 rounded-xl bg-purple-500/10 text-[#a855f7] hover:bg-purple-500/20 transition-all group relative"
                                 title="College Clubs & Updates"
                             >
-                                <motion.svg
+                                <m.svg
                                     width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                                 >
-                                    <motion.g
+                                    <m.g
                                         animate={{
                                             scale: [1, 1.05, 1],
                                         }}
@@ -127,8 +127,8 @@ export default function Navbar() {
                                         <circle cx="9" cy="7" r="4" />
                                         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                                         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                    </motion.g>
-                                </motion.svg>
+                                    </m.g>
+                                </m.svg>
                             </button>
 
                         </div>
@@ -151,17 +151,17 @@ export default function Navbar() {
                                     >
                                         <Icon />
                                         {isActive && (
-                                            <motion.span
+                                            <m.span
                                                 initial={{ opacity: 0, width: 0 }}
                                                 animate={{ opacity: 1, width: 'auto' }}
                                                 className="whitespace-nowrap overflow-hidden"
                                             >
                                                 {label}
-                                            </motion.span>
+                                            </m.span>
                                         )}
                                         {/* Active Underline Effect */}
                                         {isActive && (
-                                            <motion.div
+                                            <m.div
                                                 layoutId="nav-underline-active"
                                                 className="absolute bottom-[-1px] left-0 right-0 h-[3px] bg-[#a855f7]"
                                                 style={{ boxShadow: '0 -2px 10px rgba(168,85,247,0.4)', borderRadius: '2px 2px 0 0' }}
@@ -243,7 +243,7 @@ export default function Navbar() {
                                 </span>
                                 
                                 {isActive && (
-                                    <motion.div
+                                    <m.div
                                         layoutId="bottom-nav-active"
                                         className="absolute -bottom-1 w-1 h-1 rounded-full bg-[#a855f7] shadow-[0_0_10px_#a855f7]"
                                     />

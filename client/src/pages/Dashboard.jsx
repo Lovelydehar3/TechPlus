@@ -1,5 +1,5 @@
 import { memo, useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -38,7 +38,7 @@ function normalizeArticle(raw, idx) {
     }),
     readingTime: raw.readingTime || '2 min read',
     category: category,
-    image: raw.image || getFallbackImage(category, raw.title, raw.url),
+    image: raw.image || getFallbackImage(category, raw.title, raw.url, idx),
     source: sourceName
   };
 }
@@ -72,7 +72,7 @@ function NewsCardSkeleton() {
 
 const NewsListCard = memo(function NewsListCard({ item, index, onOpen }) {
   return (
-    <motion.div
+    <m.div
       className="group flex flex-col md:flex-row gap-0 cinematic-card border border-white/5 rounded-[32px] transition-all hover:border-[#7c3aed]/30 cursor-pointer overflow-hidden bg-[#111111]"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -82,11 +82,11 @@ const NewsListCard = memo(function NewsListCard({ item, index, onOpen }) {
     >
       <div className="w-full md:w-[280px] lg:w-[320px] aspect-video md:aspect-auto shrink-0 relative overflow-hidden">
         <img
-        src={item.image || getFallbackImage(item.category, item.title, item.url)}
+        src={item.image || getFallbackImage(item.category, item.title, item.url, index)}
         loading="lazy"
         onError={(e) => {
           e.currentTarget.onerror = null;
-          e.currentTarget.src = getFallbackImage(item.category, item.title, item.url);
+          e.currentTarget.src = getFallbackImage(item.category, item.title, item.url, index);
         }}
         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         alt=""
@@ -130,7 +130,7 @@ const NewsListCard = memo(function NewsListCard({ item, index, onOpen }) {
           </button>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 });
 
@@ -140,6 +140,9 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [domainId, setDomainId] = useState('All');
@@ -159,39 +162,83 @@ export default function Dashboard() {
   }, [domainId]);
 
   const loadNews = useCallback(
-    async (refresh = false) => {
+    async (refresh = false, pageNum = 1) => {
       try {
-        setLoading(true);
-        setApiNotice(null);
-        setCacheHint(null);
-        const response = await newsAPI.getAllNews(1, null, refresh);
-        const raw = response.combined?.articles || [];
-        const normalized = raw.map((article, index) => normalizeArticle(article, index));
-        setArticles(normalized);
+        if (pageNum === 1) {
+          setLoading(true);
+          setApiNotice(null);
+          setCacheHint(null);
+        } else {
+          setLoadingMore(true);
+        }
 
-        if (response.usedFallback && normalized.length > 0) {
+        const pageSize = pageNum === 1 ? 24 : 12; // Load 24 on initial fetch for better startup UX, 12 on subsequent
+        const response = await newsAPI.getAllNews(pageNum, backendCategory, refresh, pageSize);
+        const raw = response.combined?.articles || [];
+        const normalized = raw.map((article, index) => normalizeArticle(article, (pageNum - 1) * (pageNum === 1 ? 24 : 12) + index));
+
+        if (pageNum === 1) {
+          setArticles(normalized);
+        } else {
+          setArticles(prev => {
+            // Deduplicate
+            const existingIds = new Set(prev.map(a => a.id));
+            const uniqueNew = normalized.filter(a => !existingIds.has(a.id));
+            return [...prev, ...uniqueNew];
+          });
+        }
+
+        setHasMore(raw.length >= (pageNum === 1 ? 24 : 12) && pageNum < 50); // Limit to 50 pages (600 articles) for memory, but allow more pagination
+
+        if (response.usedFallback && normalized.length > 0 && pageNum === 1) {
           setCacheHint('Showing cached articles while live feeds recover.');
         }
 
-        if (normalized.length === 0 && response.message) {
+        if (normalized.length === 0 && response.message && pageNum === 1) {
           setApiNotice(response.message);
         }
       } catch (error) {
-        setArticles([]);
-        setApiNotice(
-          error?.message || 'News temporarily unavailable due to API limit. Please try later.'
-        );
+        if (pageNum === 1) {
+          setArticles([]);
+          setApiNotice(
+            error?.message || 'News temporarily unavailable due to API limit. Please try later.'
+          );
+        }
         addToast(error?.message || 'Failed to load news', 'error');
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
     },
-    [addToast]
+    [addToast, backendCategory]
   );
 
   useEffect(() => {
-    loadNews(false);
+    setPage(1);
+    loadNews(false, 1);
   }, [loadNews]);
+
+  // Infinite Scroll Listener
+  useEffect(() => {
+    const handleScroll = () => {
+      if (loading || loadingMore || !hasMore || searchQuery) return;
+
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = document.documentElement.scrollTop;
+      const clientHeight = document.documentElement.clientHeight;
+
+      if (scrollTop + clientHeight >= scrollHeight - 800) {
+        setPage(prev => {
+          const next = prev + 1;
+          loadNews(false, next);
+          return next;
+        });
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading, loadingMore, hasMore, loadNews, searchQuery]);
 
   const domainKeywords = useMemo(
     () => ({
@@ -288,7 +335,7 @@ export default function Dashboard() {
   const slide = featuredNews[carouselIndex];
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: 'easeOut' }}
@@ -297,7 +344,7 @@ export default function Dashboard() {
       <div className="max-w-[1100px] mx-auto w-full px-[4px] sm:px-6 lg:px-8 pb-12 pt-8">
         <section className="relative mb-8 md:mb-12">
           {showResourceResume && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               className="absolute -top-12 right-0 z-30"
@@ -307,7 +354,7 @@ export default function Dashboard() {
                 <span className="text-[10px] font-black text-white uppercase tracking-widest whitespace-nowrap">Resume: {lastActivity.videoTitle || lastActivity.title}</span>
                 <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24" className="text-[#a855f7]"><path d="M9 5l7 7-7 7" /></svg>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           <div className={showResourceResume ? 'lg:pr-[272px]' : ''}>
@@ -359,7 +406,7 @@ export default function Dashboard() {
                         }`}
                       >
                         {active && (
-                          <motion.div
+                          <m.div
                             layoutId="domain-pill"
                             className="absolute inset-0 bg-[#7c3aed] shadow-[0_0_16px_rgba(124,58,237,0.35)]"
                             transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
@@ -428,7 +475,7 @@ export default function Dashboard() {
               {featuredNews.length > 0 ? (
                 <>
                   <div className="rounded-3xl md:rounded-[40px] overflow-hidden relative aspect-[21/10] sm:aspect-[21/9] md:aspect-[3/1] border border-white/5 shadow-2xl w-full bg-white/2">
-                    <motion.div
+                    <m.div
                       key={slide?.id ?? carouselIndex}
                       initial={{ opacity: 0.85 }}
                       animate={{ opacity: 1 }}
@@ -436,10 +483,10 @@ export default function Dashboard() {
                       className="absolute inset-0"
                     >
                       <img
-                        src={slide?.image || getFallbackImage(slide?.category, slide?.title, slide?.url)}
+                        src={slide?.image || getFallbackImage(slide?.category, slide?.title, slide?.url, carouselIndex)}
                         onError={(e) => {
                           e.currentTarget.onerror = null;
-                          e.currentTarget.src = getFallbackImage(slide?.category, slide?.title, slide?.url);
+                          e.currentTarget.src = getFallbackImage(slide?.category, slide?.title, slide?.url, carouselIndex);
                         }}
                         className="w-full h-full object-cover"
                         alt=""
@@ -472,7 +519,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                       </div>
-                    </motion.div>
+                    </m.div>
 
                     <div className="hidden md:flex absolute right-4 bottom-4 md:right-8 md:bottom-8 gap-2 md:gap-3">
                       <button
@@ -539,12 +586,18 @@ export default function Dashboard() {
               </div>
             )}
 
-            {remainingNews.length === 0 && featuredNews.length > 0 && (
+            {loadingMore && (
+              <div className="py-12 flex justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#7c3aed]" />
+              </div>
+            )}
+
+            {remainingNews.length === 0 && featuredNews.length > 0 && !loadingMore && (
               <div className="py-12 text-center text-white/10 text-[10px] font-black uppercase tracking-[0.2em]">End of transmission for this category</div>
             )}
           </div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
