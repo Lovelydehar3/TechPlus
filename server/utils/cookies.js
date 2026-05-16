@@ -1,10 +1,9 @@
 export function buildAuthCookieOptions() {
   const isProd = process.env.NODE_ENV === "production"
-  // Default to "none" in prod so Vercel (frontend) -> Render (backend) works.
-  // In dev, "lax" avoids Secure-cookie issues on http://localhost.
-  const sameSiteRaw = (process.env.COOKIE_SAME_SITE || (isProd ? "none" : "lax")).toLowerCase()
-  const sameSite = sameSiteRaw === "none" ? "none" : "lax"
-  const secure = sameSite === "none" ? true : isProd
+  // FIX #5: In production, ALWAYS use sameSite=none + secure for cross-origin
+  // (Vercel frontend → Render backend). Ignore COOKIE_SAME_SITE env override in prod.
+  const sameSite = isProd ? "none" : "lax"
+  const secure = isProd
 
   return {
     httpOnly: true,

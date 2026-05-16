@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { AnimatePresence, m } from 'framer-motion';
 import NewsSidebar from './NewsSidebar';
 import ClubsPanel from './ClubsPanel';
@@ -58,6 +58,20 @@ export default function Navbar() {
         logout();
         navigate('/login');
     };
+
+    // Listen for custom events to open sidebars from other components
+    useEffect(() => {
+        const handleOpenNews = () => setNewsOpen(true);
+        const handleOpenClubs = () => setClubsOpen(true);
+
+        window.addEventListener('open-news-sidebar', handleOpenNews);
+        window.addEventListener('open-clubs-panel', handleOpenClubs);
+
+        return () => {
+            window.removeEventListener('open-news-sidebar', handleOpenNews);
+            window.removeEventListener('open-clubs-panel', handleOpenClubs);
+        };
+    }, []);
 
     const navItems = useMemo(() => {
         const items = [...BASE_NAV_ITEMS];

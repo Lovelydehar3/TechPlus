@@ -151,7 +151,20 @@ app.use((err, req, res, next) => {
   })
 })
 
+// ── Process-level error handlers (prevent silent crashes on Render) ──────────
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err.message)
+  console.error(err.stack)
+  process.exit(1)
+})
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason)
+})
+
 const PORT = process.env.PORT || 5000
+
+let httpServer = null
 
 const logStartupStatus = () => {
   const rawEmail = clean(process.env.EMAIL) || "MISSING"
@@ -161,19 +174,40 @@ const logStartupStatus = () => {
 
 const startHttpServer = () =>
   new Promise((resolve, reject) => {
-    const server = app.listen(PORT, () => {
+    httpServer = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`)
       logStartupStatus()
-      resolve(server)
+      resolve(httpServer)
     })
 
-    server.on("error", (err) => {
+    httpServer.on("error", (err) => {
       if (err.code === "EADDRINUSE") {
         console.error(`Port ${PORT} is already in use. Stop the existing server, or set PORT to a free port and point the client at that port.`)
       }
       reject(err)
     })
   })
+
+// ── Graceful shutdown (handles Render SIGTERM on free-tier spin-down) ────────
+const shutdown = (signal) => {
+  console.log(`\n${signal} received — shutting down gracefully...`)
+  if (httpServer) {
+    httpServer.close(() => {
+      console.log("HTTP server closed")
+      process.exit(0)
+    })
+    // Force exit if graceful shutdown takes too long
+    setTimeout(() => {
+      console.error("Forced exit after timeout")
+      process.exit(1)
+    }, 10000)
+  } else {
+    process.exit(0)
+  }
+}
+
+process.on("SIGTERM", () => shutdown("SIGTERM"))
+process.on("SIGINT", () => shutdown("SIGINT"))
 
 // Initialize server first, then run non-blocking startup tasks
 const initializeServer = async () => {
@@ -184,16 +218,14 @@ const initializeServer = async () => {
     // Start background jobs immediately (non-blocking)
     startHackathonSyncJob()
 
-    // Always seed clubs (required for the Clubs feature to work)
+    // Always seed clubs after the server is already accepting requests.
     setImmediate(() => {
       ensureClubsSeeded().catch(() => {})
     })
 
-    // Defer non-critical warmup tasks to background (don't block server startup)
-    // These run in parallel after a short delay to let server handle initial requests
+    // Defer non-critical warmup tasks so cold Render instances can answer auth first.
     if (process.env.ENABLE_STARTUP_WARMUPS === "true") {
-      setImmediate(() => {
-        // Run in background without blocking
+      setTimeout(() => {
         Promise.allSettled([
           ensurePlaylistsSeeded(),
           ensureRoadmapsSeeded(),
@@ -204,7 +236,7 @@ const initializeServer = async () => {
             console.log(`Startup warmups completed: ${successful}/${results.length} successful`)
           })
           .catch(() => {})
-      })
+      }, 30000)
     }
   } catch (err) {
     console.error("Failed to start server:", err.message)

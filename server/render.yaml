@@ -18,8 +18,6 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
-      - key: JWT_REFRESH_SECRET
-        sync: false
       - key: EMAIL
         sync: false
       - key: EMAIL_PASS
@@ -31,9 +29,9 @@ services:
       - key: EMAIL_FORCE_RELAY
         value: true
       - key: EMAIL_TIMEOUT_MS
-        value: 25000
+        value: 12000
       - key: EMAIL_STRATEGY_TIMEOUT_MS
-        value: 20000
+        value: 12000
       - key: NEWSAPI_KEY
         sync: false
       - key: GNEWS_API_KEY
@@ -45,7 +43,7 @@ services:
       - key: DEVFOLIO_HACKATHON_FEEDS
         value: https://devfolio.co/hackathons,https://devfolio.co/explore
       - key: HACKATHON_SYNC_ON_BOOT
-        value: true
+        value: false
       - key: CLIENT_URL
         sync: false
       - key: ALLOWED_ORIGINS
@@ -57,4 +55,10 @@ services:
       - key: SERVE_STATIC
         value: false
       - key: ENABLE_STARTUP_WARMUPS
-        value: true
+        value: false
+      - key: DISABLE_EMAIL_VERIFICATION
+        sync: false
+      - key: JWT_EXPIRES_IN
+        sync: false
+      - key: COOKIE_DOMAIN
+        sync: false

@@ -7,7 +7,7 @@ export const protect = (req, res, next) => {
     const token = headerToken || cookieToken
 
     if (!token) {
-      return res.status(401).json({ message: "Token required. Please login." })
+      return res.status(401).json({ success: false, message: "Token required. Please login." })
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
@@ -16,8 +16,8 @@ export const protect = (req, res, next) => {
 
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ message: "Token has expired. Please login again." })
+      return res.status(401).json({ success: false, message: "Token has expired. Please login again." })
     }
-    res.status(401).json({ message: "Invalid token" })
+    res.status(401).json({ success: false, message: "Invalid token" })
   }
 }

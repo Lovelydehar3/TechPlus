@@ -1,2 +1,0 @@
-My React + Vite website (TechPlus) takes 3–4 minutes to start/render initially (localhost + deployed on Vercel). After loading, most things work fine.
-

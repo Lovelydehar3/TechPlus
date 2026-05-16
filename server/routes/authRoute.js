@@ -5,6 +5,7 @@ import {
   resendOtp,
   login,
   logout,
+  currentUser,
   forgotPassword,
   resetPassword
 } from "../controllers/authController.js"
@@ -17,6 +18,7 @@ router.post('/verify-otp', verifyOtp)                  // Public
 router.post('/resend-otp', resendOtp)                  // Public
 router.post('/login', login)                           // Public
 router.post('/logout', protect, logout)                // Private
+router.get('/me', protect, currentUser)                // Private
 router.post('/forgot-password', forgotPassword)        // Public
 router.post('/reset-password', resetPassword)          // Public
 

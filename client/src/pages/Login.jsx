@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { m } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 // Real tech/coding photos for the login page scrolling grid
 // Professional tech/coding photos for the login page scrolling grid
@@ -40,8 +40,9 @@ const TILE_URLS_3 = [
 ];
 
 
-export default function Login() {
-  const [step, setStep] = useState('login'); // 'login' | 'signup' | 'verify-otp'
+export default function Login({ initialStep } = {}) {
+  // FIX #9: Accept initialStep prop for /register deep-link
+  const [step, setStep] = useState(initialStep || 'login'); // 'login' | 'signup' | 'verify-otp'
   const [form, setForm] = useState({
     email: '',
     username: '',
@@ -51,6 +52,8 @@ export default function Login() {
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // FIX #12: Separate state for confirm password visibility toggle
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { register, verifyOtp, resendOtp, loginWithCredentials } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
@@ -335,12 +338,12 @@ export default function Login() {
                   </button>
 
                   <div className="text-center mt-4">
-                    <a
-                      href="/password-reset"
+                    <Link
+                      to="/password-reset"
                       className="text-sm text-purple-600 hover:text-purple-700 font-medium"
                     >
                       Forgot Password?
-                    </a>
+                    </Link>
                   </div>
                 </form>
               )}
@@ -414,7 +417,7 @@ export default function Login() {
                     </label>
                     <div className="relative">
                       <input
-                        type={showPassword ? 'text' : 'password'}
+                        type={showConfirmPassword ? 'text' : 'password'}
                         value={form.confirmPassword || ''}
                         onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
                         placeholder="••••••••"
@@ -423,10 +426,10 @@ export default function Login() {
                       />
                       <button
                         type="button"
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                       >
-                        {showPassword ? (
+                        {showConfirmPassword ? (
                           <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                             <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" />

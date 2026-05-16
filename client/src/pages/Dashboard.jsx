@@ -358,7 +358,7 @@ export default function Dashboard() {
           )}
 
           <div className={showResourceResume ? 'lg:pr-[272px]' : ''}>
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-6">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
@@ -367,12 +367,14 @@ export default function Dashboard() {
                   </div>
                   <p className="text-white/60 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] ml-4">Technology Intelligence</p>
                 </div>
+
+                {/* Desktop Refresh Button (Visible only on sm and up) */}
                 <button
                   type="button"
                   onClick={() => loadNews(true)}
                   disabled={loading}
                   title="Refresh feed"
-                  className="shrink-0 w-10 h-10 rounded-xl border border-white/15 flex items-center justify-center text-white/70 hover:border-[#7c3aed] hover:text-white transition-all disabled:opacity-40 group"
+                  className="hidden sm:flex shrink-0 w-10 h-10 rounded-xl border border-white/15 items-center justify-center text-white/70 hover:border-[#7c3aed] hover:text-white transition-all disabled:opacity-40 group"
                 >
                   <svg
                     width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"
@@ -384,6 +386,68 @@ export default function Dashboard() {
                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
                   </svg>
                 </button>
+              </div>
+
+              {/* Mobile Quick Actions Row (Strict Alignment) */}
+              <div className="flex sm:hidden items-center justify-between w-full mt-2">
+                {/* Left: Refresh */}
+                <button
+                  type="button"
+                  onClick={() => loadNews(true)}
+                  disabled={loading}
+                  className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/70 active:scale-90 transition-all"
+                >
+                  <svg
+                    width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5"
+                    strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"
+                    className={loading ? 'animate-spin' : ''}
+                  >
+                    <path d="M23 4v6h-6" />
+                    <path d="M1 20v-6h6" />
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                  </svg>
+                </button>
+
+                {/* Right: Hot News & Group Section */}
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent('open-news-sidebar'))}
+                    className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center relative active:scale-90 transition-all"
+                  >
+                    <m.svg 
+                        width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    >
+                        <m.path 
+                            d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.291 1-3a2.5 2.5 0 0 0 2.5 2.5z" 
+                            animate={{ 
+                                scale: [1, 1.05, 1],
+                                stroke: ['#a855f7', '#d8b4fe', '#a855f7'],
+                            }}
+                            transition={{ repeat: Infinity, duration: 2 }}
+                        />
+                    </m.svg>
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#a855f7] rounded-full border-2 border-black" />
+                  </button>
+
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent('open-clubs-panel'))}
+                    className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center active:scale-90 transition-all"
+                  >
+                    <m.svg
+                        width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    >
+                        <m.g
+                            animate={{ scale: [1, 1.05, 1] }}
+                            transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+                        >
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </m.g>
+                    </m.svg>
+                  </button>
+                </div>
               </div>
 
               {cacheHint && (

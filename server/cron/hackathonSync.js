@@ -17,7 +17,9 @@ export const startHackathonSyncJob = () => {
   );
 
   if (shouldRunImmediateSync) {
-    syncHackathonsFromAPI().catch(() => {});
+    setTimeout(() => {
+      syncHackathonsFromAPI().catch(() => {});
+    }, 30000);
   }
 
   return task;

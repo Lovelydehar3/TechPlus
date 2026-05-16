@@ -4,9 +4,7 @@ import crypto from "crypto"
 
 dns.setDefaultResultOrder?.("ipv4first")
 
-export const generateOtp = () => {
-  return crypto.randomInt(100000, 999999).toString()
-}
+export const generateOtp = () => crypto.randomInt(100000, 999999).toString()
 
 const clean = (value) =>
   String(value || "")
@@ -15,8 +13,14 @@ const clean = (value) =>
     .trim()
     .replace(/^"|"$/g, "")
 
-const isProduction = clean(process.env.NODE_ENV) === "production"
 const isHttpUrl = (value) => /^https?:\/\/[^/\s]+/i.test(clean(value))
+const EMAIL_TIMEOUT_MS = Number(clean(process.env.EMAIL_TIMEOUT_MS || process.env.EMAIL_STRATEGY_TIMEOUT_MS)) || 12000
+const isProduction = clean(process.env.NODE_ENV) === "production"
+
+const smtpUser = () => clean(process.env.EMAIL)
+const smtpPass = () => clean(process.env.EMAIL_PASS)
+const emailFrom = () => clean(process.env.EMAIL_FROM) || smtpUser()
+const hasSmtpConfig = () => Boolean(smtpUser() && smtpPass())
 
 const resolveClientUrl = (overrideUrl) => {
   const override = clean(overrideUrl)
@@ -27,12 +31,6 @@ const resolveClientUrl = (overrideUrl) => {
 
   return "http://localhost:5173"
 }
-
-const EMAIL_TIMEOUT_MS = Number(clean(process.env.EMAIL_STRATEGY_TIMEOUT_MS)) || 12000
-const auth = () => ({
-  user: clean(process.env.EMAIL),
-  pass: clean(process.env.EMAIL_PASS)
-})
 
 const resolveRelayUrl = () => {
   const explicitRelay = clean(process.env.EMAIL_RELAY_URL)
@@ -45,93 +43,85 @@ const resolveRelayUrl = () => {
 }
 
 const relaySecrets = () =>
-  [clean(process.env.EMAIL_RELAY_SECRET), clean(process.env.EMAIL_PASS)]
+  [clean(process.env.EMAIL_RELAY_SECRET), smtpPass()]
     .filter(Boolean)
     .filter((value, index, items) => items.indexOf(value) === index)
 
-const shouldForceRelay = () => {
-  const configured = clean(process.env.EMAIL_FORCE_RELAY).toLowerCase()
+const readBooleanOverride = (value) => {
+  const configured = clean(value).toLowerCase()
   if (["1", "true", "yes", "on"].includes(configured)) return true
   if (["0", "false", "no", "off"].includes(configured)) return false
-  return isProduction
+  return null
 }
 
-const baseTimeouts = () => ({
-  connectionTimeout: EMAIL_TIMEOUT_MS,
-  greetingTimeout: EMAIL_TIMEOUT_MS,
-  socketTimeout: EMAIL_TIMEOUT_MS,
-  dnsTimeout: 15000
-})
+const shouldForceRelay = () => {
+  const configured = readBooleanOverride(process.env.EMAIL_FORCE_RELAY)
+  if (configured !== null) return configured
+  return isProduction && Boolean(resolveRelayUrl())
+}
 
-const createTransportStrategies = () => [
-  {
-    label: "smtp-465-ipv4",
-    resolveHost: true,
-    config: {
-      port: 465,
-      secure: true,
-      auth: auth(),
-      ...baseTimeouts(),
-      family: 4,
-      tls: {
-        rejectUnauthorized: false,
-        servername: "smtp.gmail.com"
-      }
-    }
-  },
-  {
-    label: "gmail-service-ipv4",
-    config: {
-      service: "gmail",
-      auth: auth(),
-      ...baseTimeouts(),
-      family: 4
-    }
-  },
-  {
-    label: "smtp-465-hostname",
-    config: {
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: auth(),
-      ...baseTimeouts(),
-      family: 4,
-      tls: { rejectUnauthorized: false }
-    }
+const toFriendlyEmailError = (error) => {
+  const raw = `${error?.message || ""} ${error?.code || ""}`
+  if (/relay authentication failed|Unauthorized email relay request/i.test(raw)) {
+    return new Error("Email relay authentication failed. Check EMAIL_RELAY_SECRET on Render and Vercel.")
   }
-]
+  if (/relay is not configured|EMAIL_RELAY_URL/i.test(raw)) {
+    return new Error("Email relay is not configured. Set EMAIL_RELAY_URL and EMAIL_RELAY_SECRET.")
+  }
+  if (/Invalid login|Username and Password not accepted|EAUTH/i.test(raw)) {
+    return new Error("Email login failed. Check EMAIL and EMAIL_PASS app password.")
+  }
+  if (/timeout|ETIMEDOUT|ECONNECTION|ENETUNREACH|ECONNREFUSED|AbortError/i.test(raw)) {
+    return new Error("Email service timeout. Please try again shortly.")
+  }
+  return new Error(error?.message || "Email service failed")
+}
 
-async function sendWithGmail(mailOptions) {
-  let lastError
+async function sendWithBrevo(mailOptions) {
+  const apiKey = clean(process.env.BREVO_API_KEY)
+  if (!apiKey) return null
 
-  for (const strategy of createTransportStrategies()) {
-    const hosts = strategy.resolveHost
-      ? await dns.promises.resolve4("smtp.gmail.com").catch(() => ["smtp.gmail.com"])
-      : [strategy.config.host || "smtp.gmail.com"]
-
-    for (const host of hosts) {
-      const config = { ...strategy.config, host }
-      const transporter = nodemailer.createTransport(config)
-      try {
-        console.log(`[Email] Trying ${strategy.label} (${host})`)
-        const info = await transporter.sendMail(mailOptions)
-        console.log(`[Email] Sent via ${strategy.label}: ${info.messageId}`)
-        return info
-      } catch (error) {
-        lastError = error
-        console.error(`[Email] ${strategy.label} failed:`, error.message, error.code || "")
-      } finally {
-        try {
-          transporter.close()
-        } catch {
-          // Ignore close errors after the send attempt finishes.
-        }
-      }
-    }
+  const sender = emailFrom()
+  if (!sender) {
+    throw new Error("EMAIL_FROM or EMAIL is required when using Brevo.")
   }
 
-  throw lastError || new Error("Email send failed")
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), EMAIL_TIMEOUT_MS)
+
+  try {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "api-key": apiKey
+      },
+      body: JSON.stringify({
+        sender: { email: sender, name: "TechPlus" },
+        to: [{ email: mailOptions.to }],
+        subject: mailOptions.subject,
+        htmlContent: mailOptions.html
+      }),
+      signal: controller.signal
+    })
+
+    const text = await response.text()
+    let data = {}
+    try {
+      data = text ? JSON.parse(text) : {}
+    } catch {
+      data = { message: text }
+    }
+
+    if (!response.ok) {
+      throw new Error(data.message || `Brevo email failed with status ${response.status}`)
+    }
+
+    return data
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
 async function sendWithHttpRelay(mailOptions) {
@@ -160,8 +150,8 @@ async function sendWithHttpRelay(mailOptions) {
           to: mailOptions.to,
           subject: mailOptions.subject,
           html: mailOptions.html,
-          smtpUser: auth().user,
-          smtpPass: auth().pass
+          smtpUser: smtpUser(),
+          smtpPass: smtpPass()
         }),
         signal: controller.signal
       })
@@ -180,17 +170,9 @@ async function sendWithHttpRelay(mailOptions) {
         throw relayError
       }
 
-      console.log(`[Email] Sent via HTTPS relay: ${data.messageId || "ok"}`)
       return data
     } catch (error) {
-      if (error?.name === "AbortError") {
-        lastError = new Error("Email relay timeout")
-      } else if (Number(error?.status) === 401) {
-        lastError = new Error("Email relay authentication failed. Please verify EMAIL_RELAY_SECRET on Render and Vercel.")
-      } else {
-        lastError = error
-      }
-
+      lastError = error?.name === "AbortError" ? new Error("Email relay timeout") : error
       if (Number(error?.status) === 401 && relaySecret !== secrets[secrets.length - 1]) {
         continue
       }
@@ -202,26 +184,78 @@ async function sendWithHttpRelay(mailOptions) {
   throw lastError || new Error("Email relay failed")
 }
 
-async function sendEmail(mailOptions) {
-  const forceRelay = shouldForceRelay()
-
-  try {
-    const relayResult = await sendWithHttpRelay(mailOptions)
-    if (relayResult) return relayResult
-    if (forceRelay) {
-      throw new Error("Email relay is not configured. Set EMAIL_RELAY_URL/CLIENT_URL and EMAIL_RELAY_SECRET in deployment env.")
-    }
-  } catch (error) {
-    if (forceRelay) throw error
-    console.log(`[Email] Relay attempt failed: ${error.message}. Falling back to direct transport.`)
+async function sendWithSmtp(mailOptions) {
+  if (!hasSmtpConfig()) {
+    throw new Error("SMTP email credentials are not configured.")
   }
 
-  return sendWithGmail(mailOptions)
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: smtpUser(),
+      pass: smtpPass()
+    },
+    connectionTimeout: EMAIL_TIMEOUT_MS,
+    greetingTimeout: EMAIL_TIMEOUT_MS,
+    socketTimeout: EMAIL_TIMEOUT_MS,
+    family: 4,
+    tls: {
+      rejectUnauthorized: false,
+      servername: "smtp.gmail.com"
+    }
+  })
+
+  try {
+    return await transporter.sendMail(mailOptions)
+  } finally {
+    try {
+      transporter.close()
+    } catch {
+      // Ignore close errors after the send attempt finishes.
+    }
+  }
+}
+
+async function sendEmail(mailOptions) {
+  const from = clean(mailOptions.from) || emailFrom()
+  const payload = { ...mailOptions, from }
+  const forceRelay = shouldForceRelay()
+  let lastError = null
+
+  try {
+    const brevoResult = await sendWithBrevo(payload)
+    if (brevoResult) return brevoResult
+  } catch (error) {
+    lastError = error
+    if (clean(process.env.EMAIL_PROVIDER).toLowerCase() === "brevo") {
+      throw toFriendlyEmailError(error)
+    }
+  }
+
+  try {
+    const relayResult = await sendWithHttpRelay(payload)
+    if (relayResult) return relayResult
+  } catch (error) {
+    lastError = error
+    if (forceRelay) throw toFriendlyEmailError(error)
+  }
+
+  if (forceRelay) {
+    throw toFriendlyEmailError(lastError || new Error("Email relay is not configured. Set EMAIL_RELAY_URL and EMAIL_RELAY_SECRET."))
+  }
+
+  try {
+    return await sendWithSmtp(payload)
+  } catch (error) {
+    throw toFriendlyEmailError(error)
+  }
 }
 
 export const sendOtpEmail = async (email, otp) => {
-  await sendEmail({
-    from: clean(process.env.EMAIL),
+  return sendEmail({
+    from: emailFrom(),
     to: email,
     subject: "Your OTP - TechPlus News",
     html: `
@@ -231,7 +265,7 @@ export const sendOtpEmail = async (email, otp) => {
           <p style="font-size: 16px; color: #666;">Your OTP is:</p>
           <h1 style="color: #4F46E5; letter-spacing: 8px; font-size: 32px;">${otp}</h1>
           <p style="color: #666;">Valid for <b>10 minutes</b> only.</p>
-          <p style="color: #999; font-size: 12px; margin-top: 20px;">If you didn't request this OTP, please ignore this email.</p>
+          <p style="color: #999; font-size: 12px; margin-top: 20px;">If you did not request this OTP, please ignore this email.</p>
         </div>
       </div>
     `
@@ -241,8 +275,8 @@ export const sendOtpEmail = async (email, otp) => {
 export const sendResetEmail = async (email, resetToken, clientUrlOverride = "") => {
   const resetLink = `${resolveClientUrl(clientUrlOverride)}/password-reset?token=${resetToken}`
 
-  await sendEmail({
-    from: clean(process.env.EMAIL),
+  return sendEmail({
+    from: emailFrom(),
     to: email,
     subject: "Password Reset - TechPlus News",
     html: `
@@ -254,7 +288,7 @@ export const sendResetEmail = async (email, resetToken, clientUrlOverride = "") 
           <p style="color: #666; margin-top: 20px;">Or copy this link in your browser:</p>
           <p style="color: #4F46E5; word-break: break-all;">${resetLink}</p>
           <p style="color: #666;">This link will expire in <b>30 minutes</b>.</p>
-          <p style="color: #999; font-size: 12px; margin-top: 20px;">If you didn't request this password reset, please ignore this email.</p>
+          <p style="color: #999; font-size: 12px; margin-top: 20px;">If you did not request this password reset, please ignore this email.</p>
         </div>
       </div>
     `

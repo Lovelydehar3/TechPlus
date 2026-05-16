@@ -1,8 +1,5 @@
-// SplashScreen — shows ONLY during initial auth check
-// Optimized to reduce network load during the critical auth check phase.
-import { useEffect } from 'react';
+// SplashScreen shows only during the initial auth check.
 import { m } from 'framer-motion';
-import { newsAPI } from '../config/api';
 
 const TILE_URLS_1 = [
   'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=200&q=50',
@@ -21,24 +18,7 @@ const FALLBACK =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='266'%3E%3Crect width='200' height='266' fill='%230b0b0f'/%3E%3C/svg%3E";
 
 export default function SplashScreen() {
-  // Prefetch news while the splash is visible, but ONLY after a delay
-  // to give the critical auth request priority.
-  useEffect(() => {
-    const prefetch = async () => {
-      try {
-        // Only prefetch most critical data if server is likely awake
-        await newsAPI.getAllNews(1, null, false);
-      } catch {
-        // non-fatal
-      }
-    };
-    
-    const timer = setTimeout(prefetch, 2000); 
-    return () => clearTimeout(timer);
-  }, []);
-
-  const imgProps = (url, i, col) => ({
-    key: `${col}-${i}`,
+  const imgProps = (url) => ({
     src: url,
     alt: '',
     onError: (e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK; },
@@ -57,13 +37,19 @@ export default function SplashScreen() {
         {/* Scrolling columns - fewer images for faster load */}
         <div className="absolute top-0 left-0 w-full h-[200vh] grid grid-cols-3 gap-2 p-2">
           <div className="flex flex-col gap-2 splash-scroll-up">
-            {[...TILE_URLS_1, ...TILE_URLS_1, ...TILE_URLS_1].map((url, i) => <img {...imgProps(url, i, 'c1')} />)}
+            {[...TILE_URLS_1, ...TILE_URLS_1, ...TILE_URLS_1].map((url, i) => (
+              <img key={`c1-${i}`} {...imgProps(url)} />
+            ))}
           </div>
           <div className="flex flex-col gap-2 splash-scroll-down">
-            {[...TILE_URLS_2, ...TILE_URLS_2, ...TILE_URLS_2].map((url, i) => <img {...imgProps(url, i, 'c2')} />)}
+            {[...TILE_URLS_2, ...TILE_URLS_2, ...TILE_URLS_2].map((url, i) => (
+              <img key={`c2-${i}`} {...imgProps(url)} />
+            ))}
           </div>
           <div className="flex flex-col gap-2 splash-scroll-up" style={{ animationDelay: '-12s' }}>
-            {[...TILE_URLS_3, ...TILE_URLS_3, ...TILE_URLS_3].map((url, i) => <img {...imgProps(url, i, 'c3')} />)}
+            {[...TILE_URLS_3, ...TILE_URLS_3, ...TILE_URLS_3].map((url, i) => (
+              <img key={`c3-${i}`} {...imgProps(url)} />
+            ))}
           </div>
         </div>
 

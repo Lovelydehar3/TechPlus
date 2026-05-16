@@ -14,40 +14,40 @@ const cleanEnv = (value) =>
     .replace(/^"|"$/g, "")
 
 function hasEmailConfig() {
-  return Boolean(cleanEnv(process.env.EMAIL) && cleanEnv(process.env.EMAIL_PASS))
+  return Boolean(
+    (cleanEnv(process.env.EMAIL) && cleanEnv(process.env.EMAIL_PASS)) ||
+    cleanEnv(process.env.BREVO_API_KEY) ||
+    (cleanEnv(process.env.EMAIL_RELAY_URL) && cleanEnv(process.env.EMAIL_RELAY_SECRET))
+  )
 }
 
 const isProduction = cleanEnv(process.env.NODE_ENV) === "production"
-const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 15000
-async function sendEmailWithTimeout(task) {
-  return Promise.race([
-    task,
-    new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Email service timeout")), EMAIL_TIMEOUT_MS)
-    })
-  ])
-}
-
-const toEmailErrorMessage = (error) => {
-  const raw = `${error?.message || ""} ${error?.code || ""}`
-  if (/relay authentication failed|Unauthorized email relay request/i.test(raw)) {
-    return "Email relay authentication failed. Please contact support and retry."
-  }
-  if (/Email relay is not configured/i.test(raw)) {
-    return "Email relay is not configured. Please contact support and retry."
-  }
-  if (/timeout|ETIMEDOUT|ECONNECTION|ENETUNREACH|ECONNREFUSED/i.test(raw)) {
-    return "Email service connection timeout. Please try again shortly."
-  }
-  return error?.message || "Email service failed"
-}
+const emailVerificationDisabled = cleanEnv(process.env.DISABLE_EMAIL_VERIFICATION) === "true"
 
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
 const normalizeUsername = (value) => String(value || "").trim()
 const emailUnavailable = () => ({
   success: false,
-  message: "Email service is not configured. Please add EMAIL and EMAIL_PASS on Render."
+  message: "Email service is not configured. Add EMAIL/EMAIL_PASS, BREVO_API_KEY, or EMAIL_RELAY_URL/EMAIL_RELAY_SECRET."
 })
+
+const buildAuthUser = (user) => ({
+  id: user._id,
+  username: user.username,
+  email: user.email,
+  role: user.role,
+  isVerified: user.isVerified,
+  avatar: user.avatar || null,
+  profileImage: user.profileImage || null,
+  darkMode: Boolean(user.darkMode)
+})
+
+const issueAuthToken = (user) =>
+  jwt.sign(
+    { id: user._id, email: user.email, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '72h' }
+  )
 
 // ================== REGISTER ==================
 export const register = async (req, res) => {
@@ -100,7 +100,10 @@ export const register = async (req, res) => {
       })
     }
 
-    if (!hasEmailConfig() && isProduction) {
+    // FIX #3: Check if email verification is disabled (emergency bypass)
+    const skipVerification = emailVerificationDisabled
+
+    if (!skipVerification && !hasEmailConfig() && isProduction) {
       return res.status(503).json(emailUnavailable())
     }
 
@@ -108,50 +111,66 @@ export const register = async (req, res) => {
     const otp = generateOtp()
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000) // 10 min
 
+    // FIX #3: Handle existing unverified user — update and send OTP atomically
     if (existingByEmail && !existingByEmail.isVerified) {
       existingByEmail.username = username
       existingByEmail.password = hashedPassword
       existingByEmail.otp = otp
       existingByEmail.otpExpires = otpExpires
+
+      // If verification is disabled, mark verified immediately
+      if (skipVerification) {
+        existingByEmail.isVerified = true
+        existingByEmail.otp = null
+        existingByEmail.otpExpires = null
+      }
+
       await existingByEmail.save()
 
-      if (hasEmailConfig()) {
+      if (!skipVerification && hasEmailConfig()) {
         try {
-          await sendEmailWithTimeout(sendOtpEmail(email, otp))
+          await sendOtpEmail(email, otp)
         } catch (emailError) {
           await User.deleteOne({ _id: existingByEmail._id, isVerified: false })
-          return res.status(503).json({ success: false, message: toEmailErrorMessage(emailError) })
+          return res.status(503).json({ success: false, message: emailError.message || "Failed to send OTP email" })
         }
       }
 
       return res.status(200).json({
         success: true,
-        message: hasEmailConfig() ? "New OTP sent. Please verify your email." : "OTP regenerated in development mode.",
-        ...(hasEmailConfig() ? {} : { devOtp: otp })
+        message: skipVerification
+          ? "Email verification bypassed. Account is ready."
+          : hasEmailConfig() ? "New OTP sent. Please verify your email." : "OTP regenerated in development mode.",
+        ...(hasEmailConfig() && !skipVerification ? {} : { devOtp: otp })
       })
     }
 
-    if (hasEmailConfig()) {
-      try {
-        await sendEmailWithTimeout(sendOtpEmail(email, otp))
-      } catch (emailError) {
-        return res.status(503).json({ success: false, message: toEmailErrorMessage(emailError) })
-      }
-    }
-
-    await User.create({
+    // FIX #3: Create user FIRST, then send OTP. Rollback if OTP fails.
+    const newUser = await User.create({
       username,
       email,
       password: hashedPassword,
-      otp,
-      otpExpires,
-      isVerified: false
+      otp: skipVerification ? null : otp,
+      otpExpires: skipVerification ? null : otpExpires,
+      isVerified: skipVerification
     })
+
+    if (!skipVerification && hasEmailConfig()) {
+      try {
+        await sendOtpEmail(email, otp)
+      } catch (emailError) {
+        // Rollback: delete the user we just created since OTP failed
+        await User.deleteOne({ _id: newUser._id })
+        return res.status(503).json({ success: false, message: emailError.message || "Failed to send OTP email" })
+      }
+    }
 
     res.status(201).json({
       success: true,
-      message: hasEmailConfig() ? "OTP sent to your email. Please verify." : "OTP generated in development mode.",
-      ...(hasEmailConfig() ? {} : { devOtp: otp })
+      message: skipVerification
+        ? "Account created successfully. You can now log in."
+        : hasEmailConfig() ? "OTP sent to your email. Please verify." : "OTP generated in development mode.",
+      ...(hasEmailConfig() && !skipVerification ? {} : { devOtp: otp })
     })
 
   } catch (error) {
@@ -189,24 +208,15 @@ export const verifyOtp = async (req, res) => {
     user.otpExpires = null
     await user.save()
 
-    const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    )
+    const token = issueAuthToken(user)
 
     res.cookie('techplus_token', token, buildAuthCookieOptions())
 
     res.status(200).json({
       success: true,
       message: "Email verified successfully!",
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        isVerified: user.isVerified
-      }
+      token,
+      user: buildAuthUser(user)
     })
 
   } catch (error) {
@@ -223,13 +233,25 @@ export const resendOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email is required" })
     }
 
-    if (!hasEmailConfig() && isProduction) {
+    if (!emailVerificationDisabled && !hasEmailConfig() && isProduction) {
       return res.status(503).json(emailUnavailable())
     }
 
     const user = await User.findOne({ email })
     if (!user) return res.status(404).json({ success: false, message: "User not found" })
     if (user.isVerified) return res.status(400).json({ success: false, message: "Already verified" })
+
+    // FIX #3: If verification is disabled, auto-verify on resend
+    if (emailVerificationDisabled) {
+      user.isVerified = true
+      user.otp = null
+      user.otpExpires = null
+      await user.save()
+      return res.status(200).json({
+        success: true,
+        message: "Email verification bypassed. Account is now verified."
+      })
+    }
 
     const otp = generateOtp()
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000)
@@ -238,12 +260,11 @@ export const resendOtp = async (req, res) => {
     user.otpExpires = otpExpires
     await user.save()
 
-    // Only attempt to send email if config is present
     if (hasEmailConfig()) {
       try {
-        await sendEmailWithTimeout(sendOtpEmail(email, otp))
+        await sendOtpEmail(email, otp)
       } catch (emailError) {
-        return res.status(503).json({ success: false, message: toEmailErrorMessage(emailError) })
+        return res.status(503).json({ success: false, message: emailError.message || "Failed to send OTP email" })
       }
     }
 
@@ -284,30 +305,21 @@ export const login = async (req, res) => {
       return res.status(401).json({
         success: false,
         code: "EMAIL_NOT_VERIFIED",
-        message: "Please verify your email first",
+        message: "User already exists. Please verify your email. OTP sent.",
         requiresVerification: true,
         email: user.email
       })
     }
 
-    const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    )
+    const token = issueAuthToken(user)
 
     res.cookie('techplus_token', token, buildAuthCookieOptions())
 
     res.status(200).json({
       success: true,
       message: "Login successful",
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        isVerified: user.isVerified
-      }
+      token,
+      user: buildAuthUser(user)
     })
 
   } catch (error) {
@@ -321,6 +333,26 @@ export const logout = async (req, res) => {
     res.clearCookie('techplus_token', buildAuthCookieOptions())
 
     res.status(200).json({ success: true, message: "Logged out successfully" })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+// ================== CURRENT SESSION ==================
+export const currentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .select('_id username email role isVerified avatar profileImage darkMode')
+      .lean()
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" })
+    }
+
+    res.status(200).json({
+      success: true,
+      user: buildAuthUser(user)
+    })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
@@ -351,22 +383,22 @@ export const forgotPassword = async (req, res) => {
     user.resetTokenExpires = resetTokenExpires
     await user.save()
 
-    console.log(`[Auth] ForgotPassword request for: ${email}. Email config detected: ${hasEmailConfig()}`);
+    console.log(`[Auth] ForgotPassword request for: ${email}. Email config: ${hasEmailConfig()}`)
 
     if (hasEmailConfig()) {
-      const originFromClient = String(req.body?.clientOrigin || "").trim()
-      const originFromHeader = String(req.headers.origin || "").trim()
+      const originFromClient = cleanEnv(req.body?.clientOrigin)
+      const originFromHeader = cleanEnv(req.headers.origin)
       try {
-        await sendEmailWithTimeout(sendResetEmail(email, resetToken, originFromClient || originFromHeader))
+        await sendResetEmail(email, resetToken, originFromClient || originFromHeader)
       } catch (emailError) {
-        return res.status(503).json({ success: false, message: toEmailErrorMessage(emailError) })
+        return res.status(503).json({ success: false, message: emailError.message || "Failed to send reset email" })
       }
     }
 
     res.status(200).json({
       success: true,
       message: hasEmailConfig() ? "Password reset email sent" : "Password reset token generated in development mode",
-      recipientHint: email
+      ...(hasEmailConfig() ? { recipientHint: email } : { devResetToken: resetToken })
     })
 
   } catch (error) {
@@ -406,11 +438,14 @@ export const resetPassword = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10)
     user.password = hashedPassword
+    user.isVerified = true
+    user.otp = null
+    user.otpExpires = null
     user.resetToken = null
     user.resetTokenExpires = null
     await user.save()
 
-    res.status(200).json({ success: true, message: "Password reset successful" })
+    res.status(200).json({ success: true, message: "Password reset successful. Please log in with your new password." })
 
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })

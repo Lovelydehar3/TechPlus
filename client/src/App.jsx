@@ -46,7 +46,8 @@ function ProtectedRoute({ children }) {
 function AdminRoute({ children }) {
     const { user, loading } = useAuth();
     if (loading) return <PageSpinner />;
-    if (!user || user.role !== 'admin') return <Navigate to="/" replace />;
+    // FIX #10: Redirect to /login (not /) for unauthenticated users to avoid double redirect
+    if (!user || user.role !== 'admin') return <Navigate to={user ? "/" : "/login"} replace />;
     return <Layout>{children}</Layout>;
 }
 
@@ -58,6 +59,9 @@ function AppContent() {
                 <Suspense fallback={<PageSpinner />}>
                     <Routes>
                         <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+                        {/* FIX #8: Deep-link for sign up and email verification */}
+                        <Route path="/register" element={user ? <Navigate to="/" replace /> : <Login initialStep="signup" />} />
+                        <Route path="/verify-email" element={user ? <Navigate to="/" replace /> : <Login initialStep="verify-otp" />} />
                         <Route path="/password-reset" element={<PasswordReset />} />
                         <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                         <Route path="/roadmaps" element={<ProtectedRoute><Roadmaps /></ProtectedRoute>} />
@@ -73,15 +77,15 @@ function AppContent() {
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                 </Suspense>
-            </LazyMotion>
             <Toast />
-        </ErrorBoundary>
+        </LazyMotion>
+    </ErrorBoundary>
     );
 }
 
 export default function App() {
     return (
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <ScrollToTop />
             <AuthProvider>
                 <DarkModeProvider>

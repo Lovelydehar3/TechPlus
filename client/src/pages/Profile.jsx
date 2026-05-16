@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
@@ -102,9 +102,12 @@ function EmptyState({ icon, message, sub }) {
 }
 
 // â”€â”€ STAT CHIP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function StatChip({ label, value, accent }) {
+function StatChip({ label, value, accent, onClick }) {
     return (
-        <div className="flex flex-col gap-1 p-3 sm:p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all min-w-0">
+        <div
+            onClick={onClick}
+            className={`flex flex-col gap-1 p-3 sm:p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all min-w-0 ${onClick ? 'cursor-pointer hover:bg-white/[0.06] hover:border-[#7c3aed]/30 active:scale-95' : ''}`}
+        >
             <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.12em] sm:tracking-[0.2em] text-white/30 leading-tight">{label}</span>
             <span className={`text-lg sm:text-xl font-black ${accent ? 'text-[#a855f7]' : 'text-white'}`}>{value}</span>
         </div>
@@ -112,13 +115,13 @@ function StatChip({ label, value, accent }) {
 }
 
 // â”€â”€ PROFILE PANEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function ProfilePanel({ user, createdDate, onEdit, savedHackathons = [] }) {
+function ProfilePanel({ user, createdDate, onEdit, savedHackathons = [], savedResources = [], bookmarks = [], onViewSaved }) {
     const name = user?.username || user?.name || user?.email?.split('@')[0] || 'Member';
     const email = user?.email || 'â€”';
     const profileImageSrc = user?.profileImage || user?.avatar || null;
     const watchCount   = user?.watchHistory?.filter((item) => item?.type === 'resource').length || 0;
     const downloadCount= user?.downloadedRoadmaps?.length || 0;
-    const hackathonCount = savedHackathons?.length || 0;
+    const savedCount = (savedHackathons?.length || 0) + (savedResources?.length || 0) + (bookmarks?.length || 0);
     const bookmarkCount = user?.bookmarks?.length || 0;
 
     return (
@@ -187,8 +190,8 @@ function ProfilePanel({ user, createdDate, onEdit, savedHackathons = [] }) {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 <StatChip label="Videos Watched"   value={watchCount}   accent />
                 <StatChip label="Roadmaps" value={downloadCount} accent />
-                <StatChip label="Hackathons" value={hackathonCount} />
-                <StatChip label="Bookmarks" value={bookmarkCount} accent />
+                <StatChip label="Saved" value={savedCount} accent onClick={onViewSaved} />
+                <StatChip label="Bookmarks" value={bookmarkCount} />
             </div>
 
             {/* Detail Grid */}
@@ -713,6 +716,9 @@ export default function Profile() {
                                 createdDate={createdDate}
                                 onEdit={() => setIsEditOpen(true)}
                                 savedHackathons={savedHackathons}
+                                savedResources={savedResources}
+                                bookmarks={bookmarks}
+                                onViewSaved={() => setSelectedTab('saved')}
                             />
                         )}
                         {selectedTab === 'history' && (

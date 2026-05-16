@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { authAPI, userAPI } from '../config/api';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { authAPI, clearAuthToken, setAuthToken } from '../config/api';
 
 const AuthContext = createContext();
 
@@ -12,26 +12,58 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const hydrate = async () => {
-            try {
-                const response = await userAPI.getProfile();
-                if (response?.success) {
-                    setUser(response.user);
-                }
-            } catch {
-                setUser(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-        hydrate();
+    // FIX #1: Race condition guard — if a manual login/verifyOtp completes,
+    // the hydrate() catch block must NOT wipe the user state.
+    const loginCompleted = useRef(false);
+    const hydrationAbort = useRef(null);
+
+    const cancelHydration = useCallback(() => {
+        loginCompleted.current = true;
+        if (hydrationAbort.current) {
+            hydrationAbort.current.abort();
+            hydrationAbort.current = null;
+        }
     }, []);
 
-    const login = useCallback((userData) => {
+    useEffect(() => {
+        const controller = new AbortController();
+        hydrationAbort.current = controller;
+        loginCompleted.current = false;
+        let mounted = true;
+
+        const hydrate = async () => {
+            try {
+                const response = await authAPI.me({ signal: controller.signal });
+                if (mounted && response?.success) {
+                    setUser(response.user);
+                }
+            } catch (err) {
+                if (err?.code === 'ERR_CANCELED') return;
+                // FIX #1: Skip wiping user if a manual login already succeeded
+                if (mounted && !loginCompleted.current) {
+                    setUser(null);
+                    if (err?.status === 401) clearAuthToken();
+                }
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+
+        hydrate();
+
+        return () => {
+            mounted = false;
+            controller.abort();
+            hydrationAbort.current = null;
+        };
+    }, []);
+
+    const login = useCallback((userData, token) => {
+        cancelHydration();
+        if (token) setAuthToken(token);
         setUser(userData);
         setError(null);
-    }, []);
+    }, [cancelHydration]);
 
     const updateUser = useCallback((partialUser) => {
         setUser(prev => {
@@ -46,8 +78,10 @@ export function AuthProvider({ children }) {
         } catch {
             /* ignore */
         } finally {
+            clearAuthToken();
             setUser(null);
             setError(null);
+            loginCompleted.current = false;
         }
     }, []);
 
@@ -68,7 +102,7 @@ export function AuthProvider({ children }) {
             const response = await authAPI.verifyOtp(email, otp);
 
             if (response.success && response.user) {
-                login(response.user);
+                login(response.user, response.token);
             }
 
             return response;
@@ -96,7 +130,7 @@ export function AuthProvider({ children }) {
             const response = await authAPI.login(email, password);
 
             if (response.success && response.user) {
-                login(response.user);
+                login(response.user, response.token);
             }
 
             return response;

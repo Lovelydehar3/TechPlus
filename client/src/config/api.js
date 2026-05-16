@@ -1,76 +1,156 @@
 import axios from 'axios';
 import { apiCache } from '../services/cacheService';
 
+export const AUTH_TOKEN_KEY = 'techplus_auth_token';
+
 const cleanBase = (value) =>
   String(value || '')
+    .replace(/\\n|\\r/g, '')
+    .replace(/\r|\n/g, '')
     .trim()
-    .replace(/\/api\/?$/, '')
+    .replace(/^"|"$/g, '')
+    .replace(/\/api\/?$/i, '')
     .replace(/\/$/, '');
 
+const envFlag = (value) => ['1', 'true', 'yes', 'on'].includes(String(value || '').toLowerCase());
 const isProd = import.meta.env.PROD;
-const useSameOriginApi =
-  String(import.meta.env.VITE_USE_SAME_ORIGIN_API || '').toLowerCase() === 'true';
-const configuredBase = cleanBase(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL);
-const renderBase = cleanBase(import.meta.env.VITE_RENDER_API_URL);
-const sameOriginBase =
-  useSameOriginApi && typeof window !== 'undefined' ? cleanBase(window.location.origin) : '';
-const CANDIDATE_BASES = [
-  sameOriginBase,
-  isProd ? configuredBase : '',
-  isProd ? renderBase : '',
-  !isProd ? 'http://localhost:5000' : ''
-].filter(Boolean).filter((base, index, bases) => bases.indexOf(base) === index);
 
-const API_BASE_URL = CANDIDATE_BASES[0] || 'http://localhost:5000';
+const configuredBase = cleanBase(
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_RENDER_API_URL
+);
+
+const runtimeHost = typeof window !== 'undefined' ? window.location.hostname : '';
+const isVercelHost = /\.vercel\.app$/i.test(runtimeHost);
+const isRenderHost = /\.onrender\.com$/i.test(runtimeHost);
+const useSameOriginApi =
+  envFlag(import.meta.env.VITE_USE_SAME_ORIGIN_API) ||
+  (!configuredBase && isRenderHost && !isVercelHost);
+
+// Use the configured backend URL if explicitly set; otherwise default to same-origin.
+// In dev, Vite proxy handles /api/* → localhost:5000.
+// In prod on Vercel, vercel.json rewrites /api/* → Render backend.
+const API_BASE_URL = useSameOriginApi ? '' : (configuredBase || '');
+
+export const getAuthToken = () => {
+  if (typeof window === 'undefined') return '';
+  try {
+    return window.localStorage.getItem(AUTH_TOKEN_KEY) || '';
+  } catch {
+    return '';
+  }
+};
+
+export const setAuthToken = (token) => {
+  if (typeof window === 'undefined' || !token) return;
+  try {
+    window.localStorage.setItem(AUTH_TOKEN_KEY, token);
+  } catch {
+    // Storage can be disabled in private browsing; the httpOnly cookie still works.
+  }
+};
+
+export const clearAuthToken = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(AUTH_TOKEN_KEY);
+  } catch {
+    // Ignore storage cleanup failures.
+  }
+};
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
-  timeout: 15000 // Reduced from 60s to 15s to fix 4-minute startup delay
+  // FIX #4: 60s timeout to handle Render free tier cold starts (30-60s boot)
+  timeout: 60000
 });
 
-let activeBaseIndex = 0;
-const switchToNextBase = () => {
-  if (activeBaseIndex >= CANDIDATE_BASES.length - 1) return false;
-  activeBaseIndex += 1;
-  apiClient.defaults.baseURL = CANDIDATE_BASES[activeBaseIndex];
-  return true;
-};
+// FIX #4: Retry logic for network errors and 5xx responses (cold start resilience)
+apiClient.interceptors.response.use(null, async (error) => {
+  const config = error?.config;
+  if (!config) return Promise.reject(error);
+
+  // Don't retry if already retried, or if it's a canceled request
+  if (config.__retryCount === undefined) config.__retryCount = 0;
+  if (config.__retryCount >= 2) return Promise.reject(error);
+  if (error?.code === 'ERR_CANCELED') return Promise.reject(error);
+
+  // Only retry on network errors or 5xx, never on 4xx
+  const status = error?.response?.status;
+  const isNetworkError = !error?.response;
+  const isServerError = status >= 500;
+
+  if (!isNetworkError && !isServerError) return Promise.reject(error);
+
+  config.__retryCount += 1;
+  const delay = Math.min(1000 * Math.pow(2, config.__retryCount), 10000);
+  await new Promise(r => setTimeout(r, delay));
+  return apiClient(config);
+});
+
+apiClient.interceptors.request.use((config) => {
+  const token = getAuthToken();
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
 
 apiClient.interceptors.response.use(
-  (response) => response.data,
-  async (error) => {
-    const originalConfig = error?.config || {};
-    const reqUrl = originalConfig.url || '';
-    const method = String(originalConfig.method || 'get').toLowerCase();
-    const isAuthRequest = reqUrl.includes('/api/auth/');
-    const canRetryWithNextBase =
-      !isAuthRequest &&
-      ['get', 'head', 'options'].includes(method) &&
-      !originalConfig.__retryWithNextBase;
+  (response) => {
+    const contentType = String(response.headers?.['content-type'] || '');
+    const data = response.data;
+    const looksLikeHtml =
+      typeof data === 'string' &&
+      (contentType.includes('text/html') || /<!doctype html|<html/i.test(data.slice(0, 200)));
 
-    if (!error?.response) {
-      if (canRetryWithNextBase && switchToNextBase()) {
-        originalConfig.__retryWithNextBase = true;
-        originalConfig.baseURL = apiClient.defaults.baseURL;
-        return apiClient.request(originalConfig);
-      }
-
+    if (looksLikeHtml) {
       return Promise.reject({
         success: false,
-        message: 'Server timeout/unreachable. Please retry in a few seconds.'
+        status: response.status,
+        code: 'API_MISROUTED',
+        message: 'API request returned the frontend app. Check VITE_API_URL and Vercel rewrites.'
       });
     }
 
-    if ([404, 405, 502, 503, 504].includes(error.response.status) && canRetryWithNextBase && switchToNextBase()) {
-      originalConfig.__retryWithNextBase = true;
-      originalConfig.baseURL = apiClient.defaults.baseURL;
-      return apiClient.request(originalConfig);
+    return data;
+  },
+  async (error) => {
+    if (error?.code === 'ERR_CANCELED') {
+      return Promise.reject(error);
+    }
+
+    if (error?.success === false) {
+      return Promise.reject(error);
+    }
+
+    const reqUrl = error?.config?.url || '';
+
+    if (!error?.response) {
+      return Promise.reject({
+        success: false,
+        status: 0,
+        code: error?.code || 'NETWORK_ERROR',
+        message: isProd
+          ? 'Server is waking up. Please wait a moment and try again.'
+          : 'Cannot connect to the server. Make sure the backend is running on port 5000.'
+      });
     }
 
     const status = error.response?.status;
+    const responseData = error.response?.data;
+    const normalizedError =
+      responseData && typeof responseData === 'object'
+        ? responseData
+        : { message: responseData || error.message || 'Request failed' };
+
     const skip401Redirect =
+      reqUrl.includes('/api/auth/me') ||
       reqUrl.includes('/api/user/profile') ||
       reqUrl.includes('/api/auth/login') ||
       reqUrl.includes('/api/auth/register') ||
@@ -78,17 +158,27 @@ apiClient.interceptors.response.use(
       reqUrl.includes('/api/auth/forgot-password') ||
       reqUrl.includes('/api/auth/reset-password');
 
-    if (status === 401 && !skip401Redirect) {
-      const path = window.location.pathname || '';
-      if (!path.startsWith('/login') && !path.startsWith('/register')) {
-        window.location.href = '/login';
+    if (status === 401) {
+      clearAuthToken();
+
+      if (!skip401Redirect && typeof window !== 'undefined') {
+        const path = window.location.pathname || '';
+        if (!path.startsWith('/login') && !path.startsWith('/register')) {
+          window.location.href = '/login';
+        }
       }
     }
-    return Promise.reject(error.response?.data || error);
+
+    return Promise.reject({
+      success: false,
+      status,
+      ...normalizedError
+    });
   }
 );
 
 export const authAPI = {
+  me: (config = {}) => apiClient.get('/api/auth/me', config),
   register: (email, username, password, confirmPassword) =>
     apiClient.post('/api/auth/register', { email, username, password, confirmPassword }),
   verifyOtp: (email, otp) =>
@@ -99,7 +189,7 @@ export const authAPI = {
     apiClient.post('/api/auth/login', { email, password }),
   logout: () => {
     apiCache.clear();
-    return apiClient.post('/api/auth/logout');
+    return apiClient.post('/api/auth/logout').finally(clearAuthToken);
   },
   forgotPassword: (email, clientOrigin) =>
     apiClient.post('/api/auth/forgot-password', { email, clientOrigin }),
@@ -157,7 +247,7 @@ export const newsAPI = {
         ...(limit ? { limit } : {})
       }
     });
-    apiCache.set(cacheKey, res, 1000 * 60 * 15); // 15 mins
+    apiCache.set(cacheKey, res, 1000 * 60 * 15);
     return res;
   },
   searchNews: (query) =>
@@ -166,9 +256,8 @@ export const newsAPI = {
     const cacheKey = `news-detail-${id}`;
     const cached = apiCache.get(cacheKey);
     if (cached) return cached;
-
     const res = await apiClient.get('/api/news/' + encodeURIComponent(String(id || '')));
-    apiCache.set(cacheKey, res, 1000 * 60 * 60); // 1 hour
+    apiCache.set(cacheKey, res, 1000 * 60 * 60);
     return res;
   },
   refreshNews: () =>
@@ -180,9 +269,8 @@ export const playlistAPI = {
     const cacheKey = 'playlists-all';
     const cached = apiCache.get(cacheKey);
     if (cached) return cached;
-
     const res = await apiClient.get('/api/playlists');
-    apiCache.set(cacheKey, res, 1000 * 60 * 60 * 2); // 2 hours
+    apiCache.set(cacheKey, res, 1000 * 60 * 60 * 2);
     return res;
   },
   getById: (id) => apiClient.get(`/api/playlists/${id}`),
@@ -201,9 +289,8 @@ export const roadmapAPI = {
     const cacheKey = 'roadmaps-all-v2';
     const cached = apiCache.get(cacheKey);
     if (cached) return cached;
-
     const res = await apiClient.get('/api/roadmaps');
-    apiCache.set(cacheKey, res, 1000 * 60 * 60 * 24); // 24 hours
+    apiCache.set(cacheKey, res, 1000 * 60 * 60 * 24);
     return res;
   },
   getById: (id) => apiClient.get(`/api/roadmaps/${id}`)
@@ -217,11 +304,11 @@ export const hackathonAPI = {
       if (cached) return cached;
     }
     const res = await apiClient.get('/api/hackathons', { params: filters });
-    apiCache.set(cacheKey, res, 1000 * 60 * 30); // 30 mins
+    apiCache.set(cacheKey, res, 1000 * 60 * 30);
     return res;
   },
   getById: (id) =>
-    apiClient.get(`/hackathons/${id}`),
+    apiClient.get(`/api/hackathons/${id}`),
   addBookmark: (hackathonId) =>
     apiClient.post('/api/hackathons/bookmark', { hackathonId }),
   removeBookmark: (hackathonId) =>
@@ -233,18 +320,14 @@ export const hackathonAPI = {
 };
 
 export const clubAPI = {
-  // Public
   getClubs: () => apiClient.get('/api/clubs'),
   getClubBySlug: (slug) => apiClient.get(`/api/clubs/${slug}`),
   getClubEvents: (slug) => apiClient.get(`/api/clubs/${slug}/events`),
-
-  // Admin
   getAllEvents: (clubId) =>
     apiClient.get('/api/clubs/admin/events', clubId ? { params: { clubId } } : {}),
   createEvent: (data) => apiClient.post('/api/clubs/admin/events', data),
   updateEvent: (id, data) => apiClient.put(`/api/clubs/admin/events/${id}`, data),
-  deleteEvent: (id) => apiClient.delete(`/api/clubs/admin/events/${id}`),
+  deleteEvent: (id) => apiClient.delete(`/api/clubs/admin/events/${id}`)
 };
 
 export default apiClient;
-
