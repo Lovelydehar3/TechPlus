@@ -25,6 +25,33 @@ const resolveClientUrl = (overrideUrl) => {
   return "http://localhost:5173"
 }
 
+const useRelay =
+  String(process.env.EMAIL_FORCE_RELAY || "").toLowerCase() === "true" &&
+  clean(process.env.EMAIL_RELAY_URL)
+
+const sendViaRelay = async ({ to, subject, html }) => {
+  const res = await fetch(clean(process.env.EMAIL_RELAY_URL), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-email-relay-secret": clean(process.env.EMAIL_RELAY_SECRET)
+    },
+    body: JSON.stringify({
+      to,
+      subject,
+      html,
+      from: clean(process.env.EMAIL),
+      smtpUser: clean(process.env.EMAIL),
+      smtpPass: clean(process.env.EMAIL_PASS)
+    })
+  })
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "")
+    throw new Error(`Relay returned ${res.status}: ${text}`)
+  }
+}
+
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -43,12 +70,27 @@ const createTransporter = () => {
   })
 }
 
-export const sendOtpEmail = async (email, otp) => {
-  try {
-    const transporter = createTransporter()
+const sendMail = async ({ to, subject, html }) => {
+  if (useRelay) {
+    return sendViaRelay({ to, subject, html })
+  }
 
+  const transporter = createTransporter()
+  try {
     await transporter.sendMail({
       from: clean(process.env.EMAIL),
+      to,
+      subject,
+      html
+    })
+  } finally {
+    try { transporter.close() } catch {}
+  }
+}
+
+export const sendOtpEmail = async (email, otp) => {
+  try {
+    await sendMail({
       to: email,
       subject: "Your OTP - TechPlus News",
       html: `
@@ -63,8 +105,6 @@ export const sendOtpEmail = async (email, otp) => {
         </div>
       `
     })
-
-    try { transporter.close() } catch {}
   } catch (error) {
     console.warn("Email sending failed, continuing registration flow:", error.message)
   }
@@ -72,11 +112,9 @@ export const sendOtpEmail = async (email, otp) => {
 
 export const sendResetEmail = async (email, resetToken, clientUrlOverride = "") => {
   try {
-    const transporter = createTransporter()
     const resetLink = `${resolveClientUrl(clientUrlOverride)}/password-reset?token=${resetToken}`
 
-    await transporter.sendMail({
-      from: clean(process.env.EMAIL),
+    await sendMail({
       to: email,
       subject: "Password Reset - TechPlus News",
       html: `
@@ -93,8 +131,6 @@ export const sendResetEmail = async (email, resetToken, clientUrlOverride = "") 
         </div>
       `
     })
-
-    try { transporter.close() } catch {}
   } catch (error) {
     console.warn("Reset email sending failed, using fallback flow:", error.message)
   }
