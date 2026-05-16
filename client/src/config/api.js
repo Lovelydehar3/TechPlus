@@ -26,6 +26,7 @@ const isVercelHost = /\.vercel\.app$/i.test(runtimeHost);
 const isRenderHost = /\.onrender\.com$/i.test(runtimeHost);
 const useSameOriginApi =
   envFlag(import.meta.env.VITE_USE_SAME_ORIGIN_API) ||
+  isVercelHost ||
   (!configuredBase && isRenderHost && !isVercelHost);
 
 // Use the configured backend URL if explicitly set; otherwise default to same-origin.
