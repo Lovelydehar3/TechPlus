@@ -88,12 +88,13 @@ export default function Login({ initialStep } = {}) {
 
         try {
           const response = await resendOtp(email);
-          addToast(
-            response?.devOtp
-              ? `Development OTP: ${response.devOtp}`
-              : 'Please verify your email. We sent a new OTP.',
-            'info'
-          );
+          if (response?.devOtp) {
+            addToast(`Development OTP: ${response.devOtp}`, 'info');
+          } else if (response?.emailDelivered === false) {
+            addToast(response?.message || 'Could not send OTP email. Try Resend OTP.', 'error');
+          } else {
+            addToast('Please verify your email. We sent a new OTP.', 'info');
+          }
         } catch (resendError) {
           addToast(resendError?.message || message, 'error');
         }
@@ -131,12 +132,13 @@ export default function Login({ initialStep } = {}) {
     try {
       const response = await register(email, username, form.password, form.confirmPassword);
       setForm((prev) => ({ ...prev, email, username }));
-      addToast(
-        response?.devOtp
-          ? `Development OTP: ${response.devOtp}`
-          : 'OTP sent to your email! Please verify.',
-        'success'
-      );
+      if (response?.devOtp) {
+        addToast(`Development OTP: ${response.devOtp}`, 'info');
+      } else if (response?.emailDelivered === false) {
+        addToast(response?.message || 'Could not send OTP email. Try Resend OTP.', 'error');
+      } else {
+        addToast('OTP sent to your email! Please verify.', 'success');
+      }
       setStep('verify-otp');
     } catch (error) {
       if (error?.code === 'EMAIL_ALREADY_REGISTERED') {
@@ -190,10 +192,13 @@ export default function Login({ initialStep } = {}) {
     try {
       const response = await resendOtp(email);
       setForm((prev) => ({ ...prev, email }));
-      addToast(
-        response?.devOtp ? `Development OTP: ${response.devOtp}` : 'OTP resent to your email',
-        'success'
-      );
+      if (response?.devOtp) {
+        addToast(`Development OTP: ${response.devOtp}`, 'info');
+      } else if (response?.emailDelivered === false) {
+        addToast(response?.message || 'Could not resend OTP email. Please try again.', 'error');
+      } else {
+        addToast('OTP resent to your email', 'success');
+      }
     } catch (error) {
       addToast(error.message || 'Failed to resend OTP', 'error');
     } finally {

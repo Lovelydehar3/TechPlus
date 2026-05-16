@@ -17,6 +17,23 @@ function hasEmailConfig() {
   return Boolean(cleanEnv(process.env.EMAIL) && cleanEnv(process.env.EMAIL_PASS))
 }
 
+const buildOtpDeliveryPayload = (emailResult, otp, skipVerification) => {
+  if (skipVerification) return { emailDelivered: true }
+
+  if (emailResult?.ok) {
+    return { emailDelivered: true }
+  }
+
+  if (!hasEmailConfig()) {
+    return { emailDelivered: false, devOtp: otp }
+  }
+
+  return {
+    emailDelivered: false,
+    emailError: emailResult?.error || "Email delivery failed"
+  }
+}
+
 const isProduction = cleanEnv(process.env.NODE_ENV) === "production"
 const emailVerificationDisabled = cleanEnv(process.env.DISABLE_EMAIL_VERIFICATION) === "true"
 
@@ -114,17 +131,21 @@ export const register = async (req, res) => {
 
       await existingByEmail.save()
 
-      // Send OTP email if configured — don't fail registration if email fails
+      let emailResult = { ok: true }
       if (!skipVerification && hasEmailConfig()) {
-        await sendOtpEmail(email, otp)
+        emailResult = await sendOtpEmail(email, otp)
       }
 
       return res.status(200).json({
         success: true,
         message: skipVerification
           ? "Email verification bypassed. Account is ready."
-          : hasEmailConfig() ? "New OTP sent. Please verify your email." : "OTP regenerated in development mode.",
-        ...(hasEmailConfig() && !skipVerification ? {} : { devOtp: otp })
+          : emailResult.ok
+            ? "New OTP sent. Please verify your email."
+            : hasEmailConfig()
+              ? "Account updated, but the OTP email could not be sent. Use Resend OTP."
+              : "OTP regenerated in development mode.",
+        ...buildOtpDeliveryPayload(emailResult, otp, skipVerification)
       })
     }
 
@@ -138,17 +159,21 @@ export const register = async (req, res) => {
       isVerified: skipVerification
     })
 
-    // Send OTP email if configured — don't fail registration if email fails
+    let emailResult = { ok: true }
     if (!skipVerification && hasEmailConfig()) {
-      await sendOtpEmail(email, otp)
+      emailResult = await sendOtpEmail(email, otp)
     }
 
     res.status(201).json({
       success: true,
       message: skipVerification
         ? "Account created successfully. You can now log in."
-        : hasEmailConfig() ? "OTP sent to your email. Please verify." : "OTP generated in development mode.",
-      ...(hasEmailConfig() && !skipVerification ? {} : { devOtp: otp })
+        : emailResult.ok
+          ? "OTP sent to your email. Please verify."
+          : hasEmailConfig()
+            ? "Account created, but the OTP email could not be sent. Use Resend OTP."
+            : "OTP generated in development mode.",
+      ...buildOtpDeliveryPayload(emailResult, otp, skipVerification)
     })
 
   } catch (error) {
@@ -234,15 +259,19 @@ export const resendOtp = async (req, res) => {
     user.otpExpires = otpExpires
     await user.save()
 
-    // Send OTP email if configured — don't fail if email has issues
+    let emailResult = { ok: true }
     if (hasEmailConfig()) {
-      await sendOtpEmail(email, otp)
+      emailResult = await sendOtpEmail(email, otp)
     }
 
     res.status(200).json({
       success: true,
-      message: hasEmailConfig() ? "New OTP sent!" : "OTP regenerated in development mode.",
-      ...(hasEmailConfig() ? {} : { devOtp: otp })
+      message: emailResult.ok
+        ? "New OTP sent!"
+        : hasEmailConfig()
+          ? "Could not send OTP email. Please try again in a moment."
+          : "OTP regenerated in development mode.",
+      ...buildOtpDeliveryPayload(emailResult, otp, false)
     })
 
   } catch (error) {
@@ -352,17 +381,25 @@ export const forgotPassword = async (req, res) => {
 
     console.log(`[Auth] ForgotPassword request for: ${email}. Email config: ${hasEmailConfig()}`)
 
-    // Send reset email if configured — don't fail if email has issues
+    let emailResult = { ok: true }
     if (hasEmailConfig()) {
       const originFromClient = cleanEnv(req.body?.clientOrigin)
       const originFromHeader = cleanEnv(req.headers.origin)
-      await sendResetEmail(email, resetToken, originFromClient || originFromHeader)
+      emailResult = await sendResetEmail(email, resetToken, originFromClient || originFromHeader)
     }
 
     res.status(200).json({
       success: true,
-      message: hasEmailConfig() ? "Password reset email sent" : "Password reset token generated in development mode",
-      ...(hasEmailConfig() ? { recipientHint: email } : { devResetToken: resetToken })
+      message: emailResult.ok
+        ? "Password reset email sent"
+        : hasEmailConfig()
+          ? "Reset link could not be emailed. Please try again shortly."
+          : "Password reset token generated in development mode",
+      ...(emailResult.ok && hasEmailConfig() ? { recipientHint: email, emailDelivered: true } : {}),
+      ...(!emailResult.ok && hasEmailConfig()
+        ? { emailDelivered: false, emailError: emailResult.error || "Email delivery failed" }
+        : {}),
+      ...(!hasEmailConfig() ? { devResetToken: resetToken, emailDelivered: false } : {})
     })
 
   } catch (error) {

@@ -65,6 +65,15 @@ export default function PasswordReset() {
     try {
       const response = await forgotPassword(email, window.location.origin);
       setRecipientHint(response?.recipientHint || email);
+      if (response?.devResetToken) {
+        addToast(`Development reset token: ${response.devResetToken}`, 'info');
+        setStep('check-email');
+        return;
+      }
+      if (response?.emailDelivered === false) {
+        addToast(response?.message || 'Could not send reset email. Please try again.', 'error');
+        return;
+      }
       addToast('Reset email sent. Check your inbox!', 'success');
       setStep('check-email');
     } catch (error) {
