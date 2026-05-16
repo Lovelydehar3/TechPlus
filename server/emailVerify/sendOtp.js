@@ -25,33 +25,6 @@ const resolveClientUrl = (overrideUrl) => {
   return "http://localhost:5173"
 }
 
-const useRelay =
-  String(process.env.EMAIL_FORCE_RELAY || "").toLowerCase() === "true" &&
-  clean(process.env.EMAIL_RELAY_URL)
-
-const sendViaRelay = async ({ to, subject, html }) => {
-  const res = await fetch(clean(process.env.EMAIL_RELAY_URL), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-email-relay-secret": clean(process.env.EMAIL_RELAY_SECRET)
-    },
-    body: JSON.stringify({
-      to,
-      subject,
-      html,
-      from: clean(process.env.EMAIL),
-      smtpUser: clean(process.env.EMAIL),
-      smtpPass: clean(process.env.EMAIL_PASS)
-    })
-  })
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "")
-    throw new Error(`Relay returned ${res.status}: ${text}`)
-  }
-}
-
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -61,36 +34,18 @@ const createTransporter = () => {
       user: clean(process.env.EMAIL),
       pass: clean(process.env.EMAIL_PASS)
     },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
     tls: {
       rejectUnauthorized: false
     }
   })
 }
 
-const sendMail = async ({ to, subject, html }) => {
-  if (useRelay) {
-    return sendViaRelay({ to, subject, html })
-  }
-
-  const transporter = createTransporter()
-  try {
-    await transporter.sendMail({
-      from: clean(process.env.EMAIL),
-      to,
-      subject,
-      html
-    })
-  } finally {
-    try { transporter.close() } catch {}
-  }
-}
-
 export const sendOtpEmail = async (email, otp) => {
   try {
-    await sendMail({
+    const transporter = createTransporter()
+
+    await transporter.sendMail({
+      from: clean(process.env.EMAIL),
       to: email,
       subject: "Your OTP - TechPlus News",
       html: `
@@ -100,7 +55,7 @@ export const sendOtpEmail = async (email, otp) => {
             <p style="font-size: 16px; color: #666;">Your OTP is:</p>
             <h1 style="color: #4F46E5; letter-spacing: 8px; font-size: 32px;">${otp}</h1>
             <p style="color: #666;">Valid for <b>10 minutes</b> only.</p>
-            <p style="color: #999; font-size: 12px; margin-top: 20px;">If you did not request this OTP, please ignore this email.</p>
+            <p style="color: #999; font-size: 12px; margin-top: 20px;">If you didn't request this OTP, please ignore this email.</p>
           </div>
         </div>
       `
@@ -112,9 +67,11 @@ export const sendOtpEmail = async (email, otp) => {
 
 export const sendResetEmail = async (email, resetToken, clientUrlOverride = "") => {
   try {
+    const transporter = createTransporter()
     const resetLink = `${resolveClientUrl(clientUrlOverride)}/password-reset?token=${resetToken}`
 
-    await sendMail({
+    await transporter.sendMail({
+      from: clean(process.env.EMAIL),
       to: email,
       subject: "Password Reset - TechPlus News",
       html: `
@@ -126,7 +83,7 @@ export const sendResetEmail = async (email, resetToken, clientUrlOverride = "") 
             <p style="color: #666; margin-top: 20px;">Or copy this link in your browser:</p>
             <p style="color: #4F46E5; word-break: break-all;">${resetLink}</p>
             <p style="color: #666;">This link will expire in <b>30 minutes</b>.</p>
-            <p style="color: #999; font-size: 12px; margin-top: 20px;">If you did not request this password reset, please ignore this email.</p>
+            <p style="color: #999; font-size: 12px; margin-top: 20px;">If you didn't request this password reset, please ignore this email.</p>
           </div>
         </div>
       `

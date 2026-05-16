@@ -26,10 +26,6 @@ services:
         sync: false
       - key: EMAIL_PASS
         sync: false
-      - key: EMAIL_RELAY_URL
-        sync: false
-      - key: EMAIL_RELAY_SECRET
-        sync: false
       - key: NEWSAPI_KEY
         sync: false
       - key: GNEWS_API_KEY
