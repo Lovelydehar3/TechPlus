@@ -30,12 +30,6 @@ services:
         sync: false
       - key: EMAIL_RELAY_SECRET
         sync: false
-      - key: EMAIL_FORCE_RELAY
-        value: false
-      - key: EMAIL_TIMEOUT_MS
-        value: 12000
-      - key: EMAIL_STRATEGY_TIMEOUT_MS
-        value: 12000
       - key: NEWSAPI_KEY
         sync: false
       - key: GNEWS_API_KEY
