@@ -1,5 +1,12 @@
 import nodemailer from "nodemailer"
 import crypto from "crypto"
+import {
+  getSmtpUser,
+  getEmailPass,
+  getRelaySecret,
+  resolveRelayUrl,
+  shouldUseRelay
+} from "../utils/emailEnv.js"
 
 export const generateOtp = () => crypto.randomInt(100000, 999999).toString()
 
@@ -8,7 +15,7 @@ const clean = (value) =>
     .replace(/\\n|\\r/g, "")
     .replace(/\r|\n/g, "")
     .trim()
-    .replace(/^"|"$/g, "")
+    .replace(/^["']|["']$/g, "")
 
 const isHttpUrl = (value) => /^https?:\/\/[^/\s]+/i.test(clean(value))
 
@@ -22,37 +29,16 @@ const resolveClientUrl = (overrideUrl) => {
   return "http://localhost:5173"
 }
 
-const resolveRelayUrl = () => {
-  const explicitRelay = clean(process.env.EMAIL_RELAY_URL)
-  if (isHttpUrl(explicitRelay)) return explicitRelay
-
-  const clientUrl = clean(process.env.CLIENT_URL)
-  if (isHttpUrl(clientUrl)) {
-    return `${clientUrl.replace(/\/$/, "")}/api/send-email`
-  }
-
-  return ""
-}
-
 const relayTimeoutMs = () => {
   const parsed = Number(clean(process.env.EMAIL_TIMEOUT_MS))
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 15000
 }
 
-const shouldUseRelay = () => {
-  const relayUrl = resolveRelayUrl()
-  if (!relayUrl) return false
-
-  const forceRelay = String(process.env.EMAIL_FORCE_RELAY || "").toLowerCase() === "true"
-  const relaySecret = clean(process.env.EMAIL_RELAY_SECRET)
-
-  if (forceRelay) return true
-  return Boolean(relaySecret)
-}
-
 const sendViaRelay = async ({ to, subject, html }) => {
   const relayUrl = resolveRelayUrl()
-  const relaySecret = clean(process.env.EMAIL_RELAY_SECRET) || clean(process.env.EMAIL_PASS)
+  const relaySecret = getRelaySecret()
+  const smtpUser = getSmtpUser()
+  const smtpPass = getEmailPass()
 
   if (!relayUrl) {
     throw new Error("EMAIL_RELAY_URL or CLIENT_URL is not configured for email relay")
@@ -76,9 +62,9 @@ const sendViaRelay = async ({ to, subject, html }) => {
         to,
         subject,
         html,
-        from: clean(process.env.EMAIL),
-        smtpUser: clean(process.env.EMAIL),
-        smtpPass: clean(process.env.EMAIL_PASS)
+        from: smtpUser,
+        ...(smtpUser ? { smtpUser } : {}),
+        ...(smtpPass ? { smtpPass } : {})
       }),
       signal: controller.signal
     })
@@ -98,8 +84,8 @@ const createTransporter = () =>
     port: 465,
     secure: true,
     auth: {
-      user: clean(process.env.EMAIL),
-      pass: clean(process.env.EMAIL_PASS)
+      user: getSmtpUser(),
+      pass: getEmailPass()
     },
     connectionTimeout: 15000,
     greetingTimeout: 15000,
@@ -118,7 +104,7 @@ const sendMail = async ({ to, subject, html }) => {
   const transporter = createTransporter()
   try {
     await transporter.sendMail({
-      from: clean(process.env.EMAIL),
+      from: getSmtpUser(),
       to,
       subject,
       html

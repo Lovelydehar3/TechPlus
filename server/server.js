@@ -104,8 +104,13 @@ app.use("/api/playlists", playlistRoute)
 app.use("/api/roadmaps", roadmapRoute)
 app.use("/api/clubs", clubRoute)
 
-app.get("/api/health", (req, res) => {
-  res.json({ success: true, status: "ok" })
+app.get("/api/health", async (req, res) => {
+  const { getEmailStatus } = await import("./utils/emailEnv.js")
+  res.json({
+    success: true,
+    status: "ok",
+    email: getEmailStatus()
+  })
 })
 
 const __filename = fileURLToPath(import.meta.url)
@@ -166,20 +171,12 @@ const PORT = process.env.PORT || 5000
 
 let httpServer = null
 
-const logStartupStatus = () => {
-  const rawEmail = clean(process.env.EMAIL) || "MISSING"
-  const maskedEmail = rawEmail !== "MISSING" ? rawEmail.replace(/(.{2}).+(@.+)/, "$1***$2") : "MISSING"
-  const configured = clean(process.env.EMAIL) && clean(process.env.EMAIL_PASS)
-  const forceRelay = String(process.env.EMAIL_FORCE_RELAY || "").toLowerCase() === "true"
-  const relayUrl = clean(process.env.EMAIL_RELAY_URL) || (
-    /^https?:\/\//i.test(clean(process.env.CLIENT_URL))
-      ? `${clean(process.env.CLIENT_URL).replace(/\/$/, "")}/api/send-email`
-      : ""
-  )
-
-  console.log(`Email Service Status: ${configured ? "CONFIGURED" : "NOT CONFIGURED"} (${maskedEmail})`)
-  if (configured && forceRelay) {
-    console.log(`Email Relay: ${relayUrl ? "ENABLED" : "MISSING URL — set EMAIL_RELAY_URL or CLIENT_URL to your Vercel app"}`)
+const logStartupStatus = async () => {
+  const { getEmailStatus } = await import("./utils/emailEnv.js")
+  const status = getEmailStatus()
+  console.log(`Email: canSend=${status.canSendEmail} smtp=${status.smtpConfigured} relay=${status.relayConfigured} user=${status.smtpUser || "MISSING"}`)
+  if (status.relayForced && !status.relayConfigured) {
+    console.error("EMAIL_FORCE_RELAY is true but relay is not configured (CLIENT_URL + EMAIL_RELAY_SECRET)")
   }
 }
 

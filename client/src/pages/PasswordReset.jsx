@@ -70,7 +70,7 @@ export default function PasswordReset() {
         setStep('check-email');
         return;
       }
-      if (response?.emailDelivered === false) {
+      if (response?.success === false || response?.emailDelivered === false) {
         addToast(response?.message || 'Could not send reset email. Please try again.', 'error');
         return;
       }

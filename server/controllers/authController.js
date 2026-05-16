@@ -5,6 +5,10 @@ import crypto from "crypto"
 import { User } from "../models/userModel.js"
 import { generateOtp, sendOtpEmail, sendResetEmail } from "../emailVerify/sendOtp.js"
 import { buildAuthCookieOptions } from "../utils/cookies.js"
+import {
+  canSendEmail,
+  shouldExposeDevEmailFallback
+} from "../utils/emailEnv.js"
 
 const cleanEnv = (value) =>
   String(value || "")
@@ -13,10 +17,6 @@ const cleanEnv = (value) =>
     .trim()
     .replace(/^"|"$/g, "")
 
-function hasEmailConfig() {
-  return Boolean(cleanEnv(process.env.EMAIL) && cleanEnv(process.env.EMAIL_PASS))
-}
-
 const buildOtpDeliveryPayload = (emailResult, otp, skipVerification) => {
   if (skipVerification) return { emailDelivered: true }
 
@@ -24,7 +24,7 @@ const buildOtpDeliveryPayload = (emailResult, otp, skipVerification) => {
     return { emailDelivered: true }
   }
 
-  if (!hasEmailConfig()) {
+  if (!canSendEmail() && shouldExposeDevEmailFallback()) {
     return { emailDelivered: false, devOtp: otp }
   }
 
@@ -132,8 +132,12 @@ export const register = async (req, res) => {
       await existingByEmail.save()
 
       let emailResult = { ok: true }
-      if (!skipVerification && hasEmailConfig()) {
-        emailResult = await sendOtpEmail(email, otp)
+      if (!skipVerification) {
+        if (!canSendEmail()) {
+          emailResult = { ok: false, error: "Email service is not configured on the server" }
+        } else {
+          emailResult = await sendOtpEmail(email, otp)
+        }
       }
 
       return res.status(200).json({
@@ -142,9 +146,11 @@ export const register = async (req, res) => {
           ? "Email verification bypassed. Account is ready."
           : emailResult.ok
             ? "New OTP sent. Please verify your email."
-            : hasEmailConfig()
+            : canSendEmail()
               ? "Account updated, but the OTP email could not be sent. Use Resend OTP."
-              : "OTP regenerated in development mode.",
+              : shouldExposeDevEmailFallback()
+                ? "OTP regenerated in development mode."
+                : "Email service is not configured on the server.",
         ...buildOtpDeliveryPayload(emailResult, otp, skipVerification)
       })
     }
@@ -160,8 +166,12 @@ export const register = async (req, res) => {
     })
 
     let emailResult = { ok: true }
-    if (!skipVerification && hasEmailConfig()) {
-      emailResult = await sendOtpEmail(email, otp)
+    if (!skipVerification) {
+      if (!canSendEmail()) {
+        emailResult = { ok: false, error: "Email service is not configured on the server" }
+      } else {
+        emailResult = await sendOtpEmail(email, otp)
+      }
     }
 
     res.status(201).json({
@@ -170,9 +180,11 @@ export const register = async (req, res) => {
         ? "Account created successfully. You can now log in."
         : emailResult.ok
           ? "OTP sent to your email. Please verify."
-          : hasEmailConfig()
+          : canSendEmail()
             ? "Account created, but the OTP email could not be sent. Use Resend OTP."
-            : "OTP generated in development mode.",
+            : shouldExposeDevEmailFallback()
+              ? "OTP generated in development mode."
+              : "Email service is not configured on the server.",
       ...buildOtpDeliveryPayload(emailResult, otp, skipVerification)
     })
 
@@ -260,7 +272,9 @@ export const resendOtp = async (req, res) => {
     await user.save()
 
     let emailResult = { ok: true }
-    if (hasEmailConfig()) {
+    if (!canSendEmail()) {
+      emailResult = { ok: false, error: "Email service is not configured on the server" }
+    } else {
       emailResult = await sendOtpEmail(email, otp)
     }
 
@@ -268,9 +282,11 @@ export const resendOtp = async (req, res) => {
       success: true,
       message: emailResult.ok
         ? "New OTP sent!"
-        : hasEmailConfig()
+        : canSendEmail()
           ? "Could not send OTP email. Please try again in a moment."
-          : "OTP regenerated in development mode.",
+          : shouldExposeDevEmailFallback()
+            ? "OTP regenerated in development mode."
+            : "Email service is not configured on the server.",
       ...buildOtpDeliveryPayload(emailResult, otp, false)
     })
 
@@ -379,27 +395,34 @@ export const forgotPassword = async (req, res) => {
     user.resetTokenExpires = resetTokenExpires
     await user.save()
 
-    console.log(`[Auth] ForgotPassword request for: ${email}. Email config: ${hasEmailConfig()}`)
+    console.log(`[Auth] ForgotPassword request for: ${email}. canSendEmail: ${canSendEmail()}`)
 
-    let emailResult = { ok: true }
-    if (hasEmailConfig()) {
-      const originFromClient = cleanEnv(req.body?.clientOrigin)
-      const originFromHeader = cleanEnv(req.headers.origin)
-      emailResult = await sendResetEmail(email, resetToken, originFromClient || originFromHeader)
+    if (!canSendEmail()) {
+      return res.status(503).json({
+        success: false,
+        message: "Email service is not configured. Set EMAIL, EMAIL_PASS, EMAIL_RELAY_SECRET, and CLIENT_URL on Render.",
+        ...(shouldExposeDevEmailFallback() ? { devResetToken: resetToken } : {})
+      })
+    }
+
+    const originFromClient = cleanEnv(req.body?.clientOrigin)
+    const originFromHeader = cleanEnv(req.headers.origin)
+    const emailResult = await sendResetEmail(email, resetToken, originFromClient || originFromHeader)
+
+    if (!emailResult.ok) {
+      return res.status(503).json({
+        success: false,
+        message: emailResult.error || "Could not send reset email. Please try again.",
+        emailDelivered: false,
+        ...(shouldExposeDevEmailFallback() ? { devResetToken: resetToken } : {})
+      })
     }
 
     res.status(200).json({
       success: true,
-      message: emailResult.ok
-        ? "Password reset email sent"
-        : hasEmailConfig()
-          ? "Reset link could not be emailed. Please try again shortly."
-          : "Password reset token generated in development mode",
-      ...(emailResult.ok && hasEmailConfig() ? { recipientHint: email, emailDelivered: true } : {}),
-      ...(!emailResult.ok && hasEmailConfig()
-        ? { emailDelivered: false, emailError: emailResult.error || "Email delivery failed" }
-        : {}),
-      ...(!hasEmailConfig() ? { devResetToken: resetToken, emailDelivered: false } : {})
+      message: "Password reset email sent",
+      recipientHint: email,
+      emailDelivered: true
     })
 
   } catch (error) {

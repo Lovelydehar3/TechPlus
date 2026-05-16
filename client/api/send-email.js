@@ -35,7 +35,10 @@ export default async function handler(req, res) {
 
   const bodySmtpUser = clean(body.smtpUser)
   const bodySmtpPass = clean(body.smtpPass)
-  const emailUser = clean(process.env.EMAIL) || bodySmtpUser
+  const emailUser =
+    clean(process.env.EMAIL) ||
+    clean(process.env.EMAIL_USER) ||
+    bodySmtpUser
   const emailPass = clean(process.env.EMAIL_PASS) || bodySmtpPass
   const from = clean(body.from) || emailUser
   const to = clean(body.to)
