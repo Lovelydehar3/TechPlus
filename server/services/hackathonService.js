@@ -9,6 +9,7 @@ const DEVPOST_API_URL = "https://devpost.com/api/hackathons";
 
 const DEVPOST_STATUSES = ["open", "upcoming"];
 const TRACKED_PLATFORMS = ["Devfolio", "Devpost", "MLH"];
+const COLLEGE_PLATFORM = "Manual";
 const PLATFORM_RANK = {
   Devfolio: 3,
   Devpost: 2,
@@ -852,6 +853,183 @@ function dedupeResponseDocs(docs) {
   return [...map.values()];
 }
 
+function applyHackathonFilters(query, filters) {
+  if (filters.mode && filters.mode !== "All") {
+    query.mode = filters.mode;
+  }
+
+  if (filters.search) {
+    query.$or = [
+      { title: { $regex: filters.search, $options: "i" } },
+      { description: { $regex: filters.search, $options: "i" } },
+      { organizer: { $regex: filters.search, $options: "i" } },
+      { location: { $regex: filters.search, $options: "i" } },
+      { city: { $regex: filters.search, $options: "i" } },
+      { state: { $regex: filters.search, $options: "i" } },
+      { tags: { $in: [new RegExp(filters.search, "i")] } }
+    ];
+  }
+
+  if (filters.tags && filters.tags.length > 0) {
+    query.tags = { $in: filters.tags };
+  }
+
+  return query;
+}
+
+function withImageFallback(hackathon) {
+  return {
+    ...hackathon,
+    image:
+      hackathon.image && String(hackathon.image).trim() ? hackathon.image : IMAGE_FALLBACK
+  };
+}
+
+const HACKATHON_SELECT =
+  "sourceKey sourcePlatform sourceUrl externalId title description platform mode country state city location organizer startDate endDate prize tags registrationLink image time isCollegeFeatured participants titleKey dateKey";
+
+async function fetchCollegeHackathons(filters = {}) {
+  const query = applyHackathonFilters(
+    {
+      sourcePlatform: COLLEGE_PLATFORM,
+      isCollegeFeatured: true,
+      endDate: { $gte: new Date() }
+    },
+    filters
+  );
+
+  const docs = await Hackathon.find(query)
+    .select(HACKATHON_SELECT)
+    .sort({ startDate: 1, title: 1 })
+    .lean();
+
+  return docs.map(withImageFallback);
+}
+
+function buildCollegeSourceKey(title, startDate) {
+  const titleKey = normalizeTitleKey(title);
+  const dateKey = dateKeyFromDate(startDate) || String(Date.now());
+  return `college-${titleKey}-${dateKey}`;
+}
+
+function parseTagsInput(tags) {
+  if (Array.isArray(tags)) {
+    return tags.map((tag) => clean(tag)).filter(Boolean);
+  }
+  return String(tags || "")
+    .split(",")
+    .map((tag) => clean(tag))
+    .filter(Boolean);
+}
+
+export const getAdminCollegeHackathons = async () => {
+  const docs = await Hackathon.find({
+    sourcePlatform: COLLEGE_PLATFORM,
+    isCollegeFeatured: true
+  })
+    .select(HACKATHON_SELECT)
+    .sort({ startDate: -1, createdAt: -1 })
+    .lean();
+
+  return docs.map(withImageFallback);
+};
+
+export const createCollegeHackathon = async (payload = {}) => {
+  const title = clean(payload.title);
+  if (!title) throw new Error("Title is required");
+
+  const startDate = payload.startDate ? new Date(payload.startDate) : null;
+  const endDate = payload.endDate ? new Date(payload.endDate) : null;
+  if (!startDate || Number.isNaN(startDate.getTime())) {
+    throw new Error("Valid start date is required");
+  }
+  if (!endDate || Number.isNaN(endDate.getTime())) {
+    throw new Error("Valid end date is required");
+  }
+  if (endDate < startDate) {
+    throw new Error("End date must be after start date");
+  }
+
+  const keys = computeKeys(title, startDate);
+  const sourceKey = buildCollegeSourceKey(title, startDate);
+
+  const hackathon = await Hackathon.create({
+    sourceKey,
+    sourcePlatform: COLLEGE_PLATFORM,
+    platform: COLLEGE_PLATFORM,
+    title,
+    description: clean(payload.description),
+    image: clean(payload.image),
+    location: clean(payload.location),
+    organizer: clean(payload.organizer),
+    mode: payload.mode || "Online",
+    startDate,
+    endDate,
+    time: clean(payload.time),
+    registrationLink: clean(payload.registrationLink),
+    prize: clean(payload.prize),
+    tags: parseTagsInput(payload.tags),
+    isCollegeFeatured: true,
+    titleKey: keys.titleKey,
+    dateKey: keys.dateKey
+  });
+
+  return withImageFallback(hackathon.toObject());
+};
+
+export const updateCollegeHackathon = async (id, payload = {}) => {
+  const existing = await Hackathon.findOne({
+    _id: id,
+    sourcePlatform: COLLEGE_PLATFORM,
+    isCollegeFeatured: true
+  });
+
+  if (!existing) throw new Error("College hackathon not found");
+
+  const title = clean(payload.title) || existing.title;
+  const startDate = payload.startDate ? new Date(payload.startDate) : existing.startDate;
+  const endDate = payload.endDate ? new Date(payload.endDate) : existing.endDate;
+
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    throw new Error("Valid start and end dates are required");
+  }
+  if (endDate < startDate) {
+    throw new Error("End date must be after start date");
+  }
+
+  const keys = computeKeys(title, startDate);
+
+  existing.title = title;
+  existing.description = clean(payload.description);
+  existing.image = clean(payload.image);
+  existing.location = clean(payload.location);
+  existing.organizer = clean(payload.organizer);
+  existing.mode = payload.mode || existing.mode;
+  existing.startDate = startDate;
+  existing.endDate = endDate;
+  existing.time = clean(payload.time);
+  existing.registrationLink = clean(payload.registrationLink);
+  existing.prize = clean(payload.prize);
+  existing.tags = parseTagsInput(payload.tags);
+  existing.titleKey = keys.titleKey;
+  existing.dateKey = keys.dateKey;
+  existing.sourceKey = buildCollegeSourceKey(title, startDate);
+  existing.updatedAt = new Date();
+
+  await existing.save();
+  return withImageFallback(existing.toObject());
+};
+
+export const deleteCollegeHackathon = async (id) => {
+  const deleted = await Hackathon.findOneAndDelete({
+    _id: id,
+    sourcePlatform: COLLEGE_PLATFORM
+  });
+
+  if (!deleted) throw new Error("College hackathon not found");
+  return { success: true };
+};
+
 export const getAllHackathons = async (filters = {}) => {
   try {
     const baseQuery = {
@@ -864,40 +1042,17 @@ export const getAllHackathons = async (filters = {}) => {
       await queueHackathonSync();
     }
 
-    const query = { ...baseQuery };
+    const query = applyHackathonFilters({ ...baseQuery }, filters);
 
-    if (filters.mode && filters.mode !== "All") {
-      query.mode = filters.mode;
-    }
-
-    if (filters.search) {
-      query.$or = [
-        { title: { $regex: filters.search, $options: "i" } },
-        { description: { $regex: filters.search, $options: "i" } },
-        { organizer: { $regex: filters.search, $options: "i" } },
-        { location: { $regex: filters.search, $options: "i" } },
-        { city: { $regex: filters.search, $options: "i" } },
-        { state: { $regex: filters.search, $options: "i" } },
-        { tags: { $in: [new RegExp(filters.search, "i")] } }
-      ];
-    }
-
-    if (filters.tags && filters.tags.length > 0) {
-      query.tags = { $in: filters.tags };
-    }
+    let collegeHackathons = await fetchCollegeHackathons(filters);
 
     let hackathons = await Hackathon.find(query)
-      .select(
-        "sourceKey sourcePlatform sourceUrl externalId title description platform mode country state city location organizer startDate endDate prize tags registrationLink image participants titleKey dateKey"
-      )
+      .select(HACKATHON_SELECT)
       .sort({ startDate: 1, title: 1 })
       .limit(500)
       .lean();
 
-    hackathons = dedupeResponseDocs(hackathons).map((hackathon) => ({
-      ...hackathon,
-      image: hackathon.image && String(hackathon.image).trim() ? hackathon.image : IMAGE_FALLBACK
-    }));
+    hackathons = dedupeResponseDocs(hackathons).map(withImageFallback);
 
     hackathons.sort((a, b) => {
       const aPunjab = isPunjabRelated(a) ? 1 : 0;
@@ -907,18 +1062,30 @@ export const getAllHackathons = async (filters = {}) => {
     });
 
     const maxResults = getNumberEnv("HACKATHON_MAX_RESULTS", DEFAULT_MAX_RESULTS);
-    return hackathons.slice(0, maxResults);
+    const globalLimit = Math.max(maxResults - collegeHackathons.length, 0);
+    const merged = [...collegeHackathons, ...hackathons.slice(0, globalLimit)];
+    return merged;
   } catch {
     return [];
   }
+};
+
+const ACTIVE_HACKATHON_QUERY = {
+  $or: [
+    { sourcePlatform: { $in: TRACKED_PLATFORMS }, endDate: { $gte: new Date() } },
+    {
+      sourcePlatform: COLLEGE_PLATFORM,
+      isCollegeFeatured: true,
+      endDate: { $gte: new Date() }
+    }
+  ]
 };
 
 export const getHackathonById = async (id) => {
   try {
     const hackathon = await Hackathon.findOne({
       _id: id,
-      sourcePlatform: { $in: TRACKED_PLATFORMS },
-      endDate: { $gte: new Date() }
+      ...ACTIVE_HACKATHON_QUERY
     }).lean();
 
     if (hackathon && !(hackathon.image && String(hackathon.image).trim())) {
@@ -934,8 +1101,7 @@ export const getHackathonById = async (id) => {
 export const bookmarkHackathon = async (userId, hackathonId) => {
   const hackathon = await Hackathon.findOne({
     _id: hackathonId,
-    sourcePlatform: { $in: TRACKED_PLATFORMS },
-    endDate: { $gte: new Date() }
+    ...ACTIVE_HACKATHON_QUERY
   });
 
   if (!hackathon) throw new Error("Hackathon not found");
@@ -967,8 +1133,7 @@ export const getUserBookmarkedHackathons = async (userId) => {
   try {
     const hackathons = await Hackathon.find({
       bookmarkedBy: userId,
-      sourcePlatform: { $in: TRACKED_PLATFORMS },
-      endDate: { $gte: new Date() }
+      ...ACTIVE_HACKATHON_QUERY
     }).sort({
       startDate: 1
     });

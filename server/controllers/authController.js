@@ -9,6 +9,7 @@ import {
   canSendEmail,
   shouldExposeDevEmailFallback
 } from "../utils/emailEnv.js"
+import { ensureAdminRoleForUser } from "../utils/adminEmails.js"
 
 const cleanEnv = (value) =>
   String(value || "")
@@ -221,6 +222,7 @@ export const verifyOtp = async (req, res) => {
     user.isVerified = true
     user.otp = null
     user.otpExpires = null
+    await ensureAdminRoleForUser(user)
     await user.save()
 
     const token = issueAuthToken(user)
@@ -327,6 +329,8 @@ export const login = async (req, res) => {
       })
     }
 
+    await ensureAdminRoleForUser(user)
+
     const token = issueAuthToken(user)
 
     res.cookie('techplus_token', token, buildAuthCookieOptions())
@@ -357,13 +361,14 @@ export const logout = async (req, res) => {
 // ================== CURRENT SESSION ==================
 export const currentUser = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id)
+    let user = await User.findById(req.user.id)
       .select('_id username email role isVerified avatar profileImage darkMode')
-      .lean()
 
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" })
     }
+
+    user = await ensureAdminRoleForUser(user)
 
     res.status(200).json({
       success: true,

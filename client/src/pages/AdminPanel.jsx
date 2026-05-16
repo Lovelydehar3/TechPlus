@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import { Users, Trash2, ShieldCheck, UserCheck, Activity, Search } from 'lucide-react';
 import ClubEventManager from '../components/ClubEventManager';
+import CollegeHackathonManager from '../components/CollegeHackathonManager';
 
 export default function AdminPanel() {
     const { user } = useAuth();
@@ -225,6 +226,15 @@ export default function AdminPanel() {
                     className="mt-12"
                 >
                     <ClubEventManager />
+                </m.div>
+
+                <m.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.9 }}
+                    className="mt-12"
+                >
+                    <CollegeHackathonManager />
                 </m.div>
             </div>
         </div>

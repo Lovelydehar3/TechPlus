@@ -67,6 +67,15 @@ const hackathonSchema = new mongoose.Schema({
   tags: [String],
   registrationLink: String,
   image: String,
+  time: {
+    type: String,
+    default: ""
+  },
+  isCollegeFeatured: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
   participants: {
     type: Number,
     default: 0

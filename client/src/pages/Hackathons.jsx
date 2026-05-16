@@ -12,10 +12,159 @@ const normalizeKey = (value) =>
 
 const getHackathonKey = (hackathon) => {
   if (!hackathon) return ''
+  if (hackathon._id) return String(hackathon._id)
   if (hackathon.sourceKey) return `source:${normalizeKey(hackathon.sourceKey)}`
   if (hackathon.sourceUrl) return `url:${normalizeKey(hackathon.sourceUrl)}`
   if (hackathon.registrationLink) return `link:${normalizeKey(hackathon.registrationLink)}`
   return `${normalizeKey(hackathon.title)}|${String(hackathon.startDate || '').slice(0, 10)}`
+}
+
+function HackathonGrid({
+  hackathons,
+  bookmarkedSet,
+  isDark,
+  getStatusBadge,
+  formatDate,
+  toggleBookmark,
+  onSelect,
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+      {hackathons.map((hackathon, idx) => {
+        const status = getStatusBadge(hackathon)
+        const isBookmarked = bookmarkedSet.has(hackathon._id)
+        const isCollege = Boolean(hackathon.isCollegeFeatured)
+
+        return (
+          <m.div
+            key={hackathon._id || hackathon.sourceKey || hackathon.sourceUrl}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.04, duration: 0.35 }}
+            onClick={() => onSelect(hackathon)}
+            className={`group rounded-3xl border overflow-hidden transition-all duration-300 hover:-translate-y-1 cursor-pointer ${
+              isDark
+                ? 'bg-white/[0.025] border-white/10 hover:border-[#7c3aed]/70 hover:shadow-[0_20px_40px_rgba(0,0,0,0.45)]'
+                : 'bg-white border-gray-200 hover:border-blue-500'
+            }`}
+          >
+            <div className="h-40 sm:h-44 overflow-hidden bg-gradient-to-br from-[#7c3aed]/20 to-[#3b82f6]/20 relative">
+              <img
+                src={hackathon.image || getFallbackImage('Startups', hackathon.title, hackathon.url, idx)}
+                alt={hackathon.title}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                onError={(e) => {
+                  e.currentTarget.onerror = null
+                  e.currentTarget.src = getFallbackImage('Startups', hackathon.title, hackathon.url, idx)
+                }}
+              />
+            </div>
+
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3 gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium shrink-0 ${status.color}`}>
+                    {status.text}
+                  </span>
+                  {isCollege && (
+                    <span className="px-2 py-0.5 rounded-md bg-white/10 border border-white/15 text-[9px] font-black uppercase tracking-widest text-white/50 shrink-0">
+                      clg
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    toggleBookmark(hackathon._id)
+                  }}
+                  className={`px-3 py-1 rounded-full transition-colors text-[11px] font-bold tracking-wide ${
+                    isBookmarked
+                      ? 'bg-yellow-500/20 text-yellow-300'
+                      : isDark
+                      ? 'bg-white/10 text-white/70 hover:text-white'
+                      : 'bg-gray-200 text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  {isBookmarked ? 'SAVED' : 'SAVE'}
+                </button>
+              </div>
+
+              <h3 className={`text-[17px] sm:text-xl font-black tracking-tight mb-2 line-clamp-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {hackathon.title}
+              </h3>
+
+              <p className={`text-sm mb-4 line-clamp-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
+                {hackathon.description}
+              </p>
+
+              <div className="space-y-2 mb-4 text-xs">
+                <div className={`flex items-center gap-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
+                  <span className="font-bold">DATE</span>
+                  <span>
+                    {formatDate(hackathon.startDate)} - {formatDate(hackathon.endDate)}
+                  </span>
+                </div>
+
+                {hackathon.time && (
+                  <div className={`flex items-center gap-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
+                    <span className="font-bold">TIME</span>
+                    <span>{hackathon.time}</span>
+                  </div>
+                )}
+
+                <div className={`flex items-center gap-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
+                  <span className="font-bold">LOCATION</span>
+                  <span>{hackathon.location || '-'}</span>
+                </div>
+
+                <div className={`flex items-center gap-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
+                  <span className="font-bold">MODE</span>
+                  <span>{hackathon.mode}</span>
+                </div>
+
+                <div className={`flex items-center gap-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
+                  <span className="font-bold">ORGANIZER</span>
+                  <span>{hackathon.organizer || 'TBA'}</span>
+                </div>
+
+                {hackathon.prize && (
+                  <div className={`flex items-center gap-2 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                    <span className="font-bold">PRIZE</span>
+                    <span>{hackathon.prize}</span>
+                  </div>
+                )}
+              </div>
+
+              {hackathon.tags && hackathon.tags.length > 0 && (
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {hackathon.tags.slice(0, 3).map((tag, tagIdx) => (
+                    <span
+                      key={tagIdx}
+                      className={`text-xs px-2 py-1 rounded ${
+                        isDark
+                          ? 'bg-[#7c3aed]/20 text-[#d8b4fe] border border-[#7c3aed]/40'
+                          : 'bg-blue-100 text-blue-700'
+                      }`}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                  {hackathon.tags.length > 3 && (
+                    <span className={`text-xs px-2 py-1 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
+                      +{hackathon.tags.length - 3}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </m.div>
+        )
+      })}
+    </div>
+  )
 }
 
 export default function Hackathons() {
@@ -34,11 +183,11 @@ export default function Hackathons() {
   const [selectedHackathon, setSelectedHackathon] = useState(null)
   const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false)
 
-  const loadHackathons = useCallback(async () => {
+  const loadHackathons = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true)
       setError(null)
-      const response = await hackathonAPI.getAll()
+      const response = await hackathonAPI.getAll(forceRefresh ? { refresh: true } : {})
 
       if (response.success) {
         setHackathons(response.hackathons || [])
@@ -68,10 +217,16 @@ export default function Hackathons() {
   }, [])
 
   useEffect(() => {
-    loadHackathons()
+    loadHackathons(true)
     loadBookmarks()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount
   }, [])
+
+  useEffect(() => {
+    const onHackathonsChanged = () => loadHackathons(true)
+    window.addEventListener('hackathons-changed', onHackathonsChanged)
+    return () => window.removeEventListener('hackathons-changed', onHackathonsChanged)
+  }, [loadHackathons])
 
   const bookmarkedSet = useMemo(() => new Set(bookmarks), [bookmarks])
 
@@ -110,9 +265,12 @@ export default function Hackathons() {
       )
     }
 
-    filtered = [...filtered].sort(
-      (a, b) => new Date(a.startDate) - new Date(b.startDate)
-    )
+    filtered = [...filtered].sort((a, b) => {
+      const aCollege = a.isCollegeFeatured ? 0 : 1
+      const bCollege = b.isCollegeFeatured ? 0 : 1
+      if (aCollege !== bCollege) return aCollege - bCollege
+      return new Date(a.startDate) - new Date(b.startDate)
+    })
     return filtered
   }, [dedupedHackathons, deferredSearchQuery, modeFilter, bookmarkedSet, viewMode])
 
@@ -387,125 +545,15 @@ export default function Hackathons() {
         )}
 
         {!loading && filteredHackathons.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-            {filteredHackathons.map((hackathon, idx) => {
-              const status = getStatusBadge(hackathon)
-              const isBookmarked = bookmarkedSet.has(hackathon._id)
-
-              return (
-                <m.div
-                  key={hackathon.sourceKey || hackathon.sourceUrl || hackathon._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.04, duration: 0.35 }}
-                  onClick={() => setSelectedHackathon(hackathon)}
-                  className={`group rounded-3xl border overflow-hidden transition-all duration-300 hover:-translate-y-1 cursor-pointer ${
-                    isDark
-                      ? 'bg-white/[0.025] border-white/10 hover:border-[#7c3aed]/70 hover:shadow-[0_20px_40px_rgba(0,0,0,0.45)]'
-                      : 'bg-white border-gray-200 hover:border-blue-500'
-                  }`}
-                >
-                  <div className="h-40 sm:h-44 overflow-hidden bg-gradient-to-br from-[#7c3aed]/20 to-[#3b82f6]/20">
-                    <img
-                      src={hackathon.image || getFallbackImage('Startups', hackathon.title, hackathon.url, idx)}
-                      alt={hackathon.title}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null
-                        e.currentTarget.src = getFallbackImage('Startups', hackathon.title, hackathon.url, idx)
-                      }}
-                    />
-                  </div>
-
-                  <div className="p-4 sm:p-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
-                        {status.text}
-                      </span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          toggleBookmark(hackathon._id)
-                        }}
-                        className={`px-3 py-1 rounded-full transition-colors text-[11px] font-bold tracking-wide ${
-                          isBookmarked
-                            ? 'bg-yellow-500/20 text-yellow-300'
-                            : isDark
-                            ? 'bg-white/10 text-white/70 hover:text-white'
-                            : 'bg-gray-200 text-gray-600 hover:text-gray-900'
-                        }`}
-                      >
-                        {isBookmarked ? 'SAVED' : 'SAVE'}
-                      </button>
-                    </div>
-
-                    <h3 className={`text-[17px] sm:text-xl font-black tracking-tight mb-2 line-clamp-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {hackathon.title}
-                    </h3>
-
-                    <p className={`text-sm mb-4 line-clamp-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
-                      {hackathon.description}
-                    </p>
-
-                    <div className="space-y-2 mb-4 text-xs">
-                      <div className={`flex items-center gap-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
-                        <span className="font-bold">DATE</span>
-                        <span>
-                          {formatDate(hackathon.startDate)} - {formatDate(hackathon.endDate)}
-                        </span>
-                      </div>
-
-                      <div className={`flex items-center gap-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
-                        <span className="font-bold">LOCATION</span>
-                        <span>{hackathon.location || '-'}</span>
-                      </div>
-
-                      <div className={`flex items-center gap-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
-                        <span className="font-bold">MODE</span>
-                        <span>{hackathon.mode}</span>
-                      </div>
-
-                      <div className={`flex items-center gap-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
-                        <span className="font-bold">ORGANIZER</span>
-                        <span>{hackathon.organizer || 'TBA'}</span>
-                      </div>
-
-                      {hackathon.prize && (
-                        <div className={`flex items-center gap-2 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
-                          <span className="font-bold">PRIZE</span>
-                          <span>{hackathon.prize}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {hackathon.tags && hackathon.tags.length > 0 && (
-                      <div className="mb-4 flex flex-wrap gap-2">
-                        {hackathon.tags.slice(0, 3).map((tag, tagIdx) => (
-                          <span
-                            key={tagIdx}
-                            className={`text-xs px-2 py-1 rounded ${
-                              isDark
-                                ? 'bg-[#7c3aed]/20 text-[#d8b4fe] border border-[#7c3aed]/40'
-                                : 'bg-blue-100 text-blue-700'
-                            }`}
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                        {hackathon.tags.length > 3 && (
-                          <span className={`text-xs px-2 py-1 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
-                            +{hackathon.tags.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </m.div>
-              )
-            })}
-          </div>
+          <HackathonGrid
+            hackathons={filteredHackathons}
+            bookmarkedSet={bookmarkedSet}
+            isDark={isDark}
+            getStatusBadge={getStatusBadge}
+            formatDate={formatDate}
+            toggleBookmark={toggleBookmark}
+            onSelect={setSelectedHackathon}
+          />
         )}
 
         <div className={`mt-16 grid grid-cols-1 md:grid-cols-3 gap-6`}>

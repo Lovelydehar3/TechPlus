@@ -4,9 +4,25 @@ import {
   bookmarkHackathon,
   removeHackathonBookmark,
   getUserBookmarkedHackathons,
-  syncHackathonsFromAPI
+  syncHackathonsFromAPI,
+  getAdminCollegeHackathons,
+  createCollegeHackathon,
+  updateCollegeHackathon,
+  deleteCollegeHackathon
 } from "../services/hackathonService.js";
 import cacheService from "../services/cacheService.js";
+
+const requireAdmin = (req, res) => {
+  if (req.user?.role !== "admin") {
+    res.status(403).json({ success: false, message: "Admin only" });
+    return false;
+  }
+  return true;
+};
+
+const invalidateHackathonCache = () => {
+  cacheService.clear();
+};
 
 // ============ GET ALL HACKATHONS (with filters) ============
 export const getHackathons = async (req, res) => {
@@ -37,8 +53,7 @@ export const getHackathons = async (req, res) => {
       );
     }
 
-    // Cache for 10 mins in browser, 1 hour in CDN (hackathons change even less frequently)
-    res.setHeader('Cache-Control', 'public, max-age=600, s-maxage=3600');
+    res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
 
     res.status(200).json({
       success: true,
@@ -146,6 +161,69 @@ export const getUserBookmarks = async (req, res) => {
       success: false,
       message: "Failed to fetch bookmarks",
       error: error.message
+    });
+  }
+};
+
+// ============ ADMIN: COLLEGE HACKATHONS ============
+export const listCollegeHackathons = async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  try {
+    const hackathons = await getAdminCollegeHackathons();
+    res.status(200).json({ success: true, total: hackathons.length, hackathons });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch college hackathons",
+      error: error.message
+    });
+  }
+};
+
+export const createCollegeHackathonAdmin = async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  try {
+    const hackathon = await createCollegeHackathon(req.body);
+    invalidateHackathonCache();
+    res.status(201).json({ success: true, hackathon });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message || "Failed to create college hackathon"
+    });
+  }
+};
+
+export const updateCollegeHackathonAdmin = async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  try {
+    const hackathon = await updateCollegeHackathon(req.params.id, req.body);
+    invalidateHackathonCache();
+    res.status(200).json({ success: true, hackathon });
+  } catch (error) {
+    const status = error.message === "College hackathon not found" ? 404 : 400;
+    res.status(status).json({
+      success: false,
+      message: error.message || "Failed to update college hackathon"
+    });
+  }
+};
+
+export const deleteCollegeHackathonAdmin = async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  try {
+    await deleteCollegeHackathon(req.params.id);
+    invalidateHackathonCache();
+    res.status(200).json({ success: true, message: "College hackathon deleted" });
+  } catch (error) {
+    const status = error.message === "College hackathon not found" ? 404 : 400;
+    res.status(status).json({
+      success: false,
+      message: error.message || "Failed to delete college hackathon"
     });
   }
 };

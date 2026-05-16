@@ -297,6 +297,10 @@ export const roadmapAPI = {
   getById: (id) => apiClient.get(`/api/roadmaps/${id}`)
 };
 
+const clearHackathonListCache = () => {
+  apiCache.clear();
+};
+
 export const hackathonAPI = {
   getAll: async (filters = {}) => {
     const cacheKey = `hackathons-${JSON.stringify(filters)}`;
@@ -304,8 +308,13 @@ export const hackathonAPI = {
       const cached = apiCache.get(cacheKey);
       if (cached) return cached;
     }
-    const res = await apiClient.get('/api/hackathons', { params: filters });
-    apiCache.set(cacheKey, res, 1000 * 60 * 30);
+    const res = await apiClient.get('/api/hackathons', {
+      params: filters,
+      headers: filters.refresh ? { 'Cache-Control': 'no-cache' } : undefined,
+    });
+    if (!filters.refresh) {
+      apiCache.set(cacheKey, res, 1000 * 60 * 5);
+    }
     return res;
   },
   getById: (id) =>
@@ -317,7 +326,30 @@ export const hackathonAPI = {
   getUserBookmarks: () =>
     apiClient.get('/api/hackathons/user/bookmarks'),
   manualSync: () =>
-    apiClient.post('/api/hackathons/sync')
+    apiClient.post('/api/hackathons/sync'),
+  getCollegeAdmin: () =>
+    apiClient.get('/api/hackathons/admin/college'),
+  createCollege: (data) => {
+    clearHackathonListCache();
+    return apiClient.post('/api/hackathons/admin/college', data).then((res) => {
+      window.dispatchEvent(new CustomEvent('hackathons-changed'));
+      return res;
+    });
+  },
+  updateCollege: (id, data) => {
+    clearHackathonListCache();
+    return apiClient.put(`/api/hackathons/admin/college/${id}`, data).then((res) => {
+      window.dispatchEvent(new CustomEvent('hackathons-changed'));
+      return res;
+    });
+  },
+  deleteCollege: (id) => {
+    clearHackathonListCache();
+    return apiClient.delete(`/api/hackathons/admin/college/${id}`).then((res) => {
+      window.dispatchEvent(new CustomEvent('hackathons-changed'));
+      return res;
+    });
+  }
 };
 
 export const clubAPI = {

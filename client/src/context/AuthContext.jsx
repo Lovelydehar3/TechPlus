@@ -32,6 +32,7 @@ export function AuthProvider({ children }) {
         let mounted = true;
 
         const hydrate = async () => {
+            const minLoadTime = new Promise(resolve => setTimeout(resolve, 5000));
             try {
                 const response = await authAPI.me({ signal: controller.signal });
                 if (mounted && response?.success) {
@@ -45,6 +46,7 @@ export function AuthProvider({ children }) {
                     if (err?.status === 401) clearAuthToken();
                 }
             } finally {
+                await minLoadTime;
                 if (mounted) setLoading(false);
             }
         };

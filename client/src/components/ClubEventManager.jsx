@@ -24,11 +24,50 @@ const EMPTY_FORM = {
     description: '',
     image: '',
     venue: '',
-    date: '',
-    time: '',
+    eventDate: '',
+    timeStart: '',
+    timeEnd: '',
     registrationUrl: '',
     status: 'Upcoming',
 };
+
+function toInputDate(value) {
+    if (!value) return '';
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return '';
+    const offset = parsed.getTimezoneOffset();
+    const local = new Date(parsed.getTime() - offset * 60 * 1000);
+    return local.toISOString().slice(0, 10);
+}
+
+function parseTimeRange(time = '') {
+    const parts = String(time).split(/\s*-\s*/);
+    return {
+        timeStart: parts[0]?.trim() || '',
+        timeEnd: parts[1]?.trim() || '',
+    };
+}
+
+function buildEventSchedule(eventDate, timeStart, timeEnd) {
+    let date = '';
+    if (eventDate) {
+        const parsed = new Date(`${eventDate}T12:00:00`);
+        if (!Number.isNaN(parsed.getTime())) {
+            date = parsed.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            });
+        }
+    }
+
+    let time = '';
+    if (timeStart && timeEnd) time = `${timeStart} - ${timeEnd}`;
+    else if (timeStart) time = timeStart;
+    else if (timeEnd) time = timeEnd;
+
+    return { date, time };
+}
 
 /* ─── Main Component ──────────────────────────────────────────────────────── */
 export default function ClubEventManager() {
@@ -89,6 +128,7 @@ export default function ClubEventManager() {
     };
 
     const openEditForm = (event) => {
+        const { timeStart, timeEnd } = parseTimeRange(event.time);
         setEditingId(event._id);
         setForm({
             clubId: event.club?._id || event.club || '',
@@ -96,8 +136,9 @@ export default function ClubEventManager() {
             description: event.description || '',
             image: event.image || '',
             venue: event.venue || '',
-            date: event.date || '',
-            time: event.time || '',
+            eventDate: toInputDate(event.date),
+            timeStart,
+            timeEnd,
             registrationUrl: event.registrationUrl || '',
             status: event.status || 'Upcoming',
         });
@@ -131,11 +172,24 @@ export default function ClubEventManager() {
 
         try {
             setSubmitting(true);
+            const { date, time } = buildEventSchedule(form.eventDate, form.timeStart, form.timeEnd);
+            const payload = {
+                clubId: form.clubId,
+                title: form.title,
+                description: form.description,
+                image: form.image,
+                venue: form.venue,
+                date,
+                time,
+                registrationUrl: form.registrationUrl,
+                status: form.status,
+            };
+
             if (editingId) {
-                await clubAPI.updateEvent(editingId, form);
+                await clubAPI.updateEvent(editingId, payload);
                 addToast('Event updated successfully', 'success');
             } else {
-                await clubAPI.createEvent(form);
+                await clubAPI.createEvent(payload);
                 addToast('Event created successfully', 'success');
             }
             cancelForm();
@@ -293,21 +347,28 @@ export default function ClubEventManager() {
                             {/* Date */}
                             <FormField label="Date">
                                 <input
-                                    type="text"
-                                    value={form.date}
-                                    onChange={e => handleChange('date', e.target.value)}
-                                    placeholder="e.g. May 20, 2026"
+                                    type="date"
+                                    value={form.eventDate}
+                                    onChange={e => handleChange('eventDate', e.target.value)}
                                     className="input-field"
                                 />
                             </FormField>
 
                             {/* Time */}
-                            <FormField label="Time">
+                            <FormField label="Start time">
                                 <input
-                                    type="text"
-                                    value={form.time}
-                                    onChange={e => handleChange('time', e.target.value)}
-                                    placeholder="e.g. 3:00 PM - 5:00 PM"
+                                    type="time"
+                                    value={form.timeStart}
+                                    onChange={e => handleChange('timeStart', e.target.value)}
+                                    className="input-field"
+                                />
+                            </FormField>
+
+                            <FormField label="End time">
+                                <input
+                                    type="time"
+                                    value={form.timeEnd}
+                                    onChange={e => handleChange('timeEnd', e.target.value)}
                                     className="input-field"
                                 />
                             </FormField>
