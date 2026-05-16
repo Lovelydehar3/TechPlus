@@ -319,7 +319,7 @@ export default function Dashboard() {
     navigate(lastActivity.path, { state: { resumeResource: true } });
   };
 
-  const openArticle = (item) => {
+  const openArticle = useCallback((item) => {
     if (!item) return;
     const safeId = articleRouteId(item, Date.now());
     try {
@@ -327,10 +327,8 @@ export default function Dashboard() {
     } catch {
       /* ignore */
     }
-    const target = `/news/${safeId}`;
-    const opened = window.open(target, '_blank', 'noopener,noreferrer');
-    if (!opened) navigate(target, { state: { article: item } });
-  };
+    navigate(`/news/${safeId}`, { state: { article: item } });
+  }, [navigate]);
 
   const slide = featuredNews[carouselIndex];
 
