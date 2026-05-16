@@ -54,8 +54,8 @@ export default function Navbar() {
     const [newsOpen, setNewsOpen] = useState(false);
     const [clubsOpen, setClubsOpen] = useState(false);
  
-    const handleLogout = () => {
-        logout();
+    const handleLogout = async () => {
+        await logout();
         navigate('/login');
     };
 
@@ -153,7 +153,9 @@ export default function Navbar() {
                         {/* Nav Items - Icon to Text Expand */}
                         <nav className="hidden md:flex items-center h-[64px] gap-2">
                             {navItems.map(({ label, path, icon: Icon }) => {
-                                const isActive = location.pathname === path;
+                                const isActive = path === '/'
+                                    ? location.pathname === '/'
+                                    : location.pathname.startsWith(path);
                                 return (
                                     <Link
                                         key={path}

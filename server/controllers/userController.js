@@ -441,3 +441,163 @@ export const removeSavedResource = async (req, res) => {
     res.status(500).json({ success: false, message: error.message })
   }
 }
+
+// ================== ADMIN: CREATE USER ==================
+export const adminCreateUser = async (req, res) => {
+  try {
+    const { username, email, password } = req.body
+
+    if (!username || !email || !password) {
+      return res.status(400).json({ success: false, message: "Username, email, and password are required" })
+    }
+
+    if (username.length < 3 || username.length > 50) {
+      return res.status(400).json({ success: false, message: "Username must be 3-50 characters" })
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: "Invalid email format" })
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: "Password must be at least 6 characters" })
+    }
+
+    const existingEmail = await User.findOne({ email: email.toLowerCase() })
+    if (existingEmail) {
+      return res.status(400).json({ success: false, message: "Email already registered" })
+    }
+
+    const existingUsername = await User.findOne({ username })
+    if (existingUsername) {
+      return res.status(400).json({ success: false, message: "Username already taken" })
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    const newUser = await User.create({
+      username,
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      isVerified: true,
+      role: 'user'
+    })
+
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      user: {
+        _id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+        role: newUser.role,
+        isVerified: newUser.isVerified,
+        createdAt: newUser.createdAt
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+// ================== ADMIN: GET ALL USERS ==================
+export const adminGetAllUsers = async (req, res) => {
+  try {
+    const { search, page = 1, limit = 50 } = req.query
+    const query = {}
+
+    if (search) {
+      const regex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+      query.$or = [{ username: regex }, { email: regex }]
+    }
+
+    const skip = (Number(page) - 1) * Number(limit)
+    const [users, total] = await Promise.all([
+      User.find(query)
+        .select('-password -otp -otpExpires -resetToken -resetTokenExpires -watchHistory -roadmapProgress -downloadedRoadmaps -lastActivity -bookmarks -savedResources -stats -__v')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit))
+        .lean(),
+      User.countDocuments(query)
+    ])
+
+    res.status(200).json({ success: true, users, total, page: Number(page), pages: Math.ceil(total / Number(limit)) })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+// ================== ADMIN: DELETE USER ==================
+export const adminDeleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params
+
+    if (userId === req.user.id) {
+      return res.status(400).json({ success: false, message: "Cannot delete your own account" })
+    }
+
+    const user = await User.findById(userId)
+    if (!user) return res.status(404).json({ success: false, message: "User not found" })
+
+    await Bookmark.deleteMany({ userId })
+    await User.findByIdAndDelete(userId)
+
+    res.status(200).json({ success: true, message: "User deleted successfully" })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+// ================== ADMIN: UPDATE USER ROLE ==================
+export const adminUpdateUserRole = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const { role } = req.body
+
+    if (!['user', 'admin'].includes(role)) {
+      return res.status(400).json({ success: false, message: "Invalid role" })
+    }
+
+    if (userId === req.user.id) {
+      return res.status(400).json({ success: false, message: "Cannot change your own role" })
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { role },
+      { returnDocument: "after" }
+    ).select('-password -otp -otpExpires -resetToken -resetTokenExpires -watchHistory -roadmapProgress -downloadedRoadmaps -lastActivity -bookmarks -savedResources -stats -__v')
+
+    if (!user) return res.status(404).json({ success: false, message: "User not found" })
+
+    res.status(200).json({ success: true, message: "Role updated", user })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+// ================== ADMIN: VERIFY/UNVERIFY USER ==================
+export const adminVerifyUser = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const { isVerified } = req.body
+
+    if (typeof isVerified !== 'boolean') {
+      return res.status(400).json({ success: false, message: "isVerified must be a boolean" })
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isVerified },
+      { returnDocument: "after" }
+    ).select('-password -otp -otpExpires -resetToken -resetTokenExpires -watchHistory -roadmapProgress -downloadedRoadmaps -lastActivity -bookmarks -savedResources -stats -__v')
+
+    if (!user) return res.status(404).json({ success: false, message: "User not found" })
+
+    res.status(200).json({ success: true, message: isVerified ? "User verified" : "User unverified", user })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+}

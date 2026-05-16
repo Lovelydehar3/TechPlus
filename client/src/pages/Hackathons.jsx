@@ -40,7 +40,7 @@ function HackathonGrid({
             key={hackathon._id || hackathon.sourceKey || hackathon.sourceUrl}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.04, duration: 0.35 }}
+            transition={{ delay: Math.min(idx * 0.03, 0.3), duration: 0.3 }}
             onClick={() => onSelect(hackathon)}
             className={`group rounded-3xl border overflow-hidden transition-all duration-300 hover:-translate-y-1 cursor-pointer ${
               isDark
@@ -187,11 +187,27 @@ export default function Hackathons() {
     try {
       setLoading(true)
       setError(null)
-      const response = await hackathonAPI.getAll(forceRefresh ? { refresh: true } : {})
 
-      if (response.success) {
-        setHackathons(response.hackathons || [])
-      } else {
+      // Always load from cache first for instant display
+      const cached = await hackathonAPI.getAll({})
+      if (cached.success && cached.hackathons?.length) {
+        setHackathons(cached.hackathons)
+        setLoading(false)
+      }
+
+      // If force refresh requested, sync in background and update
+      if (forceRefresh) {
+        try {
+          const fresh = await hackathonAPI.getAll({ refresh: true })
+          if (fresh.success) {
+            setHackathons(fresh.hackathons || [])
+          }
+        } catch {
+          // Background sync failed silently — cached data is already shown
+        }
+      }
+
+      if (!cached.success && !forceRefresh) {
         setError('Failed to load hackathons')
         addToast('Failed to load hackathons', 'error')
       }
@@ -620,7 +636,7 @@ export default function Hackathons() {
             className={`fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none`}
           >
             <div
-              className="pointer-events-auto rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-[#ececf4] bg-[#f7f7fb] shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
+              className="pointer-events-auto rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-[#ececf4] bg-[#f7f7fb] shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="h-48 overflow-hidden">
@@ -678,11 +694,11 @@ export default function Hackathons() {
                   </div>
                 </div>
 
-                <div className="flex gap-3 mt-6">
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
                   <button
                     type="button"
                     onClick={() => setSelectedHackathon(null)}
-                    className="flex-1 px-5 py-3.5 rounded-full font-bold text-[17px] bg-[#cfd7e6] hover:bg-[#bfc9dc] text-[#1f2937] transition-colors"
+                    className="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-[#e2e8f0] hover:bg-[#cbd5e1] text-[#1f2937] transition-colors"
                   >
                     Close
                   </button>
@@ -691,7 +707,7 @@ export default function Hackathons() {
                       href={selectedHackathon.registrationLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 px-5 py-3.5 rounded-full font-bold text-[17px] text-white text-center bg-gradient-to-r from-[#8b5cf6] to-[#a855f7] hover:from-[#7c3aed] hover:to-[#9333ea] transition-all shadow-[0_8px_24px_rgba(139,92,246,0.35)]"
+                      className="flex-1 px-4 py-3 rounded-xl font-bold text-sm text-white text-center bg-gradient-to-r from-[#8b5cf6] to-[#a855f7] hover:from-[#7c3aed] hover:to-[#9333ea] transition-all shadow-[0_4px_14px_rgba(139,92,246,0.35)]"
                     >
                       Register Now
                     </a>

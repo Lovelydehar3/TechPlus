@@ -363,4 +363,17 @@ export const clubAPI = {
   deleteEvent: (id) => apiClient.delete(`/api/clubs/admin/events/${id}`)
 };
 
+export const adminAPI = {
+  getUsers: (params = {}) =>
+    apiClient.get('/api/admin/users', { params }),
+  createUser: (data) =>
+    apiClient.post('/api/admin/users', data),
+  deleteUser: (userId) =>
+    apiClient.delete(`/api/admin/users/${userId}`),
+  updateUserRole: (userId, role) =>
+    apiClient.put(`/api/admin/users/${userId}/role`, { role }),
+  verifyUser: (userId, isVerified) =>
+    apiClient.put(`/api/admin/users/${userId}/verify`, { isVerified }),
+};
+
 export default apiClient;

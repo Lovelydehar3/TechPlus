@@ -13,6 +13,7 @@ import hackathonRoute from "./routes/hackathonRoute.js"
 import playlistRoute from "./routes/playlistRoute.js"
 import roadmapRoute from "./routes/roadmapRoute.js"
 import clubRoute from "./routes/clubRoute.js"
+import adminRoute from "./routes/adminRoute.js"
 import { authLimiter, newsLimiter } from "./middleware/rateLimiter.js"
 import { startHackathonSyncJob } from "./cron/hackathonSync.js"
 import { ensurePlaylistsSeeded } from "./services/playlistCatalogSeed.js"
@@ -103,6 +104,7 @@ app.use("/api/hackathons", hackathonRoute)
 app.use("/api/playlists", playlistRoute)
 app.use("/api/roadmaps", roadmapRoute)
 app.use("/api/clubs", clubRoute)
+app.use("/api/admin", adminRoute)
 
 app.get("/api/health", async (req, res) => {
   const { getEmailStatus } = await import("./utils/emailEnv.js")

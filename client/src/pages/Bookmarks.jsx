@@ -164,11 +164,6 @@ export default function Bookmarks() {
                       {bookmark.articleSource}
                     </p>
                   )}
-                  {bookmark.articleSource && (
-                    <p className="text-[11px] text-white/30 font-semibold uppercase tracking-widest">
-                      {bookmark.articleSource}
-                    </p>
-                  )}
                   {bookmark.description && (
                     <p className="text-[12px] text-white/40 leading-relaxed line-clamp-2">
                       {bookmark.description}

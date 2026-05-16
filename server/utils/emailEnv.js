@@ -38,11 +38,15 @@ export const shouldUseRelay = () => {
     String(process.env.EMAIL_FORCE_RELAY || "").toLowerCase() === "true"
 
   if (forceRelay) return true
-  return Boolean(getRelaySecret())
+
+  // Only use relay when EMAIL_RELAY_SECRET is explicitly set.
+  // Don't fall back to EMAIL_PASS — that would trigger the relay
+  // locally whenever CLIENT_URL is configured.
+  return Boolean(cleanEnv(process.env.EMAIL_RELAY_SECRET))
 }
 
 export const hasRelayConfig = () =>
-  Boolean(resolveRelayUrl() && getRelaySecret())
+  Boolean(resolveRelayUrl() && cleanEnv(process.env.EMAIL_RELAY_SECRET))
 
 /** True when the API should attempt to send mail (SMTP and/or Vercel relay). */
 export const canSendEmail = () => hasSmtpCredentials() || hasRelayConfig()
