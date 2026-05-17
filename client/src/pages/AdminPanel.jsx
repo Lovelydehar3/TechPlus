@@ -8,7 +8,7 @@ import { adminAPI } from '../config/api';
 import ClubEventManager from '../components/ClubEventManager';
 import CollegeHackathonManager from '../components/CollegeHackathonManager';
 
-const LOAD_TIMEOUT = 4000;
+const LOAD_TIMEOUT = 8000;
 
 export default function AdminPanel() {
     const { user } = useAuth();

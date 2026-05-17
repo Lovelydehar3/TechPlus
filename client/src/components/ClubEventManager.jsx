@@ -69,7 +69,7 @@ function buildEventSchedule(eventDate, timeStart, timeEnd) {
 }
 
 /* ─── Main Component ──────────────────────────────────────────────────────── */
-const LOAD_TIMEOUT = 4000;
+const LOAD_TIMEOUT = 8000;
 
 export default function ClubEventManager() {
     const { addToast } = useToast();

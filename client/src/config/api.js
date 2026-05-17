@@ -151,20 +151,16 @@ apiClient.interceptors.response.use(
         : { message: responseData || error.message || 'Request failed' };
 
     const skip401Redirect =
-      reqUrl.includes('/api/auth/me') ||
-      reqUrl.includes('/api/user/profile') ||
-      reqUrl.includes('/api/auth/login') ||
-      reqUrl.includes('/api/auth/register') ||
-      reqUrl.includes('/api/auth/verify-otp') ||
-      reqUrl.includes('/api/auth/forgot-password') ||
-      reqUrl.includes('/api/auth/reset-password');
+      reqUrl.includes('/api/auth/') ||
+      reqUrl.includes('/api/user/');
 
     if (status === 401) {
-      clearAuthToken();
-
+      // Only clear token + redirect for non-auth API calls
+      // Auth endpoints (/me, /login, etc.) handle their own 401s
       if (!skip401Redirect && typeof window !== 'undefined') {
+        clearAuthToken();
         const path = window.location.pathname || '';
-        if (!path.startsWith('/login') && !path.startsWith('/register')) {
+        if (!path.startsWith('/login') && !path.startsWith('/register') && !path.startsWith('/verify-email')) {
           window.location.href = '/login';
         }
       }

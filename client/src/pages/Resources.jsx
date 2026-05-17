@@ -171,14 +171,24 @@ function PlaylistPlayer({
 
     return (
         <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}>
-            <button
-                type="button"
-                onClick={onBack}
-                className="flex items-center gap-2 text-[11px] font-black text-white/30 uppercase tracking-widest mb-6 hover:text-white transition-colors group shrink-0"
-            >
-                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="group-hover:-translate-x-1 transition-transform"><path d="M19 12H5M5 12l7 7M5 12l7-7" /></svg>
-                Back to Playlists
-            </button>
+            <div className="flex items-center justify-between mb-6">
+                <button
+                    type="button"
+                    onClick={onBack}
+                    className="flex items-center gap-2 text-[11px] font-black text-white/30 uppercase tracking-widest hover:text-white transition-colors group shrink-0"
+                >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="group-hover:-translate-x-1 transition-transform"><path d="M19 12H5M5 12l7 7M5 12l7-7" /></svg>
+                    Back to Playlists
+                </button>
+                <button
+                    type="button"
+                    onClick={onBack}
+                    className="w-9 h-9 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                    title="Close"
+                >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                </button>
+            </div>
 
             <div className="flex gap-0 overflow-hidden border border-white/5 flex-col xl:flex-row rounded-[32px]" style={{ background: 'linear-gradient(145deg, #121217 0%, #0e0b18 100%)' }}>
                 <div className="flex-1 flex flex-col min-w-0">
@@ -241,21 +251,47 @@ function ExternalYouTubePlaylistPlayer({
     playlistId,
     onBack
 }) {
+    const [showDesc, setShowDesc] = useState(false);
+
     return (
         <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}>
-            <button
-                type="button"
-                onClick={onBack}
-                className="flex items-center gap-2 text-[11px] font-black text-white/30 uppercase tracking-widest mb-6 hover:text-white transition-colors group shrink-0"
-            >
-                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="group-hover:-translate-x-1 transition-transform"><path d="M19 12H5M5 12l7 7M5 12l7-7" /></svg>
-                Back to Playlists
-            </button>
+            <div className="flex items-center justify-between mb-6">
+                <button
+                    type="button"
+                    onClick={onBack}
+                    className="flex items-center gap-2 text-[11px] font-black text-white/30 uppercase tracking-widest hover:text-white transition-colors group shrink-0"
+                >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="group-hover:-translate-x-1 transition-transform"><path d="M19 12H5M5 12l7 7M5 12l7-7" /></svg>
+                    Back to Playlists
+                </button>
+                <button
+                    type="button"
+                    onClick={onBack}
+                    className="w-9 h-9 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                    title="Close"
+                >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                </button>
+            </div>
 
             <div className="overflow-hidden border border-white/5 rounded-[32px]" style={{ background: 'linear-gradient(145deg, #121217 0%, #0e0b18 100%)' }}>
                 <div className="p-6 border-b border-white/5">
                     <h2 className="text-xl font-black text-white uppercase tracking-tight mb-2">{title}</h2>
-                    <p className="text-sm text-white/40 leading-relaxed">{description}</p>
+                    {description && (
+                        <div>
+                            <button
+                                type="button"
+                                onClick={() => setShowDesc(!showDesc)}
+                                className="flex items-center gap-1.5 text-[10px] font-bold text-[#7c3aed] uppercase tracking-widest hover:text-[#a855f7] transition-colors"
+                            >
+                                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className={`transition-transform ${showDesc ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
+                                {showDesc ? 'Hide Description' : 'Show Description'}
+                            </button>
+                            {showDesc && (
+                                <p className="text-sm text-white/40 leading-relaxed mt-3">{description}</p>
+                            )}
+                        </div>
+                    )}
                 </div>
                 <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
                     <iframe

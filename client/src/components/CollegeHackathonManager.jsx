@@ -40,7 +40,7 @@ function toDateTimeLocalValue(value) {
     return local.toISOString().slice(0, 16);
 }
 
-const LOAD_TIMEOUT = 4000;
+const LOAD_TIMEOUT = 8000;
 
 export default function CollegeHackathonManager() {
     const { addToast } = useToast();

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { authAPI, clearAuthToken } from '../config/api';
+import { authAPI, clearAuthToken, setAuthToken } from '../config/api';
 
 const AuthContext = createContext();
 
@@ -32,7 +32,6 @@ export function AuthProvider({ children }) {
         let mounted = true;
 
         const hydrate = async () => {
-            const minLoadTime = new Promise(resolve => setTimeout(resolve, 1500));
             try {
                 const response = await authAPI.me({ signal: controller.signal });
                 if (mounted && response?.success) {
@@ -40,13 +39,14 @@ export function AuthProvider({ children }) {
                 }
             } catch (err) {
                 if (err?.code === 'ERR_CANCELED') return;
-                // FIX #1: Skip wiping user if a manual login already succeeded
+                // Skip wiping user if a manual login already succeeded
                 if (mounted && !loginCompleted.current) {
                     setUser(null);
+                    // Only clear token on explicit 401 (expired/invalid token)
+                    // Don't clear on network errors (server waking up)
                     if (err?.status === 401) clearAuthToken();
                 }
             } finally {
-                await minLoadTime;
                 if (mounted) setLoading(false);
             }
         };
@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
 
     const login = useCallback((userData, token) => {
         cancelHydration();
-        // Token is now stored in httpOnly cookie only (no localStorage)
+        if (token) setAuthToken(token);
         setUser(userData);
         setError(null);
     }, [cancelHydration]);
