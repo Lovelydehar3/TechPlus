@@ -38,6 +38,32 @@ const buildOtpDeliveryPayload = (emailResult, otp, skipVerification) => {
 const isProduction = cleanEnv(process.env.NODE_ENV) === "production"
 const emailVerificationDisabled = cleanEnv(process.env.DISABLE_EMAIL_VERIFICATION) === "true"
 
+// OTP brute-force protection: track failed attempts per email
+const OTP_MAX_ATTEMPTS = 5
+const otpAttempts = new Map() // email -> { count, expiresAt }
+
+const getOtpAttempts = (email) => {
+  const entry = otpAttempts.get(email)
+  if (!entry) return 0
+  if (Date.now() > entry.expiresAt) {
+    otpAttempts.delete(email)
+    return 0
+  }
+  return entry.count
+}
+
+const incrementOtpAttempt = (email) => {
+  const current = getOtpAttempts(email)
+  otpAttempts.set(email, {
+    count: current + 1,
+    expiresAt: Date.now() + 10 * 60 * 1000 // 10 min (matches OTP expiry)
+  })
+}
+
+const resetOtpAttempts = (email) => {
+  otpAttempts.delete(email)
+}
+
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
 const normalizeUsername = (value) => String(value || "").trim()
 const buildAuthUser = (user) => ({
@@ -131,6 +157,7 @@ export const register = async (req, res) => {
       }
 
       await existingByEmail.save()
+      resetOtpAttempts(email)
 
       let emailResult = { ok: true }
       if (!skipVerification) {
@@ -204,15 +231,24 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email and OTP are required" })
     }
 
+    // OTP brute-force protection
+    if (getOtpAttempts(email) >= OTP_MAX_ATTEMPTS) {
+      return res.status(429).json({ success: false, message: "Too many OTP attempts. Please request a new OTP." })
+    }
+
     const user = await User.findOne({ email })
-    if (!user) return res.status(404).json({ success: false, message: "User not found" })
+    if (!user) {
+      incrementOtpAttempt(email)
+      return res.status(400).json({ success: false, message: "Invalid email or OTP" })
+    }
 
     if (user.isVerified) {
       return res.status(400).json({ success: false, message: "Already verified" })
     }
 
     if (user.otp !== otp) {
-      return res.status(400).json({ success: false, message: "Invalid OTP" })
+      incrementOtpAttempt(email)
+      return res.status(400).json({ success: false, message: "Invalid email or OTP" })
     }
 
     if (user.otpExpires < new Date()) {
@@ -224,6 +260,7 @@ export const verifyOtp = async (req, res) => {
     user.otpExpires = null
     await ensureAdminRoleForUser(user)
     await user.save()
+    resetOtpAttempts(email)
 
     const token = issueAuthToken(user)
 
@@ -251,8 +288,10 @@ export const resendOtp = async (req, res) => {
     }
 
     const user = await User.findOne({ email })
-    if (!user) return res.status(404).json({ success: false, message: "User not found" })
-    if (user.isVerified) return res.status(400).json({ success: false, message: "Already verified" })
+    if (!user) {
+      return res.status(200).json({ success: true, message: "If an account exists, a new OTP has been sent." })
+    }
+    if (user.isVerified) return res.status(200).json({ success: true, message: "If an account exists, a new OTP has been sent." })
 
     // FIX #3: If verification is disabled, auto-verify on resend
     if (emailVerificationDisabled) {
@@ -272,6 +311,7 @@ export const resendOtp = async (req, res) => {
     user.otp = otp
     user.otpExpires = otpExpires
     await user.save()
+    resetOtpAttempts(email)
 
     let emailResult = { ok: true }
     if (!canSendEmail()) {
@@ -308,14 +348,16 @@ export const login = async (req, res) => {
     }
 
     const user = await User.findOne({ email })
-    if (!user) return res.status(404).json({ success: false, message: "User not found" })
+    if (!user) {
+      return res.status(401).json({ success: false, code: "INVALID_CREDENTIALS", message: "Invalid email or password" })
+    }
 
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        code: "WRONG_PASSWORD",
-        message: "Wrong password"
+        code: "INVALID_CREDENTIALS",
+        message: "Invalid email or password"
       })
     }
 
@@ -389,8 +431,14 @@ export const forgotPassword = async (req, res) => {
     }
 
     const user = await User.findOne({ email })
+
+    // Don't reveal whether the email exists — always return success
     if (!user) {
-      return res.status(404).json({ success: false, message: "No account found with this email. Please sign up first." })
+      return res.status(200).json({
+        success: true,
+        message: "If an account exists with this email, a password reset link has been sent.",
+        emailDelivered: true
+      })
     }
 
     const resetToken = crypto.randomBytes(32).toString('hex')
@@ -403,9 +451,10 @@ export const forgotPassword = async (req, res) => {
     console.log(`[Auth] ForgotPassword request for: ${email}. canSendEmail: ${canSendEmail()}`)
 
     if (!canSendEmail()) {
-      return res.status(503).json({
-        success: false,
-        message: "Email service is not configured. Set EMAIL, EMAIL_PASS, EMAIL_RELAY_SECRET, and CLIENT_URL on Render.",
+      return res.status(200).json({
+        success: true,
+        message: "If an account exists with this email, a password reset link has been sent.",
+        emailDelivered: true,
         ...(shouldExposeDevEmailFallback() ? { devResetToken: resetToken } : {})
       })
     }
@@ -414,20 +463,12 @@ export const forgotPassword = async (req, res) => {
     const originFromHeader = cleanEnv(req.headers.origin)
     const emailResult = await sendResetEmail(email, resetToken, originFromClient || originFromHeader)
 
-    if (!emailResult.ok) {
-      return res.status(503).json({
-        success: false,
-        message: emailResult.error || "Could not send reset email. Please try again.",
-        emailDelivered: false,
-        ...(shouldExposeDevEmailFallback() ? { devResetToken: resetToken } : {})
-      })
-    }
-
+    // Always return success regardless of email delivery outcome
     res.status(200).json({
       success: true,
-      message: "Password reset email sent",
-      recipientHint: email,
-      emailDelivered: true
+      message: "If an account exists with this email, a password reset link has been sent.",
+      emailDelivered: emailResult.ok,
+      ...(shouldExposeDevEmailFallback() && !emailResult.ok ? { devResetToken: resetToken } : {})
     })
 
   } catch (error) {

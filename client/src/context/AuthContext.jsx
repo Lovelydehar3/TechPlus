@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { authAPI, clearAuthToken, setAuthToken } from '../config/api';
+import { authAPI, clearAuthToken } from '../config/api';
 
 const AuthContext = createContext();
 
@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
 
     const login = useCallback((userData, token) => {
         cancelHydration();
-        if (token) setAuthToken(token);
+        // Token is now stored in httpOnly cookie only (no localStorage)
         setUser(userData);
         setError(null);
     }, [cancelHydration]);

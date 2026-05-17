@@ -154,11 +154,6 @@ function ProfilePanel({ user, createdDate, onEdit, savedHackathons = [], savedRe
                     <div className="flex-1 min-w-0">
                         <div className="flex items-start gap-2 flex-wrap mb-1">
                             <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-white uppercase tracking-tighter truncate max-w-full">{name}</h1>
-                            {user?.role === 'admin' && (
-                                <span className="shrink-0 text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center gap-1">
-                                    <IconStar /> Admin
-                                </span>
-                            )}
                         </div>
                         <div className="flex items-center gap-1.5 text-white/30 text-[10px] sm:text-xs font-bold mb-2 min-w-0">
                             <IconEmail />
