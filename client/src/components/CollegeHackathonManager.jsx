@@ -150,6 +150,7 @@ export default function CollegeHackathonManager() {
             }
             cancelForm();
             fetchHackathons();
+            window.dispatchEvent(new Event('hackathons-changed'));
         } catch (err) {
             addToast(err?.message || 'Operation failed', 'error');
         } finally {
@@ -163,6 +164,7 @@ export default function CollegeHackathonManager() {
             addToast('College hackathon deleted', 'success');
             setDeletingId(null);
             fetchHackathons();
+            window.dispatchEvent(new Event('hackathons-changed'));
         } catch {
             addToast('Failed to delete hackathon', 'error');
         }

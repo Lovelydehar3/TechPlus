@@ -297,7 +297,7 @@ export const roadmapAPI = {
   getById: (id) => apiClient.get(`/api/roadmaps/${id}`)
 };
 
-const clearHackathonListCache = () => {
+export const clearHackathonListCache = () => {
   apiCache.clear();
 };
 

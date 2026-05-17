@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
 import { useToast } from '../context/ToastContext'
-import { hackathonAPI } from '../config/api'
+import { hackathonAPI, clearHackathonListCache } from '../config/api'
 import { getFallbackImage } from '../utils/imageUtils'
 
 const normalizeKey = (value) =>
@@ -50,16 +50,21 @@ function HackathonGrid({
           >
             <div className="h-40 sm:h-44 overflow-hidden bg-gradient-to-br from-[#7c3aed]/20 to-[#3b82f6]/20 relative">
               <img
-                src={hackathon.image || getFallbackImage('Startups', hackathon.title, hackathon.url, idx)}
+                src={hackathon.image || getFallbackImage('Startups', hackathon.title, hackathon._id, 0)}
                 alt={hackathon.title}
                 loading="lazy"
                 decoding="async"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => {
                   e.currentTarget.onerror = null
-                  e.currentTarget.src = getFallbackImage('Startups', hackathon.title, hackathon.url, idx)
+                  e.currentTarget.src = getFallbackImage('Startups', hackathon.title, hackathon._id, 0)
                 }}
               />
+              {isCollege && (
+                <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur border border-white/10 text-[9px] font-black text-[#a855f7] uppercase tracking-widest">
+                  College
+                </div>
+              )}
             </div>
 
             <div className="p-4 sm:p-6">
@@ -68,11 +73,6 @@ function HackathonGrid({
                   <span className={`px-3 py-1 rounded-full text-xs font-medium shrink-0 ${status.color}`}>
                     {status.text}
                   </span>
-                  {isCollege && (
-                    <span className="px-2 py-0.5 rounded-md bg-white/10 border border-white/15 text-[9px] font-black uppercase tracking-widest text-white/50 shrink-0">
-                      clg
-                    </span>
-                  )}
                 </div>
                 <button
                   type="button"
@@ -244,7 +244,10 @@ export default function Hackathons() {
   }, [])
 
   useEffect(() => {
-    const onHackathonsChanged = () => loadHackathons(true)
+    const onHackathonsChanged = () => {
+      clearHackathonListCache()
+      loadHackathons(true)
+    }
     window.addEventListener('hackathons-changed', onHackathonsChanged)
     return () => window.removeEventListener('hackathons-changed', onHackathonsChanged)
   }, [loadHackathons])
@@ -662,12 +665,12 @@ export default function Hackathons() {
               <div className="flex-1 overflow-y-auto custom-scrollbar p-5 sm:p-6">
                 <div className="h-40 sm:h-48 overflow-hidden rounded-2xl mb-5">
                   <img
-                    src={selectedHackathon.image || getFallbackImage('Startups', selectedHackathon.title, selectedHackathon.url)}
+                    src={selectedHackathon.image || getFallbackImage('Startups', selectedHackathon.title, selectedHackathon._id, 0)}
                     alt={selectedHackathon.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.currentTarget.onerror = null;
-                      e.currentTarget.src = getFallbackImage('Startups', selectedHackathon.title, selectedHackathon.url);
+                      e.currentTarget.src = getFallbackImage('Startups', selectedHackathon.title, selectedHackathon._id, 0);
                     }}
                   />
                 </div>
