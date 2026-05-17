@@ -168,6 +168,7 @@ function PlaylistPlayer({
     };
 
     const currentVideo = playlist[activeIndex];
+    const [showDesc, setShowDesc] = useState(false);
 
     return (
         <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}>
@@ -180,15 +181,33 @@ function PlaylistPlayer({
                     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="group-hover:-translate-x-1 transition-transform"><path d="M19 12H5M5 12l7 7M5 12l7-7" /></svg>
                     Back to Playlists
                 </button>
-                <button
-                    type="button"
-                    onClick={onBack}
-                    className="w-9 h-9 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                    title="Close"
-                >
-                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
-                </button>
+                <div className="flex items-center gap-2">
+                    {playlistDesc && (
+                        <button
+                            type="button"
+                            onClick={() => setShowDesc(!showDesc)}
+                            className="flex items-center gap-1.5 text-[10px] font-bold text-[#7c3aed] uppercase tracking-widest hover:text-[#a855f7] transition-colors px-3 py-1.5 rounded-full border border-[#7c3aed]/30 bg-[#7c3aed]/10"
+                        >
+                            <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className={`transition-transform ${showDesc ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
+                            Info
+                        </button>
+                    )}
+                    <button
+                        type="button"
+                        onClick={onBack}
+                        className="w-9 h-9 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                        title="Close"
+                    >
+                        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                    </button>
+                </div>
             </div>
+
+            {showDesc && playlistDesc && (
+                <div className="mb-4 p-4 rounded-2xl border border-white/5 bg-white/[0.02]">
+                    <p className="text-sm text-white/40 leading-relaxed">{playlistDesc}</p>
+                </div>
+            )}
 
             <div className="flex gap-0 overflow-hidden border border-white/5 flex-col xl:flex-row rounded-[32px]" style={{ background: 'linear-gradient(145deg, #121217 0%, #0e0b18 100%)' }}>
                 <div className="flex-1 flex flex-col min-w-0">
@@ -198,7 +217,6 @@ function PlaylistPlayer({
 
                     <div className="p-6">
                         <h2 className="text-xl font-black text-white uppercase tracking-tight mb-2">{currentVideo?.title}</h2>
-                        <p className="text-sm text-white/40 leading-relaxed mb-3">{playlistDesc}</p>
                         <div className="flex items-center gap-4">
                             <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full" style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#7c3aed' }}>
                                 {playlistDuration} Total
@@ -252,6 +270,78 @@ function ExternalYouTubePlaylistPlayer({
     onBack
 }) {
     const [showDesc, setShowDesc] = useState(false);
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [playerReady, setPlayerReady] = useState(false);
+    const [videoTitle, setVideoTitle] = useState('');
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [playlistVideos, setPlaylistVideos] = useState([]);
+    const playerMountId = useMemo(() => `ext-ytp-${Math.random().toString(36).slice(2, 11)}`, []);
+    const ytPlayerRef = useRef(null);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        loadYouTubeApi().then(() => {
+            if (cancelled || !window.YT?.Player) return;
+            ytPlayerRef.current = new window.YT.Player(playerMountId, {
+                width: '100%',
+                height: '100%',
+                playerVars: {
+                    listType: 'playlist',
+                    list: playlistId,
+                    autoplay: 1,
+                    rel: 0,
+                    modestbranding: 1
+                },
+                events: {
+                    onReady: () => {
+                        setPlayerReady(true);
+                        try {
+                            const data = ytPlayerRef.current.getVideoData?.();
+                            if (data?.title) setVideoTitle(data.title);
+                            // Get playlist video IDs for sidebar
+                            const ids = ytPlayerRef.current.getPlaylist?.();
+                            if (Array.isArray(ids) && ids.length > 0) {
+                                setPlaylistVideos(ids.map((vid, i) => ({ videoId: vid, title: `Video ${i + 1}` })));
+                            }
+                        } catch { /* ignore */ }
+                    },
+                    onStateChange: (e) => {
+                        if (e.data === window.YT.PlayerState.PLAYING) {
+                            setIsPlaying(true);
+                            try {
+                                const idx = ytPlayerRef.current.getPlaylistIndex?.();
+                                if (idx !== undefined && idx >= 0) setActiveIndex(idx);
+                                const data = ytPlayerRef.current.getVideoData?.();
+                                if (data?.title) setVideoTitle(data.title);
+                            } catch { /* ignore */ }
+                        } else if (e.data === window.YT.PlayerState.PAUSED) {
+                            setIsPlaying(false);
+                        }
+                    }
+                }
+            });
+        });
+
+        return () => {
+            cancelled = true;
+            try { ytPlayerRef.current?.destroy?.(); } catch { /* ignore */ }
+        };
+    }, [playerMountId, playlistId]);
+
+    const prevVideo = () => { ytPlayerRef.current?.previousVideo?.(); };
+    const nextVideo = () => { ytPlayerRef.current?.nextVideo?.(); };
+    const togglePlay = () => {
+        if (!playerReady) return;
+        if (isPlaying) {
+            ytPlayerRef.current?.pauseVideo?.();
+        } else {
+            ytPlayerRef.current?.playVideo?.();
+        }
+    };
+    const selectVideo = (index) => {
+        ytPlayerRef.current?.playVideoAt?.(index);
+    };
 
     return (
         <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}>
@@ -264,44 +354,121 @@ function ExternalYouTubePlaylistPlayer({
                     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="group-hover:-translate-x-1 transition-transform"><path d="M19 12H5M5 12l7 7M5 12l7-7" /></svg>
                     Back to Playlists
                 </button>
-                <button
-                    type="button"
-                    onClick={onBack}
-                    className="w-9 h-9 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                    title="Close"
-                >
-                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
-                </button>
+                <div className="flex items-center gap-2">
+                    {description && (
+                        <button
+                            type="button"
+                            onClick={() => setShowDesc(!showDesc)}
+                            className="flex items-center gap-1.5 text-[10px] font-bold text-[#7c3aed] uppercase tracking-widest hover:text-[#a855f7] transition-colors px-3 py-1.5 rounded-full border border-[#7c3aed]/30 bg-[#7c3aed]/10"
+                        >
+                            <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className={`transition-transform ${showDesc ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
+                            Info
+                        </button>
+                    )}
+                    <button
+                        type="button"
+                        onClick={onBack}
+                        className="w-9 h-9 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                        title="Close"
+                    >
+                        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                    </button>
+                </div>
             </div>
 
-            <div className="overflow-hidden border border-white/5 rounded-[32px]" style={{ background: 'linear-gradient(145deg, #121217 0%, #0e0b18 100%)' }}>
-                <div className="p-6 border-b border-white/5">
-                    <h2 className="text-xl font-black text-white uppercase tracking-tight mb-2">{title}</h2>
-                    {description && (
-                        <div>
-                            <button
-                                type="button"
-                                onClick={() => setShowDesc(!showDesc)}
-                                className="flex items-center gap-1.5 text-[10px] font-bold text-[#7c3aed] uppercase tracking-widest hover:text-[#a855f7] transition-colors"
-                            >
-                                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className={`transition-transform ${showDesc ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
-                                {showDesc ? 'Hide Description' : 'Show Description'}
-                            </button>
-                            {showDesc && (
-                                <p className="text-sm text-white/40 leading-relaxed mt-3">{description}</p>
-                            )}
+            {showDesc && description && (
+                <div className="mb-4 p-4 rounded-2xl border border-white/5 bg-white/[0.02]">
+                    <p className="text-sm text-white/40 leading-relaxed">{description}</p>
+                </div>
+            )}
+
+            <div className="flex gap-0 overflow-hidden border border-white/5 flex-col xl:flex-row rounded-[32px]" style={{ background: 'linear-gradient(145deg, #121217 0%, #0e0b18 100%)' }}>
+                <div className="flex-1 flex flex-col min-w-0">
+                    <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
+                        <div id={playerMountId} className="absolute inset-0 w-full h-full" />
+                    </div>
+
+                    <div className="p-6">
+                        <h2 className="text-xl font-black text-white uppercase tracking-tight mb-2">{videoTitle || title}</h2>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full" style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#7c3aed' }}>
+                                    Video {activeIndex + 1}{playlistVideos.length > 0 ? ` of ${playlistVideos.length}` : ''}
+                                </span>
+                                {playerReady && (
+                                    <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full ${isPlaying ? '' : ''}`} style={{ background: isPlaying ? 'rgba(52,211,153,0.15)' : 'rgba(239,68,68,0.15)', border: `1px solid ${isPlaying ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)'}`, color: isPlaying ? '#34d399' : '#f87171' }}>
+                                        {isPlaying ? 'Playing' : 'Paused'}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={prevVideo}
+                                    disabled={!playerReady}
+                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30"
+                                >
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" /></svg>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={togglePlay}
+                                    disabled={!playerReady}
+                                    className="w-12 h-12 rounded-full flex items-center justify-center border text-white hover:bg-white/10 transition-all disabled:opacity-30"
+                                    style={{ background: 'rgba(124,58,237,0.2)', borderColor: 'rgba(124,58,237,0.4)' }}
+                                >
+                                    {isPlaying ? (
+                                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z" /></svg>
+                                    ) : (
+                                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                    )}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={nextVideo}
+                                    disabled={!playerReady}
+                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30"
+                                >
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" /></svg>
+                                </button>
+                            </div>
                         </div>
-                    )}
+                    </div>
                 </div>
-                <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
-                    <iframe
-                        title={title}
-                        src={getYouTubePlaylistEmbedUrl(playlistId)}
-                        className="absolute inset-0 w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                    />
-                </div>
+
+                {playlistVideos.length > 0 && (
+                    <div className="xl:w-[340px] w-full border-t xl:border-t-0 xl:border-l border-white/5 flex flex-col" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                        <div className="px-5 py-4 border-b border-white/5">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">Up Next</h3>
+                                <span className="text-[10px] font-bold text-white/20">{playlistVideos.length} videos</span>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto custom-scrollbar max-h-[500px]">
+                            {playlistVideos.map((item, index) => {
+                                const isActive = index === activeIndex;
+                                return (
+                                    <button
+                                        type="button"
+                                        key={`${item.videoId}-${index}`}
+                                        disabled={!playerReady}
+                                        onClick={() => selectVideo(index)}
+                                        className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-all duration-200 group disabled:opacity-40 ${isActive ? 'bg-[#7c3aed]/10 border-l-[3px] border-[#7c3aed]' : 'border-l-[3px] border-transparent hover:bg-white/5'}`}
+                                    >
+                                        <span className={`text-[11px] font-black mt-2 shrink-0 w-5 text-right ${isActive ? 'text-[#7c3aed]' : 'text-white/20'}`}>{String(index + 1).padStart(2, '0')}</span>
+                                        <div className="w-[100px] h-[56px] rounded-lg overflow-hidden shrink-0 relative border border-white/5">
+                                            <img src={getYouTubeThumbnail(item.videoId)} alt="" className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex flex-col gap-1 min-w-0 pt-0.5">
+                                            <span className={`text-[12px] font-bold leading-snug line-clamp-2 transition-colors ${isActive ? 'text-white' : 'text-white/60 group-hover:text-white/80'}`}>{item.title}</span>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
         </m.div>
     );
