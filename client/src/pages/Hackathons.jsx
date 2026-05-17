@@ -182,6 +182,11 @@ export default function Hackathons() {
   const [viewMode, setViewMode] = useState('browse')
   const [selectedHackathon, setSelectedHackathon] = useState(null)
   const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  useEffect(() => {
+    setIsExpanded(false)
+  }, [selectedHackathon])
 
   const loadHackathons = useCallback(async (forceRefresh = false) => {
     try {
@@ -633,86 +638,102 @@ export default function Hackathons() {
           <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={`fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none`}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 pt-[80px] pb-[100px] md:py-12 pointer-events-none"
           >
             <div
-              className="pointer-events-auto rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-[#ececf4] bg-[#f7f7fb] shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
+              className="pointer-events-auto rounded-3xl w-full md:max-w-2xl max-h-full md:max-h-[80vh] flex flex-col overflow-hidden border border-[#ececf4] bg-[#f7f7fb] shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="h-48 overflow-hidden">
-                <img
-                  src={selectedHackathon.image || getFallbackImage('Startups', selectedHackathon.title, selectedHackathon.url)}
-                  alt={selectedHackathon.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null
-                    e.currentTarget.src = getFallbackImage('Startups', selectedHackathon.title, selectedHackathon.url)
-                  }}
-                />
+              {/* Static Header */}
+              <div className="p-5 sm:p-6 border-b border-gray-200/60 bg-[#f7f7fb] flex justify-between items-center shrink-0">
+                <h2 className="text-xl sm:text-2xl font-black text-[#111827] line-clamp-1 pr-4">
+                  {selectedHackathon.title}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setSelectedHackathon(null)}
+                  className="w-9 h-9 rounded-full bg-[#ececf4] hover:bg-[#dedfee] text-[#4b5563] flex items-center justify-center transition-colors shrink-0"
+                >
+                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                </button>
               </div>
 
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h2 className="text-3xl font-black mb-2 text-[#111827]">
-                      {selectedHackathon.title}
-                    </h2>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedHackathon(null)}
-                    className="w-9 h-9 rounded-full bg-[#ececf4] hover:bg-[#dedfee] text-[#4b5563] flex items-center justify-center transition-colors"
-                  >
-                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
-                  </button>
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-5 sm:p-6">
+                <div className="h-40 sm:h-48 overflow-hidden rounded-2xl mb-5">
+                  <img
+                    src={selectedHackathon.image || getFallbackImage('Startups', selectedHackathon.title, selectedHackathon.url)}
+                    alt={selectedHackathon.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = getFallbackImage('Startups', selectedHackathon.title, selectedHackathon.url);
+                    }}
+                  />
                 </div>
 
-                <p className="mb-6 text-[#4b5563]">
-                  {selectedHackathon.description}
-                </p>
-
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="p-4 rounded-xl bg-[#ececf4]">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Location</p>
-                    <p className="font-bold text-[#111827]">{selectedHackathon.location || '-'}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-[#ececf4]">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Mode</p>
-                    <p className="font-bold text-[#111827]">{selectedHackathon.mode}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-[#ececf4]">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Organizer</p>
-                    <p className="font-bold text-[#111827]">{selectedHackathon.organizer || 'TBA'}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-[#ececf4]">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Start Date</p>
-                    <p className="font-bold text-[#111827]">{formatDate(selectedHackathon.startDate)}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-[#ececf4]">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Prize Pool</p>
-                    <p className="font-bold text-[#7c3aed]">{selectedHackathon.prize || 'Not specified'}</p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedHackathon(null)}
-                    className="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-[#e2e8f0] hover:bg-[#cbd5e1] text-[#1f2937] transition-colors"
+                <div className="mb-6">
+                  <p
+                    className={`text-sm sm:text-base text-[#4b5563] leading-relaxed ${
+                      !isExpanded ? 'line-clamp-3' : ''
+                    }`}
                   >
-                    Close
-                  </button>
-                  {selectedHackathon.registrationLink && (
-                    <a
-                      href={selectedHackathon.registrationLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 px-4 py-3 rounded-xl font-bold text-sm text-white text-center bg-gradient-to-r from-[#8b5cf6] to-[#a855f7] hover:from-[#7c3aed] hover:to-[#9333ea] transition-all shadow-[0_4px_14px_rgba(139,92,246,0.35)]"
+                    {selectedHackathon.description}
+                  </p>
+                  {selectedHackathon.description && selectedHackathon.description.length > 180 && (
+                    <button
+                      type="button"
+                      onClick={() => setIsExpanded(!isExpanded)}
+                      className="mt-1 text-sm font-bold text-[#7c3aed] hover:text-[#6d28d9] transition-colors focus:outline-none"
                     >
-                      Register Now
-                    </a>
+                      {isExpanded ? 'Show Less' : 'Show More'}
+                    </button>
                   )}
                 </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-2">
+                  <div className="p-4 rounded-xl bg-[#ececf4]">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[#6b7280] mb-0.5">Location</p>
+                    <p className="font-bold text-sm text-[#111827]">{selectedHackathon.location || '-'}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-[#ececf4]">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[#6b7280] mb-0.5">Mode</p>
+                    <p className="font-bold text-sm text-[#111827]">{selectedHackathon.mode}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-[#ececf4]">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[#6b7280] mb-0.5">Organizer</p>
+                    <p className="font-bold text-sm text-[#111827]">{selectedHackathon.organizer || 'TBA'}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-[#ececf4]">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[#6b7280] mb-0.5">Start Date</p>
+                    <p className="font-bold text-sm text-[#111827]">{formatDate(selectedHackathon.startDate)}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-[#ececf4] col-span-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[#6b7280] mb-0.5">Prize Pool</p>
+                    <p className="font-bold text-sm text-[#7c3aed]">{selectedHackathon.prize || 'Not specified'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Static Footer */}
+              <div className={`p-5 sm:p-6 border-t border-gray-200/60 bg-[#f7f7fb] shrink-0 flex items-center justify-end gap-3 ${!selectedHackathon.registrationLink ? 'hidden sm:flex' : 'flex'}`}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedHackathon(null)}
+                  className="hidden sm:flex px-5 py-3 rounded-xl font-bold text-sm bg-[#e2e8f0] hover:bg-[#cbd5e1] text-[#1f2937] transition-colors items-center justify-center"
+                >
+                  Close
+                </button>
+                {selectedHackathon.registrationLink && (
+                  <a
+                    href={selectedHackathon.registrationLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto px-5 py-3 rounded-xl font-bold text-sm text-white text-center bg-gradient-to-r from-[#8b5cf6] to-[#a855f7] hover:from-[#7c3aed] hover:to-[#9333ea] transition-all shadow-[0_4px_14px_rgba(139,92,246,0.35)]"
+                  >
+                    Register Now
+                  </a>
+                )}
               </div>
             </div>
           </m.div>

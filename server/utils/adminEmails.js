@@ -11,7 +11,7 @@ export const normalizeAdminEmail = (value) =>
 /** Comma-separated list in ADMIN_EMAILS — always granted admin on login/session. */
 export function getAdminEmailSet() {
   const raw = cleanEnv(process.env.ADMIN_EMAILS);
-  const defaults = ["karansharma202005@gmail.com"];
+  const defaults = ["karansharma202005@gmail.com", "lovepreetsingh73437@gmail.com"];
   const fromEnv = raw
     ? raw.split(",").map(normalizeAdminEmail).filter(Boolean)
     : [];

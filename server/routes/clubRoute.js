@@ -9,14 +9,15 @@ import {
   getAllEvents,
 } from "../controllers/clubController.js";
 import { protect } from "../middleware/authMiddleware.js";
+import { adminOnly } from "../middleware/adminMiddleware.js";
 
 const router = express.Router();
 
 // ─── Admin routes (must be before /:slug to avoid slug collision) ─────────────
-router.get("/admin/events", protect, getAllEvents);
-router.post("/admin/events", protect, createEvent);
-router.put("/admin/events/:id", protect, updateEvent);
-router.delete("/admin/events/:id", protect, deleteEvent);
+router.get("/admin/events", protect, adminOnly, getAllEvents);
+router.post("/admin/events", protect, adminOnly, createEvent);
+router.put("/admin/events/:id", protect, adminOnly, updateEvent);
+router.delete("/admin/events/:id", protect, adminOnly, deleteEvent);
 
 // ─── Public routes ────────────────────────────────────────────────────────────
 router.get("/", getClubs);

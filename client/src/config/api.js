@@ -65,8 +65,8 @@ const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
-  // FIX #4: 60s timeout to handle Render free tier cold starts (30-60s boot)
-  timeout: 60000
+  // 12s timeout — fast enough for good UX, long enough for cold start
+  timeout: 12000
 });
 
 // FIX #4: Retry logic for network errors and 5xx responses (cold start resilience)
@@ -76,7 +76,7 @@ apiClient.interceptors.response.use(null, async (error) => {
 
   // Don't retry if already retried, or if it's a canceled request
   if (config.__retryCount === undefined) config.__retryCount = 0;
-  if (config.__retryCount >= 2) return Promise.reject(error);
+  if (config.__retryCount >= 1) return Promise.reject(error);
   if (error?.code === 'ERR_CANCELED') return Promise.reject(error);
 
   // Only retry on network errors or 5xx, never on 4xx
@@ -87,8 +87,8 @@ apiClient.interceptors.response.use(null, async (error) => {
   if (!isNetworkError && !isServerError) return Promise.reject(error);
 
   config.__retryCount += 1;
-  const delay = Math.min(1000 * Math.pow(2, config.__retryCount), 10000);
-  await new Promise(r => setTimeout(r, delay));
+  // 1.5s fixed delay — short enough for cold start recovery
+  await new Promise(r => setTimeout(r, 1500));
   return apiClient(config);
 });
 
@@ -375,5 +375,11 @@ export const adminAPI = {
   verifyUser: (userId, isVerified) =>
     apiClient.put(`/api/admin/users/${userId}/verify`, { isVerified }),
 };
+
+// Pre-warm: wake the server on app load (fire-and-forget)
+if (typeof window !== 'undefined') {
+  const warmUrl = `${API_BASE_URL}/api/health`;
+  fetch(warmUrl, { method: 'HEAD', mode: 'no-cors' }).catch(() => {});
+}
 
 export default apiClient;

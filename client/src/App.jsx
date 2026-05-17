@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { DarkModeProvider } from './context/DarkModeContext';
@@ -36,18 +36,47 @@ function PageSpinner() {
     );
 }
 
+// Splash timeout — show skip button after 3s, force redirect after 7s
+function SplashWithTimeout() {
+    const [showSkip, setShowSkip] = useState(false);
+    const [forceRedirect, setForceRedirect] = useState(false);
+
+    useEffect(() => {
+        const skipTimer = setTimeout(() => setShowSkip(true), 3000);
+        const redirectTimer = setTimeout(() => setForceRedirect(true), 7000);
+        return () => { clearTimeout(skipTimer); clearTimeout(redirectTimer); };
+    }, []);
+
+    if (forceRedirect) return <Navigate to="/login" replace />;
+
+    return (
+        <div className="relative">
+            <SplashScreen />
+            {showSkip && (
+                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[1000]">
+                    <button
+                        onClick={() => setForceRedirect(true)}
+                        className="px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white/70 text-sm font-bold hover:bg-white/20 transition-all"
+                    >
+                        Server waking up — Skip to Login
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
+
 // ProtectedRoute with Suspense to prevent flash of unstyled content during lazy load
 function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
-    if (loading) return <SplashScreen />;
+    if (loading) return <SplashWithTimeout />;
     if (!user) return <Navigate to="/login" replace />;
     return <Layout>{children}</Layout>;
 }
 
 function AdminRoute({ children }) {
     const { user, loading } = useAuth();
-    if (loading) return <PageSpinner />;
-    // FIX #10: Redirect to /login (not /) for unauthenticated users to avoid double redirect
+    if (loading) return <SplashWithTimeout />;
     if (!user || user.role !== 'admin') return <Navigate to={user ? "/" : "/login"} replace />;
     return <Layout>{children}</Layout>;
 }

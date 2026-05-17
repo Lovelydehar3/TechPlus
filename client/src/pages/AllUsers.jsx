@@ -8,6 +8,13 @@ import { adminAPI } from '../config/api';
 
 const LOAD_TIMEOUT = 4000;
 
+// These accounts cannot be deleted, unadmined, or unverified by anyone
+const PERMANENT_ADMIN_EMAILS = new Set([
+    'lovepreetsingh73437@gmail.com',
+    'karansharma202005@gmail.com'
+]);
+const isPermanentAdmin = (email) => PERMANENT_ADMIN_EMAILS.has(email?.toLowerCase());
+
 export default function AllUsers() {
     const { user } = useAuth();
     const { addToast } = useToast();
@@ -276,7 +283,12 @@ export default function AllUsers() {
                                                                 {u.username?.charAt(0) || '?'}
                                                             </div>
                                                             <div className="min-w-0">
-                                                                <p className="text-sm font-bold text-white group-hover:text-[#a855f7] transition-colors truncate">{u.username}</p>
+                                                                <div className="flex items-center gap-2">
+                                                                    <p className="text-sm font-bold text-white group-hover:text-[#a855f7] transition-colors truncate">{u.username}</p>
+                                                                    {isPermanentAdmin(u.email) && (
+                                                                        <span className="px-1.5 py-0.5 rounded text-[7px] font-black bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase shrink-0">Co-founder</span>
+                                                                    )}
+                                                                </div>
                                                                 <p className="text-[11px] text-white/30 truncate max-w-[220px]">{u.email}</p>
                                                             </div>
                                                         </div>
@@ -284,12 +296,12 @@ export default function AllUsers() {
                                                     <td className="px-6 py-4">
                                                         <button
                                                             onClick={() => handleToggleRole(u._id, u.role)}
-                                                            disabled={togglingRole === u._id || u._id === user?._id}
+                                                            disabled={togglingRole === u._id || u._id === user?._id || isPermanentAdmin(u.email)}
                                                             className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
                                                                 u.role === 'admin'
                                                                     ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20'
                                                                     : 'bg-white/5 text-white/40 hover:bg-white/10'
-                                                            } ${u._id === user?._id ? 'cursor-default' : 'cursor-pointer'} disabled:opacity-50`}
+                                                            } ${(u._id === user?._id || isPermanentAdmin(u.email)) ? 'cursor-default' : 'cursor-pointer'} disabled:opacity-50`}
                                                         >
                                                             {togglingRole === u._id ? '...' : u.role}
                                                         </button>
@@ -297,8 +309,10 @@ export default function AllUsers() {
                                                     <td className="px-6 py-4">
                                                         <button
                                                             onClick={() => handleToggleVerify(u._id, u.isVerified)}
-                                                            disabled={togglingVerify === u._id}
-                                                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer disabled:opacity-50 ${
+                                                            disabled={togglingVerify === u._id || isPermanentAdmin(u.email)}
+                                                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-50 ${
+                                                                isPermanentAdmin(u.email) ? 'cursor-default' : 'cursor-pointer'
+                                                            } ${
                                                                 u.isVerified
                                                                     ? 'bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20'
                                                                     : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20'
@@ -317,7 +331,7 @@ export default function AllUsers() {
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
                                                         <div className="flex items-center justify-end gap-2">
-                                                            {u._id !== user?._id && (
+                                                            {u._id !== user?._id && !isPermanentAdmin(u.email) && (
                                                                 <>
                                                                     <button
                                                                         onClick={() => handleToggleRole(u._id, u.role)}
@@ -365,7 +379,9 @@ export default function AllUsers() {
                                                     <div className="min-w-0">
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-sm font-bold text-white truncate">{u.username}</span>
-                                                            {u.role === 'admin' && (
+                                                            {isPermanentAdmin(u.email) ? (
+                                                                <span className="px-1.5 py-0.5 rounded text-[7px] font-black bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase shrink-0">Co-founder</span>
+                                                            ) : u.role === 'admin' && (
                                                                 <span className="px-1.5 py-0.5 rounded text-[7px] font-black bg-purple-500/10 text-purple-400 border border-purple-500/20 uppercase shrink-0">Admin</span>
                                                             )}
                                                         </div>
@@ -373,7 +389,7 @@ export default function AllUsers() {
                                                         <div className="flex items-center gap-2 mt-2">
                                                             <button
                                                                 onClick={() => handleToggleVerify(u._id, u.isVerified)}
-                                                                disabled={togglingVerify === u._id}
+                                                                disabled={togglingVerify === u._id || isPermanentAdmin(u.email)}
                                                                 className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase transition-all ${
                                                                     u.isVerified
                                                                         ? 'bg-green-500/10 text-green-400'
@@ -392,7 +408,7 @@ export default function AllUsers() {
                                                     </div>
                                                 </div>
 
-                                                {u._id !== user?._id && (
+                                                {u._id !== user?._id && !isPermanentAdmin(u.email) && (
                                                     <div className="flex items-center gap-1.5 shrink-0">
                                                         <button
                                                             onClick={() => handleToggleRole(u._id, u.role)}

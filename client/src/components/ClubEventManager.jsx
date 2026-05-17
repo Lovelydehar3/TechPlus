@@ -289,14 +289,14 @@ export default function ClubEventManager() {
             <AnimatePresence>
                 {showForm && (
                     <div
-                        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-sm"
+                        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pt-[80px] pb-[100px] md:py-12 bg-black/40 backdrop-blur-sm"
                         onClick={cancelForm}
                     >
                         <m.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white rounded-[24px] p-5 sm:p-8 w-full max-w-4xl shadow-2xl relative flex flex-col max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)]"
+                            className="bg-white rounded-[24px] p-5 sm:p-8 w-full md:max-w-2xl shadow-2xl relative flex flex-col max-h-full md:max-h-[80vh]"
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Header */}
@@ -442,15 +442,16 @@ export default function ClubEventManager() {
                             {/* Footer */}
                             <div className="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-gray-100 shrink-0">
                                 <button
+                                    type="button"
                                     onClick={cancelForm}
-                                    className="px-8 py-3 rounded-full bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition-all flex items-center justify-center"
+                                    className="hidden sm:flex px-8 py-3 rounded-full bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition-all items-center justify-center"
                                 >
                                     Close
                                 </button>
                                 <button
                                     onClick={handleSubmit}
                                     disabled={submitting}
-                                    className="px-8 py-3 rounded-full bg-[#a855f7] text-white text-sm font-bold hover:bg-[#9333ea] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="w-full sm:w-auto px-8 py-3 rounded-full bg-[#a855f7] text-white text-sm font-bold hover:bg-[#9333ea] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     {submitting ? (
                                         <>

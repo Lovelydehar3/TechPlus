@@ -5,6 +5,12 @@ import { Playlist } from "../models/playlistModel.js"
 import bcrypt from "bcryptjs"
 import { buildAuthCookieOptions } from "../utils/cookies.js"
 
+// Permanent admins — cannot be deleted, unadmined, or unverified by anyone
+const PERMANENT_ADMIN_EMAILS = new Set([
+  'lovepreetsingh73437@gmail.com',
+  'karansharma202005@gmail.com'
+])
+
 function buildUserStats(userDoc, savedHackathonsCount = 0) {
   const resourceWatchHistory = userDoc.watchHistory?.filter((item) => item?.type === 'resource') || []
   return {
@@ -132,6 +138,10 @@ export const deleteAccount = async (req, res) => {
     const { password } = req.body
     const user = await User.findById(req.user.id)
     if (!user) return res.status(404).json({ success: false, message: "User not found" })
+
+    if (PERMANENT_ADMIN_EMAILS.has(user.email)) {
+      return res.status(403).json({ success: false, message: "Co-founder accounts cannot be deleted" })
+    }
 
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) return res.status(401).json({ success: false, message: "Incorrect password" })
@@ -541,6 +551,10 @@ export const adminDeleteUser = async (req, res) => {
     const user = await User.findById(userId)
     if (!user) return res.status(404).json({ success: false, message: "User not found" })
 
+    if (PERMANENT_ADMIN_EMAILS.has(user.email)) {
+      return res.status(403).json({ success: false, message: "Cannot delete a permanent admin" })
+    }
+
     await Bookmark.deleteMany({ userId })
     await User.findByIdAndDelete(userId)
 
@@ -564,13 +578,22 @@ export const adminUpdateUserRole = async (req, res) => {
       return res.status(400).json({ success: false, message: "Cannot change your own role" })
     }
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { role },
-      { returnDocument: "after" }
-    ).select('-password -otp -otpExpires -resetToken -resetTokenExpires -watchHistory -roadmapProgress -downloadedRoadmaps -lastActivity -bookmarks -savedResources -stats -__v')
+    const targetUser = await User.findById(userId)
+    if (!targetUser) return res.status(404).json({ success: false, message: "User not found" })
 
-    if (!user) return res.status(404).json({ success: false, message: "User not found" })
+    if (PERMANENT_ADMIN_EMAILS.has(targetUser.email)) {
+      return res.status(403).json({ success: false, message: "Cannot change role of a permanent admin" })
+    }
+
+    targetUser.role = role
+    await targetUser.save()
+
+    const user = targetUser.toObject()
+    delete user.password
+    delete user.otp
+    delete user.otpExpires
+    delete user.resetToken
+    delete user.resetTokenExpires
 
     res.status(200).json({ success: true, message: "Role updated", user })
   } catch (error) {
@@ -588,15 +611,24 @@ export const adminVerifyUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "isVerified must be a boolean" })
     }
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { isVerified },
-      { returnDocument: "after" }
-    ).select('-password -otp -otpExpires -resetToken -resetTokenExpires -watchHistory -roadmapProgress -downloadedRoadmaps -lastActivity -bookmarks -savedResources -stats -__v')
-
+    const user = await User.findById(userId)
     if (!user) return res.status(404).json({ success: false, message: "User not found" })
 
-    res.status(200).json({ success: true, message: isVerified ? "User verified" : "User unverified", user })
+    if (PERMANENT_ADMIN_EMAILS.has(user.email)) {
+      return res.status(403).json({ success: false, message: "Cannot modify a permanent admin" })
+    }
+
+    user.isVerified = isVerified
+    await user.save()
+
+    const updated = user.toObject()
+    delete updated.password
+    delete updated.otp
+    delete updated.otpExpires
+    delete updated.resetToken
+    delete updated.resetTokenExpires
+
+    res.status(200).json({ success: true, message: isVerified ? "User verified" : "User unverified", user: updated })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }

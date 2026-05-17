@@ -39,3 +39,13 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
 })
+
+// Admin-specific rate limiter — stricter than general API
+export const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { success: false, message: "Too many admin requests. Please wait." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+})
