@@ -11,6 +11,8 @@ import {
   deleteCollegeHackathon
 } from "../services/hackathonService.js";
 import cacheService from "../services/cacheService.js";
+import { User } from "../models/userModel.js";
+import { Bookmark } from "../models/bookmarkModel.js";
 
 const requireAdmin = (req, res) => {
   if (req.user?.role !== "admin") {
@@ -216,7 +218,21 @@ export const deleteCollegeHackathonAdmin = async (req, res) => {
   if (!requireAdmin(req, res)) return;
 
   try {
-    await deleteCollegeHackathon(req.params.id);
+    const hackathonId = req.params.id;
+
+    // Clean up user bookmarks referencing this hackathon
+    await User.updateMany(
+      { bookmarks: hackathonId },
+      { $pull: { bookmarks: hackathonId } }
+    ).catch(() => {});
+
+    // Clean up any Bookmark documents referencing this hackathon
+    const hackathon = await getHackathonById(hackathonId);
+    if (hackathon?.image) {
+      await Bookmark.deleteMany({ articleImage: hackathon.image }).catch(() => {});
+    }
+
+    await deleteCollegeHackathon(hackathonId);
     invalidateHackathonCache();
     res.status(200).json({ success: true, message: "College hackathon deleted" });
   } catch (error) {

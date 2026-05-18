@@ -1,5 +1,6 @@
 import { Club } from "../models/clubModel.js";
 import { ClubEvent } from "../models/clubEventModel.js";
+import { Bookmark } from "../models/bookmarkModel.js";
 
 // ─── Helper: admin gate ──────────────────────────────────────────────────────
 const requireAdmin = (req, res) => {
@@ -179,6 +180,11 @@ export const deleteEvent = async (req, res) => {
     const event = await ClubEvent.findByIdAndDelete(req.params.id);
     if (!event)
       return res.status(404).json({ success: false, message: "Event not found" });
+
+    // Clean up any bookmarks that reference this event's image
+    if (event.image) {
+      await Bookmark.deleteMany({ articleImage: event.image }).catch(() => {});
+    }
 
     return res.status(200).json({ success: true, message: "Event deleted" });
   } catch (error) {

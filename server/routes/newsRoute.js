@@ -5,7 +5,8 @@ import {
   getAllTechNews,
   searchNewsArticles,
   refreshNewsCache,
-  getNewsArticle
+  getNewsArticle,
+  deleteNewsArticle
 } from "../controllers/newsController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { adminOnly } from "../middleware/adminMiddleware.js";
@@ -17,6 +18,7 @@ router.get('/gnews', getGTechNews);
 router.get('/all', getAllTechNews);
 router.get('/search', searchNewsArticles);
 router.post('/refresh', protect, adminOnly, refreshNewsCache);
+router.delete('/:id', protect, adminOnly, deleteNewsArticle);
 router.get('/:id', getNewsArticle);
 
 export default router;

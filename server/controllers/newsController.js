@@ -5,6 +5,9 @@
   getNewsById
 } from "../services/newsService.js";
 import cacheService from "../services/cacheService.js";
+import { News } from "../models/newsModel.js";
+import { Bookmark } from "../models/bookmarkModel.js";
+import { User } from "../models/userModel.js";
 
 function parseCategory(category) {
   if (!category || String(category).toLowerCase() === "all") return null;
@@ -197,6 +200,49 @@ export const getNewsArticle = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch article",
+      error: error.message
+    });
+  }
+};
+
+// ============ ADMIN: DELETE NEWS ARTICLE ============
+export const deleteNewsArticle = async (req, res) => {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ success: false, message: "Admin only" });
+  }
+
+  try {
+    const { id } = req.params;
+    const article = await News.findById(id);
+    if (!article) {
+      return res.status(404).json({ success: false, message: "Article not found" });
+    }
+
+    // Clean up bookmarks referencing this article
+    if (article.url) {
+      await Bookmark.deleteMany({ articleUrl: article.url }).catch(() => {});
+    }
+    if (article.image) {
+      await Bookmark.deleteMany({ articleImage: article.image }).catch(() => {});
+    }
+
+    // Remove from user bookmark references
+    await User.updateMany(
+      { bookmarks: id },
+      { $pull: { bookmarks: id } }
+    ).catch(() => {});
+
+    // Remove from news savedBy arrays
+    await News.findByIdAndDelete(id);
+
+    // Clear news cache
+    cacheService.clear();
+
+    res.status(200).json({ success: true, message: "Article deleted" });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete article",
       error: error.message
     });
   }

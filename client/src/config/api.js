@@ -258,7 +258,11 @@ export const newsAPI = {
     return res;
   },
   refreshNews: () =>
-    apiClient.post('/api/news/refresh')
+    apiClient.post('/api/news/refresh'),
+  deleteArticle: (id) => {
+    apiCache.clear();
+    return apiClient.delete('/api/news/' + encodeURIComponent(String(id || '')));
+  }
 };
 
 export const playlistAPI = {
