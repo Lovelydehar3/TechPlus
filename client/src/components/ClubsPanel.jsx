@@ -3,78 +3,57 @@ import { m, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { clubAPI } from '../config/api';
 
-/* ─── Inline SVG logos ─────────────────────────────────────────────────────── */
-const ComicLogo = () => (
-    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="comic-grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#a855f7" />
-                <stop offset="1" stopColor="#6366f1" />
-            </linearGradient>
-            <filter id="comic-glow">
-                <feGaussianBlur stdDeviation="2" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-        </defs>
-        <rect x="4" y="4" width="56" height="56" rx="14" fill="rgba(168,85,247,0.08)" stroke="url(#comic-grad)" strokeWidth="1.5" />
-        {/* Speech bubble */}
-        <path d="M16 18h24c2.2 0 4 1.8 4 4v14c0 2.2-1.8 4-4 4H28l-6 6v-6h-6c-2.2 0-4-1.8-4-4V22c0-2.2 1.8-4 4-4z" fill="rgba(168,85,247,0.15)" stroke="#a855f7" strokeWidth="1.5" filter="url(#comic-glow)" />
-        {/* Lightning bolt inside bubble */}
-        <path d="M30 22l-6 10h6l-2 10 8-12h-6l4-8z" fill="#a855f7" opacity="0.9" />
-        {/* Star accents */}
-        <circle cx="48" cy="16" r="2" fill="#d8b4fe" opacity="0.6" />
-        <circle cx="52" cy="22" r="1.2" fill="#c084fc" opacity="0.4" />
+/* ─── Custom Icons ────────────────────────────────────────────────────────── */
+const CosmicIcon = () => (
+    <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="text-purple-600 md:group-hover:text-purple-700 group-active:text-purple-700 transition-colors">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
     </svg>
 );
 
-const DataScienceLogo = () => (
-    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="ds-grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#6366f1" />
-                <stop offset="1" stopColor="#a855f7" />
-            </linearGradient>
-            <filter id="ds-glow">
-                <feGaussianBlur stdDeviation="2" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-        </defs>
-        <rect x="4" y="4" width="56" height="56" rx="14" fill="rgba(99,102,241,0.08)" stroke="url(#ds-grad)" strokeWidth="1.5" />
-        {/* Brain / network nodes */}
-        <circle cx="32" cy="24" r="4" fill="rgba(99,102,241,0.3)" stroke="#6366f1" strokeWidth="1.5" filter="url(#ds-glow)" />
-        <circle cx="20" cy="34" r="3" fill="rgba(168,85,247,0.3)" stroke="#a855f7" strokeWidth="1.2" />
-        <circle cx="44" cy="34" r="3" fill="rgba(168,85,247,0.3)" stroke="#a855f7" strokeWidth="1.2" />
-        <circle cx="26" cy="46" r="2.5" fill="rgba(99,102,241,0.25)" stroke="#6366f1" strokeWidth="1" />
-        <circle cx="38" cy="46" r="2.5" fill="rgba(99,102,241,0.25)" stroke="#6366f1" strokeWidth="1" />
-        {/* Connection lines */}
-        <line x1="32" y1="28" x2="20" y2="31" stroke="#a855f7" strokeWidth="1" opacity="0.5" />
-        <line x1="32" y1="28" x2="44" y2="31" stroke="#a855f7" strokeWidth="1" opacity="0.5" />
-        <line x1="20" y1="37" x2="26" y2="43.5" stroke="#6366f1" strokeWidth="0.8" opacity="0.4" />
-        <line x1="44" y1="37" x2="38" y2="43.5" stroke="#6366f1" strokeWidth="0.8" opacity="0.4" />
-        <line x1="26" y1="46" x2="38" y2="46" stroke="#a855f7" strokeWidth="0.8" opacity="0.3" />
-        {/* Bar chart accent */}
-        <rect x="14" y="50" width="3" height="6" rx="1" fill="#a855f7" opacity="0.4" />
-        <rect x="19" y="48" width="3" height="8" rx="1" fill="#6366f1" opacity="0.5" />
-        <rect x="24" y="46" width="3" height="10" rx="1" fill="#a855f7" opacity="0.6" />
+const DataScienceIcon = () => (
+    <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="text-purple-600 md:group-hover:text-purple-700 group-active:text-purple-700 transition-colors">
+        <circle cx="18" cy="5" r="3" />
+        <circle cx="6" cy="12" r="3" />
+        <circle cx="18" cy="19" r="3" />
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
     </svg>
 );
 
-const CLUB_LOGOS = {
-    'comic-club': ComicLogo,
-    'data-science-club': DataScienceLogo,
+const CLUB_ICONS = {
+    'cosmic-club': CosmicIcon,
+    'data-science-club': DataScienceIcon,
+};
+
+const getTaglineIcon = (slug) => {
+    if (slug === 'cosmic-club') {
+        return (
+            <div className="w-3 h-3 rounded-full border-2 border-purple-400 md:group-hover:border-purple-500 group-active:border-purple-500 transition-colors" />
+        );
+    }
+    if (slug === 'data-science-club') {
+        return (
+            <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="text-purple-400 md:group-hover:text-purple-500 group-active:text-purple-500 transition-colors">
+                <path d="M18 20V10M12 20V4M6 20v-6" />
+            </svg>
+        );
+    }
+    return (
+        <div className="w-2.5 h-2.5 rounded-full border border-purple-400 md:group-hover:border-purple-500 group-active:border-purple-500 transition-colors" />
+    );
 };
 
 /* ─── Skeleton Card ────────────────────────────────────────────────────────── */
 const SkeletonCard = () => (
-    <div className="glass p-6 animate-pulse">
-        <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-white/10" />
+    <div className="bg-[#f8f8fc] border border-gray-100/60 p-5 rounded-2xl animate-pulse min-h-[140px] flex flex-col justify-between">
+        <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gray-200" />
             <div className="flex-1 space-y-2">
-                <div className="h-4 bg-white/10 rounded w-3/4" />
-                <div className="h-3 bg-white/5 rounded w-1/2" />
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
+                <div className="h-3 bg-gray-150 rounded w-1/2" />
             </div>
         </div>
-        <div className="h-3 bg-white/5 rounded w-full" />
+        <div className="h-3 bg-gray-150 rounded w-full mt-4" />
     </div>
 );
 
@@ -121,7 +100,7 @@ export default function ClubsPanel({ isOpen, onClose }) {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[90]"
+                        className="fixed inset-0 bg-black/55 backdrop-blur-sm z-[90]"
                     />
 
                     {/* Floating Panel Wrapper */}
@@ -133,118 +112,113 @@ export default function ClubsPanel({ isOpen, onClose }) {
                             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
                             className="pointer-events-auto w-full max-w-[680px]"
                         >
-                        <div
-                            className="rounded-2xl border border-white/10 overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.7)]"
-                            style={{
-                                background: 'linear-gradient(145deg, rgba(10,10,14,0.97) 0%, rgba(16,10,28,0.97) 100%)',
-                                backdropFilter: 'blur(40px)',
-                                WebkitBackdropFilter: 'blur(40px)',
-                            }}
-                        >
-                            {/* Header */}
-                            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/5">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-2 h-2 rounded-full bg-[#7c3aed] animate-pulse" />
-                                    <div>
-                                        <h2 className="text-xl font-black text-white uppercase tracking-tighter">
-                                            College Clubs
-                                        </h2>
-                                        <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mt-0.5">
-                                            Updates & Events
-                                        </p>
+                            <div className="bg-white rounded-3xl overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.18)] border border-gray-100 p-6 sm:p-8">
+                                {/* Header */}
+                                <div className="flex items-center justify-between pb-5 border-b border-gray-100/60">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-[#f0effb] flex items-center justify-center text-[#7c3aed]">
+                                            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 14v7" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 className="text-lg sm:text-xl font-black text-gray-900 uppercase tracking-[0.22em] font-sans">
+                                                College Clubs
+                                            </h2>
+                                            <p className="text-[10px] font-black text-[#7c3aed] uppercase tracking-[0.22em] mt-1.5">
+                                                Updates & Events
+                                            </p>
+                                        </div>
                                     </div>
+                                    <button
+                                        onClick={onClose}
+                                        className="w-10 h-10 rounded-2xl border border-gray-100 hover:border-gray-200 text-gray-400 hover:text-gray-900 flex items-center justify-center bg-white transition-all duration-200 active:scale-95 cursor-pointer"
+                                    >
+                                        <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                            <path d="M18 6L6 18M6 6l12 12" />
+                                        </svg>
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={onClose}
-                                    className="p-2 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                                >
-                                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                                        <path d="M18 6L6 18M6 6l12 12" />
-                                    </svg>
-                                </button>
+
+                                {/* Content */}
+                                <div className="pt-6">
+                                    {loading ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                            <SkeletonCard />
+                                            <SkeletonCard />
+                                        </div>
+                                    ) : error ? (
+                                        <div className="py-12 text-center">
+                                            <p className="text-gray-400 text-sm font-bold">{error}</p>
+                                        </div>
+                                    ) : clubs.length === 0 ? (
+                                        <div className="py-12 text-center">
+                                            <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">
+                                                No clubs available yet
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                            {clubs.map((club, idx) => {
+                                                const Icon = CLUB_ICONS[club.slug];
+                                                return (
+                                                    <m.button
+                                                        key={club._id}
+                                                        initial={{ opacity: 0, y: 16 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: idx * 0.08, duration: 0.4 }}
+                                                        onClick={() => handleClubClick(club.slug)}
+                                                        className="group relative text-left rounded-[20px] border border-gray-100 p-5 flex flex-col justify-between min-h-[140px] cursor-pointer transition-all duration-300 bg-white md:hover:bg-[#fcfcff] md:hover:border-[#7c3aed]/40 md:hover:shadow-[0_16px_36px_rgba(124,58,237,0.06)] md:hover:scale-[1.01] active:scale-[0.97] active:bg-[#f8f7ff] active:border-[#7c3aed]/40 active:shadow-[0_16px_36px_rgba(124,58,237,0.06)] overflow-hidden"
+                                                    >
+                                                        {/* Top Section */}
+                                                        <div className="w-full flex items-center gap-3">
+                                                            {/* Logo Icon Box */}
+                                                            <div className="shrink-0 w-12 h-12 rounded-[16px] bg-[#f0effb] flex items-center justify-center border border-purple-100/30 md:group-hover:scale-105 md:group-hover:bg-[#e2e0f9] group-active:scale-95 group-active:bg-[#e2e0f9] transition-all duration-300">
+                                                                {Icon ? <Icon /> : (
+                                                                    <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 font-black text-base group-active:text-purple-700 md:group-hover:text-purple-700 transition-colors">
+                                                                        {club.name.charAt(0)}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Title */}
+                                                            <div className="flex-1 min-w-0">
+                                                                <h3 className="text-sm sm:text-base font-black text-gray-900 uppercase tracking-[0.1em] md:group-hover:text-[#7c3aed] group-active:text-[#7c3aed] transition-colors leading-tight">
+                                                                    {club.name}
+                                                                </h3>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Inner Divider */}
+                                                        <div className="w-full border-t border-gray-100/60 my-4" />
+
+                                                        {/* Bottom Section */}
+                                                        <div className="w-full flex items-center justify-between gap-2">
+                                                            {/* Tagline / Subtitle */}
+                                                            <div className="flex items-center gap-2 min-w-0">
+                                                                {getTaglineIcon(club.slug)}
+                                                                <span className="text-xs text-gray-500 font-medium tracking-tight truncate md:group-hover:text-gray-700 group-active:text-gray-700 transition-colors">
+                                                                    {club.tagline}
+                                                                </span>
+                                                            </div>
+
+                                                            {/* Arrow Button */}
+                                                            <div className="shrink-0 w-8 h-8 rounded-full bg-[#f0effb] border border-purple-100/30 flex items-center justify-center text-[#7c3aed] md:group-hover:bg-gradient-to-r md:group-hover:from-[#8b5cf6] md:group-hover:to-[#a855f7] md:group-hover:text-white md:group-hover:border-transparent md:group-hover:shadow-[0_4px_12px_rgba(124,58,237,0.25)] group-active:bg-gradient-to-r group-active:from-[#8b5cf6] group-active:to-[#a855f7] group-active:text-white group-active:border-transparent group-active:shadow-[0_4px_12px_rgba(124,58,237,0.25)] transition-all duration-300">
+                                                                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                                                    <path d="M9 18l6-6-6-6" />
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                    </m.button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-
-                            {/* Content */}
-                            <div className="p-6">
-                                {loading ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <SkeletonCard />
-                                        <SkeletonCard />
-                                    </div>
-                                ) : error ? (
-                                    <div className="py-12 text-center">
-                                        <p className="text-white/30 text-sm font-bold">{error}</p>
-                                    </div>
-                                ) : clubs.length === 0 ? (
-                                    <div className="py-12 text-center">
-                                        <p className="text-white/20 font-bold uppercase tracking-widest text-sm">
-                                            No clubs available yet
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {clubs.map((club, idx) => {
-                                            const Logo = CLUB_LOGOS[club.slug];
-                                            return (
-                                                <m.button
-                                                    key={club._id}
-                                                    initial={{ opacity: 0, y: 16 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ delay: idx * 0.1, duration: 0.4 }}
-                                                    onClick={() => handleClubClick(club.slug)}
-                                                    className="group relative text-left rounded-2xl border border-white/[0.06] p-5 transition-all duration-500 hover:border-[#7c3aed]/40 cursor-pointer overflow-hidden"
-                                                    style={{
-                                                        background: 'rgba(255,255,255,0.02)',
-                                                    }}
-                                                >
-                                                    {/* Hover glow */}
-                                                    <div
-                                                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                                                        style={{
-                                                            background: 'radial-gradient(circle at 50% 50%, rgba(124,58,237,0.12) 0%, transparent 70%)',
-                                                        }}
-                                                    />
-
-                                                    <div className="relative z-10 flex items-start gap-4">
-                                                        {/* Logo */}
-                                                        <div className="shrink-0 w-16 h-16 rounded-2xl flex items-center justify-center overflow-hidden bg-white/[0.03] border border-white/[0.06] group-hover:border-[#7c3aed]/30 transition-all duration-500 group-hover:scale-105">
-                                                            {Logo ? <Logo /> : (
-                                                                <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 font-black text-lg">
-                                                                    {club.name.charAt(0)}
-                                                                </div>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Info */}
-                                                        <div className="flex-1 min-w-0">
-                                                            <h3 className="text-base font-black text-white uppercase tracking-tight group-hover:text-[#a855f7] transition-colors">
-                                                                {club.name}
-                                                            </h3>
-                                                            <m.p
-                                                                initial={{ opacity: 0 }}
-                                                                animate={{ opacity: 1 }}
-                                                                transition={{ delay: 0.3 + idx * 0.1 }}
-                                                                className="text-xs text-white/40 mt-1 font-semibold"
-                                                            >
-                                                                {club.tagline}
-                                                            </m.p>
-                                                        </div>
-
-                                                        {/* Arrow */}
-                                                        <div className="shrink-0 mt-1 text-white/10 group-hover:text-[#a855f7] transition-all group-hover:translate-x-1">
-                                                            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                                <path d="M9 18l6-6-6-6" />
-                                                            </svg>
-                                                        </div>
-                                                    </div>
-                                                </m.button>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </m.div>
+                        </m.div>
                     </div>
                 </>
             )}

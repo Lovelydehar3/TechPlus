@@ -322,13 +322,13 @@ export default function ClubEventManager() {
                                             onChange={e => handleChange('clubId', e.target.value)}
                                             className="w-full bg-[#f0f4f8] text-gray-900 text-sm font-semibold rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#a855f7] transition-all"
                                         >
-                                            <option value="" className="bg-[#111115]">Choose a club...</option>
+                                            <option value="">Choose a club...</option>
                                             {clubs.length > 0 ? (
                                                 clubs.map(c => (
-                                                    <option key={c._id} value={c._id} className="bg-[#111115]">{c.name}</option>
+                                                    <option key={c._id} value={c._id}>{c.name}</option>
                                                 ))
                                             ) : (
-                                                <option disabled className="bg-[#111115]">No clubs available</option>
+                                                <option disabled>No clubs available</option>
                                             )}
                                         </select>
                                     </FormField>
@@ -340,7 +340,7 @@ export default function ClubEventManager() {
                                             className="w-full bg-[#f0f4f8] text-gray-900 text-sm font-semibold rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#a855f7] transition-all"
                                         >
                                             {STATUS_OPTIONS.map(s => (
-                                                <option key={s} value={s} className="bg-[#111115]">{s}</option>
+                                                <option key={s} value={s}>{s}</option>
                                             ))}
                                         </select>
                                     </FormField>

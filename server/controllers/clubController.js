@@ -13,16 +13,32 @@ const requireAdmin = (req, res) => {
 
 // ─── Seed default clubs if DB is empty ──────────────────────────────────────
 export const ensureClubsSeeded = async () => {
+  // Auto-migrate legacy "comic-club" documents if they exist
+  try {
+    await Club.updateOne(
+      { slug: "comic-club" },
+      {
+        $set: {
+          slug: "cosmic-club",
+          name: "Cosmic Club",
+          description: "Where art meets narrative. The Cosmic Club celebrates creativity through comics, illustration, and visual storytelling — from manga to superhero panels."
+        }
+      }
+    );
+  } catch (err) {
+    console.error("[ClubSeed] Migration failed:", err.message);
+  }
+
   const count = await Club.countDocuments();
   if (count > 0) return;
 
   await Club.insertMany([
     {
-      slug: "comic-club",
-      name: "Comic Club",
+      slug: "cosmic-club",
+      name: "Cosmic Club",
       tagline: "Art, Story & Imagination",
       description:
-        "Where art meets narrative. The Comic Club celebrates creativity through comics, illustration, and visual storytelling — from manga to superhero panels.",
+        "Where art meets narrative. The Cosmic Club celebrates creativity through comics, illustration, and visual storytelling — from manga to superhero panels.",
       logoUrl: "",
       isActive: true,
     },
