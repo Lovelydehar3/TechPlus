@@ -28,12 +28,12 @@ export default function SplashScreen() {
   });
 
   return (
-    <div className="fixed inset-0 bg-[#050505] flex items-center justify-center z-[999] overflow-hidden">
+    <div className="fixed inset-0 bg-[#f8f9fa] flex items-center justify-center z-[999] overflow-hidden">
       {/* Background Ambient Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#7c3aed]/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#7c3aed]/5 blur-[120px] rounded-full pointer-events-none" />
 
       {/* Centered image panel */}
-      <div className="relative w-full max-w-[480px] h-full overflow-hidden opacity-40">
+      <div className="relative w-full max-w-[480px] h-full overflow-hidden opacity-90">
         {/* Scrolling columns - fewer images for faster load */}
         <div className="absolute top-0 left-0 w-full h-[200vh] grid grid-cols-3 gap-2 p-2">
           <div className="flex flex-col gap-2 splash-scroll-up">
@@ -53,11 +53,11 @@ export default function SplashScreen() {
           </div>
         </div>
 
-        {/* Edge fades */}
-        <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#050505] to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#050505] to-transparent pointer-events-none z-10" />
-        <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#050505] to-transparent pointer-events-none z-10" />
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#050505] to-transparent pointer-events-none z-10" />
+        {/* Edge fades - updated to match the light theme */}
+        <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#f8f9fa] to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#f8f9fa] to-transparent pointer-events-none z-10" />
+        <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#f8f9fa] to-transparent pointer-events-none z-10" />
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#f8f9fa] to-transparent pointer-events-none z-10" />
       </div>
 
       {/* Center: logo + spinner */}
@@ -65,7 +65,7 @@ export default function SplashScreen() {
         <div className="relative flex items-center justify-center">
           {/* Pulse rings */}
           <m.div
-            className="absolute w-24 h-24 rounded-full border border-[#7c3aed]/30"
+            className="absolute w-24 h-24 rounded-full border border-[#7c3aed]/20"
             animate={{ scale: [1, 1.35, 1], opacity: [0.5, 0, 0.5] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           />
@@ -79,9 +79,9 @@ export default function SplashScreen() {
               transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
             />
           </svg>
-          {/* Logo */}
+          {/* Logo - styled with a dark drop shadow */}
           <m.div
-            className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-black text-lg bg-white shadow-[0_0_30px_rgba(255,255,255,0.25)] relative z-10"
+            className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-black text-lg bg-white shadow-[0_8px_30px_rgba(0,0,0,0.08)] border border-black/5 relative z-10"
             animate={{ scale: [1, 1.04, 1] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           >
@@ -95,12 +95,12 @@ export default function SplashScreen() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <span className="text-2xl font-black tracking-tighter text-white uppercase">TECHPLUS</span>
+          <span className="text-2xl font-black tracking-tighter text-[#0f0f12] uppercase">TECHPLUS</span>
           <div className="flex items-center gap-2">
             <div className="w-1 h-1 rounded-full bg-[#7c3aed] animate-ping" />
             <m.span
-              className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]"
-              animate={{ opacity: [0.3, 0.7, 0.3] }}
+              className="text-[10px] font-black text-black/45 uppercase tracking-[0.3em]"
+              animate={{ opacity: [0.4, 0.8, 0.4] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
               Initializing Systems

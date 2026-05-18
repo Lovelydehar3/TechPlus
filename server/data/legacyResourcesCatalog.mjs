@@ -1560,5 +1560,1090 @@ export const LEGACY_CATALOG = [
         tags: ["codeaesthetic", "famous", "software design"]
       })
     ]
+  },
+  {
+    category: "DSA & Competitive Programming",
+    links: [
+      course({
+        title: "Striver's A2Z DSA Sheet / Course",
+        url: "https://takeuforward.org/strivers-a2z-dsa-course/strivers-a2z-dsa-course-sheet-2/",
+        desc: "Comprehensive DSA sheet by Raj Vikramaditya (Striver) covering 450+ problems from basics to advanced topics for placements and competitive programming.",
+        platform: "Take U Forward",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Beginner to Advanced",
+        resourceType: "Free Course With Certificate",
+        tags: ["dsa", "striver", "placements", "problem solving", "a2z sheet"]
+      }),
+      course({
+        title: "LeetCode Blind 75 - NeetCode",
+        url: "https://neetcode.io/practice",
+        desc: "Curated 75 must-do LeetCode problems with video explanations by NeetCode. Covers arrays, trees, graphs, DP, and more.",
+        platform: "NeetCode",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Intermediate to Advanced",
+        resourceType: "Free Course With Certificate",
+        tags: ["dsa", "leetcode", "neetcode", "interview prep"]
+      }),
+      course({
+        title: "Striver's SDE Sheet - Take U Forward",
+        url: "https://takeuforward.org/interviews/strivers-sde-sheet-top-coding-interview-problems/",
+        desc: "191 curated coding problems covering all DSA topics asked in top tech company interviews by Striver.",
+        platform: "Take U Forward",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Intermediate to Advanced",
+        resourceType: "Free Course With Certificate",
+        tags: ["dsa", "striver", "sde sheet", "interviews"]
+      }),
+      course({
+        title: "Grokking the Coding Interview - Educative",
+        url: "https://www.educative.io/courses/grokking-coding-interview-patterns-python",
+        desc: "Pattern-based approach to coding interviews covering sliding window, two pointers, fast/slow pointers, merge intervals, and more.",
+        platform: "Educative",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Intermediate",
+        resourceType: "Paid Course",
+        tags: ["dsa", "patterns", "interview prep", "educative"]
+      }),
+      course({
+        title: "Algorithms Specialization - Stanford (Coursera)",
+        url: "https://www.coursera.org/specializations/algorithms",
+        desc: "Tim Roughgarden's Stanford algorithms specialization covering divide and conquer, graph algorithms, greedy, and dynamic programming.",
+        platform: "Coursera",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Intermediate to Advanced",
+        resourceType: "Paid Course",
+        tags: ["algorithms", "stanford", "graph", "dynamic programming"]
+      }),
+      playlistSeries({
+        title: "Take U Forward - DSA Playlist",
+        desc: "Complete DSA playlist by Striver (Raj Vikramaditya) covering arrays, linked lists, trees, graphs, DP, and advanced topics with problem-solving walkthroughs.",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Beginner to Advanced",
+        duration: "8h+",
+        tags: ["dsa", "striver", "take u forward", "interviews"],
+        playlist: [
+          { title: "Arrays - Data Structures and Algorithms", videoId: "37E9ckMDdTk", duration: "45:00" },
+          { title: "Sort an array of 0s 1s and 2s", videoId: "tp8JIuCXBaU", duration: "22:30" },
+          { title: "Kadane's Algorithm - Maximum Subarray Sum", videoId: "w_KEocd1BYE", duration: "18:15" },
+          { title: "Next Permutation", videoId: "LuLCLg7ElWs", duration: "25:40" }
+        ]
+      }),
+      playlistSeries({
+        title: "Take U Forward - Binary Trees Playlist",
+        desc: "Binary tree problem-solving playlist by Striver covering traversals, views, path problems, and construction techniques.",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Intermediate",
+        duration: "6h+",
+        tags: ["binary trees", "striver", "dsa"],
+        playlist: [
+          { title: "Binary Tree Representation in C++", videoId: "ctCpPax-FcE", duration: "15:30" },
+          { title: "Binary Tree Traversals - Inorder Preorder Postorder", videoId: "jmy0LaFIGEk", duration: "28:45" },
+          { title: "Height of Binary Tree", videoId: "Y9PDsMiGl8c", duration: "20:10" }
+        ]
+      }),
+      playlistSeries({
+        title: "Take U Forward - Graph Series",
+        desc: "Graph algorithms playlist by Striver covering BFS, DFS, shortest paths, MST, topological sort, and advanced graph problems.",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Intermediate to Advanced",
+        duration: "7h+",
+        tags: ["graphs", "striver", "bfs", "dfs", "shortest path"],
+        playlist: [
+          { title: "Graph Representation - Adjacency Matrix and List", videoId: "zD2nRJ9IBZo", duration: "32:00" },
+          { title: "BFS in Graph", videoId: "L1b2ESMA7PE", duration: "25:30" },
+          { title: "DFS in Graph", videoId: "aZVqz2WFBMs", duration: "22:15" }
+        ]
+      }),
+      playlistSeries({
+        title: "Take U Forward - Dynamic Programming Series",
+        desc: "Dynamic programming playlist by Striver covering 1D DP, 2D DP, subsequences, strings, stocks, LIS, and partition DP patterns.",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Advanced",
+        duration: "8h+",
+        tags: ["dynamic programming", "striver", "dp patterns"],
+        playlist: [
+          { title: "Introduction to Dynamic Programming", videoId: "tyB0ztf0DNY", duration: "35:00" },
+          { title: "Climbing Stairs - DP on Subsequences", videoId: "mLfjzJsN8us", duration: "20:45" },
+          { title: "Frog Jump - DP 3", videoId: "EgG3emZYqbg", duration: "28:30" }
+        ]
+      }),
+      playlistSeries({
+        title: "Love Babbar - DSA Course Playlist",
+        desc: "Complete DSA course in C++ by Love Babbar covering all topics from arrays to advanced data structures with 450+ problems.",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Beginner to Advanced",
+        duration: "10h+",
+        tags: ["dsa", "love babbar", "cpp", "placements"],
+        playlist: [
+          { title: "Lec 1: Introduction to Arrays", videoId: "3FBCRSvRo1M", duration: "45:00" },
+          { title: "Lec 2: Array Interview Questions", videoId: "bYWLmO1eJ7o", duration: "52:00" },
+          { title: "Lec 3: STL in C++", videoId: "RRHF8lOZNs0", duration: "38:20" }
+        ]
+      }),
+      playlistSeries({
+        title: "CodeHelp by Babbar - DSA Supreme Playlist",
+        desc: "DSA Supreme batch free content from CodeHelp by Love Babbar. Covers C++, DSA fundamentals, and interview preparation.",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Beginner to Intermediate",
+        duration: "6h+",
+        tags: ["codehelp", "dsa", "love babbar", "cpp"],
+        playlist: [
+          { title: "Introduction to C++", videoId: "S579sOFMdBA", duration: "40:00" },
+          { title: "Patterns in C++", videoId: "YHfCGRHoFXM", duration: "35:15" },
+          { title: "Functions in C++", videoId: "jCW7sTzV2g4", duration: "28:40" }
+        ]
+      }),
+      playlistSeries({
+        title: "Kunal Kushwaha - Java + DSA Playlist",
+        desc: "Java and DSA playlist by Kunal Kushwaha covering Java fundamentals, OOP, collections, algorithms, and interview preparation.",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Beginner to Intermediate",
+        duration: "7h+",
+        tags: ["java", "dsa", "kunal kushwaha", "interviews"],
+        playlist: [
+          { title: "Introduction to Java", videoId: "ntLJmHOJ0ME", duration: "1:20:00" },
+          { title: "Conditions and Loops in Java", videoId: "ldYLYRNaucM", duration: "45:00" },
+          { title: "Arrays in Java", videoId: "mY9n7BVR0VE", duration: "35:20" }
+        ]
+      })
+    ]
+  },
+  {
+    category: "System Design & CS Fundamentals",
+    links: [
+      course({
+        title: "Grokking the System Design Interview - Educative",
+        url: "https://www.educative.io/courses/grokking-modern-system-design-interview-for-engineers-managers",
+        desc: "Popular system design interview preparation course covering URL shortener, Twitter, Netflix, and other real-world design problems.",
+        platform: "Educative",
+        domain: "System Design",
+        difficulty: "Intermediate to Advanced",
+        resourceType: "Paid Course",
+        tags: ["system design", "interviews", "scalability", "educative"]
+      }),
+      course({
+        title: "System Design Interview by Alex Xu",
+        url: "https://www.amazon.com/System-Design-Interview-insiders-Second/dp/B08CMF2CQF",
+        desc: "Bestselling system design book covering step-by-step approaches to designing large-scale systems like TinyURL, Twitter, and web crawlers.",
+        platform: "Book / Self-Study",
+        domain: "System Design",
+        difficulty: "Intermediate to Advanced",
+        resourceType: "Paid Course",
+        tags: ["system design", "alex xu", "interviews", "distributed systems"]
+      }),
+      course({
+        title: "Operating Systems Fundamentals - Coursera",
+        url: "https://www.coursera.org/learn/os-power-user",
+        desc: "Google's operating systems course covering processes, memory management, file systems, and OS fundamentals for developers.",
+        platform: "Coursera",
+        domain: "Operating Systems",
+        difficulty: "Intermediate",
+        resourceType: "Paid Course",
+        tags: ["os", "operating systems", "processes", "memory"]
+      }),
+      course({
+        title: "DBMS Course - Apna College",
+        url: "https://www.youtube.com/playlist?list=PLfqMhTWNBTe0cef0G62mOlGi0qO7vL8zP",
+        desc: "Complete DBMS course by Apna College covering ER diagrams, normalization, SQL, transactions, and concurrency for placements.",
+        platform: "YouTube",
+        domain: "Database Management",
+        difficulty: "Beginner to Intermediate",
+        resourceType: "YouTube Playlist",
+        tags: ["dbms", "sql", "normalization", "apna college"]
+      }),
+      course({
+        title: "Operating System Placement Series - Gate Smashers",
+        url: "https://www.youtube.com/playlist?list=PLC36xJgs4dxGveMk8J7G0ynQa0pL7xOjv",
+        desc: "Complete OS concepts playlist by Gate Smashers covering process management, memory, scheduling, deadlocks, and file systems.",
+        platform: "YouTube",
+        domain: "Operating Systems",
+        difficulty: "Intermediate",
+        resourceType: "YouTube Playlist",
+        tags: ["os", "operating systems", "gate smashers", "placements"]
+      }),
+      course({
+        title: "Computer Networks - Gate Smashers",
+        url: "https://www.youtube.com/playlist?list=PLC36xJgs4dxFcGJ-97E9f8mVnG4B-mGqz",
+        desc: "Complete computer networking playlist by Gate Smashers covering OSI model, TCP/IP, routing, and network protocols.",
+        platform: "YouTube",
+        domain: "Computer Networks",
+        difficulty: "Intermediate",
+        resourceType: "YouTube Playlist",
+        tags: ["networking", "tcp ip", "gate smashers", "placements"]
+      }),
+      playlistSeries({
+        title: "Piyush Garg - System Design Playlist",
+        desc: "System design playlist by Piyush Garg covering real-world architecture problems, scaling strategies, and interview preparation.",
+        domain: "System Design",
+        difficulty: "Intermediate to Advanced",
+        duration: "5h+",
+        tags: ["system design", "piyush garg", "architecture", "scalability"],
+        playlist: [
+          { title: "What is System Design?", videoId: "bI8hN7HqMsE", duration: "25:00" },
+          { title: "Design a URL Shortener", videoId: "JPMwNE_MSKs", duration: "35:30" },
+          { title: "Load Balancer Explained", videoId: "L1J9B3mJq8E", duration: "28:15" }
+        ]
+      }),
+      playlistSeries({
+        title: "Piyush Garg - Web Development Playlist",
+        desc: "Full-stack web development playlist by Piyush Garg covering React, Node.js, MongoDB, and deployment with real projects.",
+        domain: "Web Development",
+        difficulty: "Beginner to Intermediate",
+        duration: "6h+",
+        tags: ["web dev", "react", "node.js", "piyush garg"],
+        playlist: [
+          { title: "React JS Tutorial for Beginners", videoId: "Rp33KMSga4Q", duration: "1:10:00" },
+          { title: "Node.js and Express Tutorial", videoId: "fBzm-VBkIL4", duration: "55:30" },
+          { title: "MongoDB Tutorial", videoId: "ExcRbA7fy_A", duration: "42:15" }
+        ]
+      }),
+      playlistSeries({
+        title: "Thapa Technical - React + JavaScript Playlist",
+        desc: "React and JavaScript tutorials by Vinod Thapa (Thapa Technical) covering hooks, state management, routing, and project-based learning.",
+        domain: "Frontend Development",
+        difficulty: "Beginner to Intermediate",
+        duration: "5h+",
+        tags: ["react", "javascript", "thapa technical", "hooks"],
+        playlist: [
+          { title: "React JS Tutorial in Hindi", videoId: "RGKi6LSPDLU", duration: "1:30:00" },
+          { title: "useEffect Hook Explained", videoId: "jM_Mz1Gz8LY", duration: "25:00" },
+          { title: "React Router v6 Tutorial", videoId: "Ul3y1LXxzdU", duration: "40:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "Thapa Technical - JavaScript Full Course",
+        desc: "Complete JavaScript course by Thapa Technical covering ES6, DOM manipulation, async programming, and practical projects in Hindi.",
+        domain: "JavaScript",
+        difficulty: "Beginner to Intermediate",
+        duration: "6h+",
+        tags: ["javascript", "es6", "dom", "thapa technical"],
+        playlist: [
+          { title: "JavaScript Tutorial in Hindi - 2024", videoId: "Hr5iLG7sUa0", duration: "2:00:00" },
+          { title: "JavaScript Async Await", videoId: "vn3tm0quoqE", duration: "30:00" },
+          { title: "JavaScript DOM Manipulation", videoId: "0-S5a0eXPoc", duration: "45:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "Thapa Technical - MERN Stack Project",
+        desc: "Full MERN stack project playlist by Thapa Technical building complete web applications with React, Node.js, Express, and MongoDB.",
+        domain: "Full Stack Development",
+        difficulty: "Intermediate",
+        duration: "4h+",
+        tags: ["mern", "full stack", "thapa technical", "projects"],
+        playlist: [
+          { title: "MERN Stack Project Tutorial", videoId: "5oP1s2m5PEc", duration: "1:20:00" },
+          { title: "Backend API with Express", videoId: "SccSCuHhOw0", duration: "45:30" },
+          { title: "Deploy MERN App to Production", videoId: "71UN3xHjKqA", duration: "35:20" }
+        ]
+      }),
+      playlistSeries({
+        title: "Apna College - DSA Playlist (C++)",
+        desc: "Complete DSA playlist by Apna College (Shradha Khapra) in C++ covering all major data structures and algorithms for placements.",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Beginner to Advanced",
+        duration: "8h+",
+        tags: ["dsa", "cpp", "apna college", "placements"],
+        playlist: [
+          { title: "Introduction to C++", videoId: "z9bZufPHFLU", duration: "40:00" },
+          { title: "Arrays in C++", videoId: "k0xgKZMiF3c", duration: "45:00" },
+          { title: "Pointers in C++", videoId: "Cv_LV0eFb6k", duration: "35:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "Apna College - Web Development Playlist",
+        desc: "Full web development course by Apna College covering HTML, CSS, JavaScript, React, Node.js, and deployment for beginners.",
+        domain: "Web Development",
+        difficulty: "Beginner to Intermediate",
+        duration: "6h+",
+        tags: ["web dev", "html", "css", "javascript", "apna college"],
+        playlist: [
+          { title: "HTML Tutorial for Beginners", videoId: "HcOc7P5BMi4", duration: "1:00:00" },
+          { title: "CSS Complete Tutorial", videoId: "ESnrn1kAD4E", duration: "1:30:00" },
+          { title: "JavaScript Tutorial", videoId: "1x3Kzj4uH6E", duration: "2:00:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "CodeWithHarry - Web Development Playlist",
+        desc: "Complete web development course by CodeWithHarry covering HTML, CSS, JavaScript, React, Node.js, and MongoDB in Hindi.",
+        domain: "Web Development",
+        difficulty: "Beginner to Intermediate",
+        duration: "8h+",
+        tags: ["web dev", "hindi", "codewithharry", "full stack"],
+        playlist: [
+          { title: "Web Development Complete Course", videoId: "6mbwJ2xhgzM", duration: "3:30:00" },
+          { title: "JavaScript Full Course", videoId: "Hr5iLG7sUa0", duration: "2:00:00" },
+          { title: "React JS Tutorial", videoId: "RGKi6LSPDLU", duration: "1:30:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "CodeWithHarry - Python Full Course",
+        desc: "Complete Python programming course by CodeWithHarry in Hindi covering fundamentals, OOP, file handling, and projects.",
+        domain: "Python",
+        difficulty: "Beginner",
+        duration: "6h+",
+        tags: ["python", "hindi", "codewithharry", "beginner"],
+        playlist: [
+          { title: "Python Tutorial for Beginners", videoId: "uOQVqMPTXhI", duration: "4:30:00" },
+          { title: "Python OOP Concepts", videoId: "JeznW_7DlB0", duration: "35:00" },
+          { title: "Python Projects for Beginners", videoId: "Y8Tko2YC5hA", duration: "1:00:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "CodeWithHarry - DSA in C++ Playlist",
+        desc: "DSA course in C++ by CodeWithHarry covering arrays, linked lists, trees, graphs, sorting, and searching algorithms in Hindi.",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Beginner to Intermediate",
+        duration: "7h+",
+        tags: ["dsa", "cpp", "codewithharry", "hindi"],
+        playlist: [
+          { title: "DSA Full Course in C++", videoId: "5_5oE5lgrwM", duration: "3:00:00" },
+          { title: "Sorting Algorithms", videoId: "kgBjXUE_Nwc", duration: "45:00" },
+          { title: "Linked List in C++", videoId: "R9PTBwOzceo", duration: "40:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "Chai aur Code - JavaScript Series",
+        desc: "JavaScript tutorials by Hitesh Choudhary (Chai aur Code) in Hindi covering modern JS, async programming, and practical projects.",
+        domain: "JavaScript",
+        difficulty: "Beginner to Intermediate",
+        duration: "5h+",
+        tags: ["javascript", "chai aur code", "hitesh choudhary", "hindi"],
+        playlist: [
+          { title: "JavaScript Crash Course", videoId: "VlPiVmYuoqw", duration: "3:26:42" },
+          { title: "Async JavaScript Tutorial", videoId: "PoRJizFvM7s", duration: "35:40" },
+          { title: "JavaScript Projects", videoId: "dtKciwkNqEs", duration: "1:00:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "Chai aur Code - React + Next.js Playlist",
+        desc: "React and Next.js tutorials by Chai aur Code (Hitesh Choudhary) covering hooks, routing, SSR, and deployment in Hindi.",
+        domain: "Frontend Development",
+        difficulty: "Intermediate",
+        duration: "5h+",
+        tags: ["react", "next.js", "chai aur code", "hindi"],
+        playlist: [
+          { title: "React JS Tutorial Hindi", videoId: "w7ejDZ8SWv8", duration: "1:48:39" },
+          { title: "Next.js Tutorial", videoId: "wm5gMKuwSYk", duration: "55:00" },
+          { title: "React Hooks Complete Guide", videoId: "TNhaISOUy6Q", duration: "35:12" }
+        ]
+      }),
+      playlistSeries({
+        title: "Sheriyans - Web Development Playlist",
+        desc: "Web development playlist by Sheriyans Coding School covering HTML, CSS, JavaScript, React, and real-world projects.",
+        domain: "Web Development",
+        difficulty: "Beginner to Intermediate",
+        duration: "7h+",
+        tags: ["web dev", "sheryians", "react", "projects"],
+        playlist: [
+          { title: "Web Development Bootcamp", videoId: "Y3TRq2MgE2Y", duration: "2:00:00" },
+          { title: "JavaScript Projects", videoId: "dtKciwkNqEs", duration: "1:30:00" },
+          { title: "React Tutorial", videoId: "w7ejDZ8SWv8", duration: "1:48:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "Sheriyans - DSA + Interview Prep Playlist",
+        desc: "DSA and interview preparation playlist by Sheriyans Coding School covering problem-solving patterns and coding challenges.",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Intermediate",
+        duration: "5h+",
+        tags: ["dsa", "sheryians", "interviews", "problem solving"],
+        playlist: [
+          { title: "DSA for Placements", videoId: "RBSGKlAvoiM", duration: "8:56:11" },
+          { title: "Interview Preparation", videoId: "0-S5a0eXPoc", duration: "55:00" },
+          { title: "Coding Problem Patterns", videoId: "GU7DpgHINWQ", duration: "34:15" }
+        ]
+      }),
+      playlistSeries({
+        title: "CampusX - Data Science Playlist",
+        desc: "Data science playlist by CampusX (Nitish Singh) covering Python, statistics, ML, SQL, and end-to-end data science projects.",
+        domain: "Data Science",
+        difficulty: "Beginner to Advanced",
+        duration: "8h+",
+        tags: ["data science", "python", "campusx", "ml"],
+        playlist: [
+          { title: "Data Science Full Course", videoId: "LHBE6Q9XlzI", duration: "2:36:09" },
+          { title: "Statistics for Data Science", videoId: "Vfo5le26IhY", duration: "1:30:00" },
+          { title: "Pandas Tutorial", videoId: "vmEHCJofslg", duration: "1:02:43" }
+        ]
+      }),
+      playlistSeries({
+        title: "CampusX - 100 Days of Machine Learning",
+        desc: "100-day machine learning challenge by CampusX with day-wise lessons, code walkthroughs, and project-based learning.",
+        domain: "Machine Learning",
+        difficulty: "Intermediate",
+        duration: "10h+",
+        tags: ["machine learning", "campusx", "100 days", "python"],
+        playlist: [
+          { title: "Day 1 - ML Introduction", videoId: "i_LwzRVP7bg", duration: "1:55:00" },
+          { title: "Day 2 - Data Preprocessing", videoId: "LHBE6Q9XlzI", duration: "2:36:09" },
+          { title: "Day 3 - Linear Regression", videoId: "GNhgr_OnQOM", duration: "42:30" }
+        ]
+      }),
+      playlistSeries({
+        title: "Kunal Kushwaha - Git & Open Source Playlist",
+        desc: "Git and open source contribution playlist by Kunal Kushwaha covering version control, GitHub workflows, and open source etiquette.",
+        domain: "DevOps",
+        difficulty: "Beginner",
+        duration: "3h+",
+        tags: ["git", "github", "open source", "kunal kushwaha"],
+        playlist: [
+          { title: "Git & GitHub Crash Course", videoId: "apGV9Kg7ics", duration: "1:10:00" },
+          { title: "Open Source Contribution Guide", videoId: "yzeVMec6CE8", duration: "45:00" },
+          { title: "Git Branching Strategies", videoId: "SFnpqmEj0mg", duration: "30:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "Kunal Kushwaha - DevOps Playlist",
+        desc: "DevOps fundamentals playlist by Kunal Kushwaha covering Docker, Kubernetes, CI/CD, and cloud-native development.",
+        domain: "DevOps",
+        difficulty: "Intermediate",
+        duration: "5h+",
+        tags: ["devops", "docker", "kubernetes", "kunal kushwaha"],
+        playlist: [
+          { title: "DevOps Course for Beginners", videoId: "j5ZsaEa9vBo", duration: "2:00:00" },
+          { title: "Docker Tutorial", videoId: "3c-iBn73dDE", duration: "55:00" },
+          { title: "Kubernetes Tutorial", videoId: "X48VuDVv0do", duration: "60:00" }
+        ]
+      })
+    ]
+  },
+  {
+    category: "Additional Online Courses",
+    links: [
+      course({
+        title: "The Complete 2024 Web Development Bootcamp",
+        url: "https://www.udemy.com/course/the-complete-web-development-bootcamp/",
+        desc: "Angela Yu's highly-rated Udemy bootcamp covering HTML, CSS, JavaScript, React, Node.js, PostgreSQL, and Web3. One of the best-selling web dev courses.",
+        platform: "Udemy",
+        domain: "Web Development",
+        difficulty: "Beginner to Intermediate",
+        resourceType: "Paid Course",
+        tags: ["web dev", "html", "css", "javascript", "react", "node.js"]
+      }),
+      course({
+        title: "CS50: Introduction to Computer Science",
+        url: "https://cs50.harvard.edu/x/",
+        desc: "Harvard's legendary intro to CS course by David Malan. Covers C, Python, SQL, HTML/CSS/JS, and fundamental CS concepts. Free with optional certificate.",
+        platform: "edX / Harvard",
+        domain: "Computer Science",
+        difficulty: "Beginner",
+        resourceType: "Free Course With Certificate",
+        tags: ["cs50", "harvard", "programming", "algorithms"]
+      }),
+      course({
+        title: "The Web Developer Bootcamp 2024",
+        url: "https://www.udemy.com/course/the-web-developer-bootcamp/",
+        desc: "Colt Steele's comprehensive web development course covering HTML, CSS, JavaScript, Node, Express, MongoDB, and RESTful APIs.",
+        platform: "Udemy",
+        domain: "Web Development",
+        difficulty: "Beginner",
+        resourceType: "Paid Course",
+        tags: ["web dev", "full stack", "javascript", "node.js"]
+      }),
+      course({
+        title: "Google IT Support Professional Certificate",
+        url: "https://www.coursera.org/professional-certificates/google-it-support",
+        desc: "Google's entry-level IT support certificate covering troubleshooting, networking, operating systems, security, and system administration.",
+        platform: "Coursera",
+        domain: "IT Support",
+        difficulty: "Beginner",
+        resourceType: "Paid Course",
+        tags: ["it support", "networking", "security", "google"]
+      }),
+      course({
+        title: "AWS Solutions Architect Associate Certification",
+        url: "https://explore.skillbuilder.aws/learn/course/external/view/elearning/11458/aws-cloud-quest-solutions-architect",
+        desc: "AWS certification preparation for Solutions Architect Associate covering compute, storage, networking, security, and architecture best practices.",
+        platform: "AWS",
+        domain: "Cloud Computing",
+        difficulty: "Intermediate",
+        resourceType: "Free Course With Certificate",
+        tags: ["aws", "cloud", "solutions architect", "certification"]
+      }),
+      course({
+        title: "Meta Social Media Marketing Professional Certificate",
+        url: "https://www.coursera.org/professional-certificates/meta-social-media-marketing",
+        desc: "Meta's social media marketing program covering strategy, content creation, advertising, analytics, and campaign management.",
+        platform: "Coursera",
+        domain: "Digital Marketing",
+        difficulty: "Beginner",
+        resourceType: "Paid Course",
+        tags: ["marketing", "social media", "meta", "analytics"]
+      }),
+      course({
+        title: "IBM Cybersecurity Analyst Professional Certificate",
+        url: "https://www.coursera.org/professional-certificates/ibm-cybersecurity-analyst",
+        desc: "IBM's cybersecurity analyst certificate covering network security, incident response, threat intelligence, and SIEM tools.",
+        platform: "Coursera",
+        domain: "Cybersecurity",
+        difficulty: "Beginner to Intermediate",
+        resourceType: "Paid Course",
+        tags: ["cybersecurity", "siem", "network security", "ibm"]
+      }),
+      course({
+        title: "TensorFlow Developer Professional Certificate",
+        url: "https://www.coursera.org/professional-certificates/tensorflow-in-practice",
+        desc: "DeepLearning.AI's TensorFlow certificate covering CNNs, NLP, time series, and sequence models with practical projects.",
+        platform: "Coursera",
+        domain: "AI/ML",
+        difficulty: "Intermediate",
+        resourceType: "Paid Course",
+        tags: ["tensorflow", "deep learning", "cnn", "nlp"]
+      }),
+      course({
+        title: "Google Advanced Data Analytics Professional Certificate",
+        url: "https://www.coursera.org/professional-certificates/google-advanced-data-analytics",
+        desc: "Google's advanced analytics certificate covering Python, statistics, machine learning, regression models, and data-driven decision making.",
+        platform: "Coursera",
+        domain: "Data Science",
+        difficulty: "Intermediate",
+        resourceType: "Paid Course",
+        tags: ["data analytics", "python", "statistics", "machine learning"]
+      }),
+      course({
+        title: "IBM Full Stack Software Developer Professional Certificate",
+        url: "https://www.coursera.org/professional-certificates/ibm-full-stack-cloud-developer",
+        desc: "IBM's full stack developer certificate covering HTML, CSS, JavaScript, React, Node.js, Python, Django, Docker, Kubernetes, and microservices.",
+        platform: "Coursera",
+        domain: "Full Stack Development",
+        difficulty: "Beginner to Advanced",
+        resourceType: "Paid Course",
+        tags: ["full stack", "react", "node.js", "docker", "kubernetes"]
+      }),
+      course({
+        title: "PostgreSQL for Everybody Certification",
+        url: "https://www.freecodecamp.org/learn/relational-database/",
+        desc: "Free certification covering PostgreSQL fundamentals, SQL queries, database design, and relational database concepts with hands-on projects.",
+        platform: "FreeCodeCamp",
+        domain: "Database Engineering",
+        difficulty: "Beginner to Intermediate",
+        resourceType: "Free Course With Certificate",
+        tags: ["postgresql", "sql", "database", "relational"]
+      }),
+      course({
+        title: "College Algebra with Python Certification",
+        url: "https://www.freecodecamp.org/learn/college-algebra-with-python/",
+        desc: "Free certification combining college algebra concepts with Python programming for mathematical computing and data analysis.",
+        platform: "FreeCodeCamp",
+        domain: "Mathematics",
+        difficulty: "Beginner",
+        resourceType: "Free Course With Certificate",
+        tags: ["algebra", "python", "mathematics", "computing"]
+      }),
+      course({
+        title: "Foundations of User Experience (UX) Design - Google",
+        url: "https://www.coursera.org/learn/foundations-user-experience-design",
+        desc: "Google's introductory UX design course covering design thinking, user research, wireframing, and prototyping fundamentals.",
+        platform: "Coursera",
+        domain: "UX Design",
+        difficulty: "Beginner",
+        resourceType: "Paid Course",
+        tags: ["ux", "design thinking", "research", "google"]
+      }),
+      course({
+        title: "Introduction to Cyber Security - NYU (edX)",
+        url: "https://www.edx.org/learn/cybersecurity/new-york-university-introduction-to-cybersecurity",
+        desc: "NYU's introductory cybersecurity course covering threat landscape, cryptography, network security, and security fundamentals.",
+        platform: "edX",
+        domain: "Cybersecurity",
+        difficulty: "Beginner",
+        resourceType: "Paid Course",
+        tags: ["cybersecurity", "cryptography", "network security", "nyu"]
+      }),
+      course({
+        title: "Blockchain Basics - University at Buffalo (Coursera)",
+        url: "https://www.coursera.org/learn/blockchain-basics",
+        desc: "University-backed blockchain fundamentals course covering consensus mechanisms, smart contracts, and decentralized application design.",
+        platform: "Coursera",
+        domain: "Blockchain",
+        difficulty: "Beginner",
+        resourceType: "Paid Course",
+        tags: ["blockchain", "smart contracts", "consensus", "ethereum"]
+      }),
+      course({
+        title: "React Native - The Practical Guide [2024]",
+        url: "https://www.udemy.com/course/react-native-the-practical-guide/",
+        desc: "Maximilian Schwarzmuller's React Native course covering cross-platform mobile development, navigation, native APIs, and app deployment.",
+        platform: "Udemy",
+        domain: "Mobile Development",
+        difficulty: "Intermediate",
+        resourceType: "Paid Course",
+        tags: ["react native", "mobile", "ios", "android"]
+      }),
+      course({
+        title: "Flutter & Dart - The Complete Guide [2024]",
+        url: "https://www.udemy.com/course/learn-flutter-dart-to-build-ios-android-apps/",
+        desc: "Academind's comprehensive Flutter course covering Dart, widgets, state management, native device features, and app publishing.",
+        platform: "Udemy",
+        domain: "Mobile Development",
+        difficulty: "Beginner to Intermediate",
+        resourceType: "Paid Course",
+        tags: ["flutter", "dart", "mobile", "cross-platform"]
+      })
+    ]
+  },
+  {
+    category: "India Creator YouTube Deep Dives",
+    links: [
+      creatorPlaylistLink({
+        creator: "Love Babbar",
+        variant: "Web Development Cohort",
+        url: "https://www.youtube.com/playlist?list=PLDzeHZWIZsTr7lJCycQWXDAKCkPNlPWEt",
+        domain: "Full Stack Development",
+        tags: ["love babbar", "web dev", "mern", "codehelp", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Love Babbar",
+        variant: "Operating Systems",
+        url: "https://www.youtube.com/playlist?list=PLDzeHZWIZsTo3S6gHLJkxlE3sOHDy0kQy",
+        domain: "Computer Science Fundamentals",
+        tags: ["love babbar", "os", "operating systems", "placements"]
+      }),
+      creatorPlaylistLink({
+        creator: "Love Babbar",
+        variant: "DBMS",
+        url: "https://www.youtube.com/playlist?list=PLDzeHZWIZsTo8wVasHkCJ-uWBPlKBZuTM",
+        domain: "Database Engineering",
+        tags: ["love babbar", "dbms", "database", "placements"]
+      }),
+      creatorPlaylistLink({
+        creator: "Love Babbar",
+        variant: "OOPs",
+        url: "https://www.youtube.com/playlist?list=PLDzeHZWIZsTp1DGqHeiCXRJSFGhWnJAlY",
+        domain: "Computer Science Fundamentals",
+        tags: ["love babbar", "oops", "oop", "placements"]
+      }),
+      creatorPlaylistLink({
+        creator: "Apna College",
+        variant: "C++ Placement",
+        url: "https://www.youtube.com/playlist?list=PLfqMhTWNBTe0gEF2Mz0BYsv-8-bjC98AC",
+        domain: "C++",
+        tags: ["apna college", "cpp", "dsa", "placement", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Apna College",
+        variant: "Java Placement",
+        url: "https://www.youtube.com/playlist?list=PLfqMhTWNBTe3L1Vm3ssUBPw-JCqMfPMUP",
+        domain: "Java",
+        tags: ["apna college", "java", "dsa", "placement", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Apna College",
+        variant: "SQL & DBMS",
+        url: "https://www.youtube.com/playlist?list=PLfqMhTWNBTe0Lk6yyplRkdCnxzLPBpLQq",
+        domain: "SQL",
+        tags: ["apna college", "sql", "dbms", "database"]
+      }),
+      creatorPlaylistLink({
+        creator: "Apna College",
+        variant: "Web Dev",
+        url: "https://www.youtube.com/playlist?list=PLfqMhTWNBTe2C_dQAP1UoemcgAxBTlItp",
+        domain: "Full Stack Development",
+        tags: ["apna college", "web dev", "html", "css", "javascript"]
+      }),
+      creatorPlaylistLink({
+        creator: "Apna College",
+        variant: "Git & GitHub",
+        url: "https://www.youtube.com/playlist?list=PLfqMhTWNBTe2HWRzS_ckjOSSwqJV1yj1e",
+        domain: "DevOps",
+        tags: ["apna college", "git", "github", "version control"]
+      }),
+      creatorPlaylistLink({
+        creator: "Sheriyans Coding School",
+        variant: "JavaScript Projects",
+        url: "https://www.youtube.com/playlist?list=PLbtI3_MArDOlS0aqcN3L0bVGrJeGwC1RJ",
+        domain: "JavaScript",
+        tags: ["sheryians", "javascript", "projects", "frontend"]
+      }),
+      creatorPlaylistLink({
+        creator: "Sheriyans Coding School",
+        variant: "React Complete",
+        url: "https://www.youtube.com/playlist?list=PLbtI3_MArDOkxP0kPMcWJ_Lh9WKrFYrpN",
+        domain: "React",
+        tags: ["sheryians", "react", "frontend", "hooks"]
+      }),
+      creatorPlaylistLink({
+        creator: "Sheriyans Coding School",
+        variant: "Node.js Backend",
+        url: "https://www.youtube.com/playlist?list=PLbtI3_MArDOkV8bYjKqxJUhD6FKJGKnJd",
+        domain: "Node.js",
+        tags: ["sheryians", "node.js", "express", "backend"]
+      }),
+      creatorPlaylistLink({
+        creator: "Sheriyans AI Coding School",
+        variant: "GenAI with Python",
+        url: "https://www.youtube.com/playlist?list=PLaldQ9PzZd9pj6zB9scSgP6Mzo38qixsS",
+        domain: "Artificial Intelligence",
+        tags: ["sheryians", "genai", "python", "ai"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeWithHarry",
+        variant: "C Language",
+        url: "https://www.youtube.com/playlist?list=PLu0W_9lII9aiQiBJoSamOgs7nS_8eFHyp",
+        domain: "C Programming",
+        tags: ["codewithharry", "c", "programming", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeWithHarry",
+        variant: "Python Full Course",
+        url: "https://www.youtube.com/playlist?list=PLu0W_9lII9agi2v2FGTCA2aOofOBSHMNe",
+        domain: "Python",
+        tags: ["codewithharry", "python", "beginner", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeWithHarry",
+        variant: "Java Full Course",
+        url: "https://www.youtube.com/playlist?list=PLu0W_9lII9agIC1SUBMiQhX1N_X1PZmEv",
+        domain: "Java",
+        tags: ["codewithharry", "java", "beginner", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeWithHarry",
+        variant: "JavaScript",
+        url: "https://www.youtube.com/playlist?list=PLu0W_9lII9ahR1blEpDPC8-1Z9AtVbh_R",
+        domain: "JavaScript",
+        tags: ["codewithharry", "javascript", "web", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeWithHarry",
+        variant: "DSA in C++",
+        url: "https://www.youtube.com/playlist?list=PLu0W_9lII9ahK2Oo0dMiJfZ38JdsGiOwN",
+        domain: "Data Structures & Algorithms",
+        tags: ["codewithharry", "dsa", "cpp", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Chai aur Code",
+        variant: "React Complete",
+        url: "https://www.youtube.com/playlist?list=PLwGdqUZWnOp3a-S8BHn2d8GIDDoGvdIEJ",
+        domain: "React",
+        tags: ["chai aur code", "react", "hitesh choudhary", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Chai aur Code",
+        variant: "Node.js Complete",
+        url: "https://www.youtube.com/playlist?list=PLRAV69dS1uWQHSN6j_2_a0DsHjE3fBbCF",
+        domain: "Node.js",
+        tags: ["chai aur code", "node.js", "express", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Chai aur Code",
+        variant: "Python Complete",
+        url: "https://www.youtube.com/playlist?list=PLRAV69dS1uWQiStjB0Ck_6L7A4T8dPiE",
+        domain: "Python",
+        tags: ["chai aur code", "python", "hitesh choudhary", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Chai aur Code",
+        variant: "Git & GitHub",
+        url: "https://www.youtube.com/playlist?list=PLRAV69dS1uWQHN1cTKH9dN2x7p2yZ-bdN",
+        domain: "DevOps",
+        tags: ["chai aur code", "git", "github", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Chai aur Code",
+        variant: "Docker Complete",
+        url: "https://www.youtube.com/playlist?list=PLRAV69dS1uWS4Fvz7JLi3LXFzIbhjZ4V0",
+        domain: "DevOps",
+        tags: ["chai aur code", "docker", "devops", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Chai aur Code",
+        variant: "TypeScript",
+        url: "https://www.youtube.com/playlist?list=PLRAV69dS1uWQuJ6qLFOjZ86NGKZ73O8nR",
+        domain: "TypeScript",
+        tags: ["chai aur code", "typescript", "hitesh choudhary", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Thapa Technical",
+        variant: "React JS",
+        url: "https://www.youtube.com/playlist?list=PLwGdqUZWnOp3b_LFjCdeBNb57FGBfhVf4",
+        domain: "React",
+        tags: ["thapa technical", "react", "hindi", "frontend"]
+      }),
+      creatorPlaylistLink({
+        creator: "Thapa Technical",
+        variant: "MERN Stack",
+        url: "https://www.youtube.com/playlist?list=PLwGdqUZWnOp1dJo9DkIQQFdJHblO-cEDl",
+        domain: "Full Stack Development",
+        tags: ["thapa technical", "mern", "fullstack", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Piyush Garg",
+        variant: "Docker Complete",
+        url: "https://www.youtube.com/playlist?list=PLinedj3B30sDby4Al-i41NN9uPirQ8YAu",
+        domain: "DevOps",
+        tags: ["piyush garg", "docker", "devops", "containers"]
+      }),
+      creatorPlaylistLink({
+        creator: "Piyush Garg",
+        variant: "Next.js Complete",
+        url: "https://www.youtube.com/playlist?list=PLinedj3B30sAnIjV7m4b1HHhO1V22X7mC",
+        domain: "Next.js",
+        tags: ["piyush garg", "next.js", "react", "fullstack"]
+      }),
+      creatorPlaylistLink({
+        creator: "Piyush Garg",
+        variant: "Web Dev Bootcamp",
+        url: "https://www.youtube.com/playlist?list=PLinedj3B30sBwXJzDft2pqy1Yz-ZjHl1",
+        domain: "Full Stack Development",
+        tags: ["piyush garg", "web dev", "bootcamp", "hindi"]
+      }),
+      creatorPlaylistLink({
+        creator: "Kunal Kushwaha",
+        variant: "Java DSA",
+        url: "https://www.youtube.com/playlist?list=PL9gnSGHSqcnpZnzO-bHTpnK-uVeUF8qIb",
+        domain: "Data Structures & Algorithms",
+        tags: ["kunal kushwaha", "java", "dsa", "interviews"]
+      }),
+      creatorPlaylistLink({
+        creator: "Kunal Kushwaha",
+        variant: "Web3 & Blockchain",
+        url: "https://www.youtube.com/playlist?list=PL9gnSGHSqcnjNnECzhicQxKWm2bDM5U5d",
+        domain: "Blockchain",
+        tags: ["kunal kushwaha", "web3", "blockchain", "solidity"]
+      }),
+      creatorPlaylistLink({
+        creator: "Take U Forward (Striver)",
+        variant: "SDE Sheet",
+        url: "https://www.youtube.com/playlist?list=PLgUwDviBIf0oE6-g0g4JH0lrbDql15l7L",
+        domain: "Data Structures & Algorithms",
+        tags: ["striver", "sde sheet", "interview", "dsa"]
+      }),
+      creatorPlaylistLink({
+        creator: "Take U Forward (Striver)",
+        variant: "Tree Series",
+        url: "https://www.youtube.com/playlist?list=PLgUwDviBIf0q8Fh_nR8jJI8C5jY3lB3D2",
+        domain: "Data Structures & Algorithms",
+        tags: ["striver", "trees", "binary tree", "dsa"]
+      }),
+      creatorPlaylistLink({
+        creator: "Take U Forward (Striver)",
+        variant: "DP Series",
+        url: "https://www.youtube.com/playlist?list=PLgUwDviBIf0qUlt5H_kiKYaB_2cIwGgce",
+        domain: "Data Structures & Algorithms",
+        tags: ["striver", "dynamic programming", "dp", "dsa"]
+      }),
+      creatorPlaylistLink({
+        creator: "Anuj Bhaiya",
+        variant: "DSA Complete",
+        url: "https://www.youtube.com/playlist?list=PLUcsbZa0qzu0M-bqj2nFD0qICYsM6aB5i",
+        domain: "Data Structures & Algorithms",
+        tags: ["anuj bhaiya", "dsa", "java", "interview"]
+      }),
+      creatorPlaylistLink({
+        creator: "Anuj Bhaiya",
+        variant: "Spring Boot",
+        url: "https://www.youtube.com/playlist?list=PLUcsbZa0qzu3VHyDsd0LAzo5LNxH-nSf6",
+        domain: "Backend Development",
+        tags: ["anuj bhaiya", "spring boot", "java", "backend"]
+      }),
+      creatorPlaylistLink({
+        creator: "CampusX",
+        variant: "Statistics for DS",
+        url: "https://www.youtube.com/playlist?list=PLKnIA16_RmvYB2P1lxnMf4NwbZqJNDaIW",
+        domain: "Data Science",
+        tags: ["campusx", "statistics", "data science", "math"]
+      }),
+      creatorPlaylistLink({
+        creator: "CampusX",
+        variant: "Python for DS",
+        url: "https://www.youtube.com/playlist?list=PLKnIA16_RmvZAFikAYzTSiBnJyuA4JZXC",
+        domain: "Python",
+        tags: ["campusx", "python", "data science", "programming"]
+      }),
+      creatorPlaylistLink({
+        creator: "CampusX",
+        variant: "SQL Complete",
+        url: "https://www.youtube.com/playlist?list=PLKnIA16_RmvYYzcrC0WpaZvfOlCqjCZrA",
+        domain: "SQL",
+        tags: ["campusx", "sql", "database", "analytics"]
+      }),
+      creatorPlaylistLink({
+        creator: "CampusX",
+        variant: "NLP Complete",
+        url: "https://www.youtube.com/playlist?list=PLKnIA16_RmvYXitxUe2sGcJDdyx9LZykc",
+        domain: "Natural Language Processing",
+        tags: ["campusx", "nlp", "ai", "text processing"]
+      }),
+      creatorPlaylistLink({
+        creator: "NeetCode",
+        variant: "NeetCode 150",
+        url: "https://www.youtube.com/playlist?list=PLot-Xpze53ldg14YDND0eFD5TpPL7LqS7r",
+        domain: "Data Structures & Algorithms",
+        tags: ["neetcode", "neetcode 150", "dsa", "patterns"]
+      }),
+      creatorPlaylistLink({
+        creator: "NeetCode",
+        variant: "System Design",
+        url: "https://www.youtube.com/playlist?list=PLot-Xpze53ldVjst2IY6W50fpXHp8FJaUR",
+        domain: "System Design",
+        tags: ["neetcode", "system design", "interview", "architecture"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeHelp by Babbar",
+        variant: "Operating Systems",
+        url: "https://www.youtube.com/playlist?list=PLDzeHZWIZsTo8wVasHkCJ-uWBPlKBZuTM",
+        domain: "Computer Science Fundamentals",
+        tags: ["codehelp", "os", "operating systems", "placements"]
+      }),
+      creatorPlaylistLink({
+        creator: "CodeHelp by Babbar",
+        variant: "DBMS",
+        url: "https://www.youtube.com/playlist?list=PLDzeHZWIZsTo8wVasHkCJ-uWBPlKBZuTM",
+        domain: "Database Engineering",
+        tags: ["codehelp", "dbms", "database", "placements"]
+      }),
+      creatorPlaylistLink({
+        creator: "Luv",
+        variant: "Competitive Programming",
+        url: "https://www.youtube.com/playlist?list=PLauivoElc3giVRs2HImSniarIPjCSMGPC",
+        domain: "Competitive Programming",
+        tags: ["luv", "cp", "competitive programming", "codeforces"]
+      }),
+      creatorPlaylistLink({
+        creator: "Abdul Bari",
+        variant: "Algorithms Masterclass",
+        url: "https://www.youtube.com/playlist?list=PLDN4rrl48XKpZkf03iYFl-O29szjTrs_O",
+        domain: "Algorithms",
+        tags: ["abdul bari", "algorithms", "masterclass", "theory"]
+      }),
+      creatorPlaylistLink({
+        creator: "freeCodeCamp",
+        variant: "Machine Learning",
+        url: "https://www.youtube.com/playlist?list=PLWKjhJtqVAbnqQ3iZ4L9pM8kE1bGf3PcT",
+        domain: "Machine Learning",
+        tags: ["freecodecamp", "ml", "python", "tensorflow"]
+      }),
+      creatorPlaylistLink({
+        creator: "freeCodeCamp",
+        variant: "Python API Development",
+        url: "https://www.youtube.com/playlist?list=PLWKjhJtqVAbmMuZ3saqRnW870cYhSSC-4",
+        domain: "Backend Development",
+        tags: ["freecodecamp", "python", "fastapi", "backend"]
+      }),
+      creatorPlaylistLink({
+        creator: "freeCodeCamp",
+        variant: "Kubernetes",
+        url: "https://www.youtube.com/playlist?list=PLWKjhJtqVAblhAXKPlmFdJ8k7BkOo0O7G",
+        domain: "Kubernetes",
+        tags: ["freecodecamp", "kubernetes", "devops", "containers"]
+      }),
+      creatorPlaylistLink({
+        creator: "Simplilearn",
+        variant: "Full Stack Java",
+        url: "https://www.youtube.com/playlist?list=PLEiEAq2VkUUIHs9s2GiAZjwoIljMTPPci",
+        domain: "Full Stack Development",
+        tags: ["simplilearn", "java", "fullstack", "spring"]
+      }),
+      creatorPlaylistLink({
+        creator: "Gate Smashers",
+        variant: "Operating Systems",
+        url: "https://www.youtube.com/playlist?list=PLC36xJgs4dxGveMk8J7G0ynQa0pL7xOjv",
+        domain: "Operating Systems",
+        tags: ["gate smashers", "os", "operating systems", "placements"]
+      }),
+      creatorPlaylistLink({
+        creator: "Gate Smashers",
+        variant: "Computer Networks",
+        url: "https://www.youtube.com/playlist?list=PLC36xJgs4dxFcGJ-97E9f8mVnG4B-mGqz",
+        domain: "Computer Networks",
+        tags: ["gate smashers", "networking", "tcp ip", "placements"]
+      }),
+      playlistSeries({
+        title: "Apna College - C++ DSA Playlist",
+        desc: "Complete C++ DSA course by Apna College (Shradha Khapra & Aman Dhattarwal) covering all topics for placement preparation.",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Beginner to Advanced",
+        duration: "50h+",
+        tags: ["dsa", "cpp", "apna college", "placement", "hindi"],
+        playlist: [
+          { title: "Introduction to C++", videoId: "z9bZufPHFLU", duration: "15:00" },
+          { title: "Variables and Data Types", videoId: "bLh9MHM3oK4", duration: "25:30" },
+          { title: "If-Else and Conditions", videoId: "FmWFS3ZwAog", duration: "20:15" },
+          { title: "Loops in C++", videoId: "aZc5aGhSsKU", duration: "35:40" },
+          { title: "Patterns", videoId: "PdSBFV4nXkI", duration: "42:20" },
+          { title: "Functions", videoId: "Kz6nBo8mKJc", duration: "28:10" }
+        ]
+      }),
+      playlistSeries({
+        title: "Sheriyans - Frontend Bootcamp",
+        desc: "Frontend development bootcamp by Sheriyans Coding School covering HTML, CSS, JavaScript, React, and real projects.",
+        domain: "Frontend Development",
+        difficulty: "Beginner to Intermediate",
+        duration: "20h+",
+        tags: ["frontend", "html", "css", "javascript", "sheryians", "hindi"],
+        playlist: [
+          { title: "HTML Full Course", videoId: "HcOc7P5BMi4", duration: "1:30:00" },
+          { title: "CSS Full Course", videoId: "Edsxf_NBFrw", duration: "2:15:00" },
+          { title: "JavaScript Full Course", videoId: "Hr5iLG7sUaA", duration: "3:45:00" },
+          { title: "React JS Tutorial", videoId: "Ke90Tje7VS0", duration: "2:30:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "CodeWithHarry - Python Full Course",
+        desc: "Complete Python programming course by CodeWithHarry in Hindi covering fundamentals, OOP, file handling, and projects.",
+        domain: "Python",
+        difficulty: "Beginner",
+        duration: "6h+",
+        tags: ["python", "hindi", "codewithharry", "beginner"],
+        playlist: [
+          { title: "Python Tutorial for Beginners", videoId: "uOQVqMPTXhI", duration: "4:30:00" },
+          { title: "Python OOP Concepts", videoId: "JeznW_7DlB0", duration: "35:00" },
+          { title: "Python Projects for Beginners", videoId: "Y8Tko2YC5hA", duration: "1:00:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "Chai aur Code - JavaScript Series",
+        desc: "JavaScript tutorials by Hitesh Choudhary (Chai aur Code) in Hindi covering modern JS, async programming, and practical projects.",
+        domain: "JavaScript",
+        difficulty: "Beginner to Intermediate",
+        duration: "5h+",
+        tags: ["javascript", "chai aur code", "hitesh choudhary", "hindi"],
+        playlist: [
+          { title: "JavaScript Crash Course", videoId: "VlPiVmYuoqw", duration: "3:26:42" },
+          { title: "Async JavaScript Tutorial", videoId: "PoRJizFvM7s", duration: "35:40" },
+          { title: "JavaScript Projects", videoId: "dtKciwkNqEs", duration: "1:00:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "CampusX - Data Science Playlist",
+        desc: "Data science playlist by CampusX (Nitish Singh) covering Python, statistics, ML, SQL, and end-to-end data science projects.",
+        domain: "Data Science",
+        difficulty: "Beginner to Advanced",
+        duration: "8h+",
+        tags: ["data science", "python", "campusx", "ml"],
+        playlist: [
+          { title: "Data Science Full Course", videoId: "LHBE6Q9XlzI", duration: "2:36:09" },
+          { title: "Statistics for Data Science", videoId: "Vfo5le26IhY", duration: "1:30:00" },
+          { title: "Pandas Tutorial", videoId: "vmEHCJofslg", duration: "1:02:43" }
+        ]
+      }),
+      playlistSeries({
+        title: "Kunal Kushwaha - Git & Open Source",
+        desc: "Git and open source contribution playlist by Kunal Kushwaha covering version control, GitHub workflows, and open source etiquette.",
+        domain: "DevOps",
+        difficulty: "Beginner",
+        duration: "3h+",
+        tags: ["git", "github", "open source", "kunal kushwaha"],
+        playlist: [
+          { title: "Git & GitHub Crash Course", videoId: "apGV9Kg7ics", duration: "1:10:00" },
+          { title: "Open Source Contribution Guide", videoId: "yzeVMec6CE8", duration: "45:00" },
+          { title: "Git Branching Strategies", videoId: "SFnpqmEj0mg", duration: "30:00" }
+        ]
+      }),
+      playlistSeries({
+        title: "Thapa Technical - React + MERN",
+        desc: "React and MERN stack tutorials by Vinod Thapa (Thapa Technical) covering hooks, state management, routing, and full-stack projects.",
+        domain: "Full Stack Development",
+        difficulty: "Beginner to Intermediate",
+        duration: "10h+",
+        tags: ["react", "mern", "thapa technical", "hindi"],
+        playlist: [
+          { title: "React JS Tutorial in Hindi", videoId: "RGKi6LSPDLU", duration: "1:30:00" },
+          { title: "useEffect Hook Explained", videoId: "jM_Mz1Gz8LY", duration: "25:00" },
+          { title: "MERN Stack Project", videoId: "5oP1s2m5PEc", duration: "1:20:00" }
+        ]
+      })
+    ]
   }
 ];

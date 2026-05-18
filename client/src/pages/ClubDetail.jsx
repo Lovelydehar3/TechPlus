@@ -60,6 +60,8 @@ function EventCard({ event, index }) {
                         src={event.image}
                         alt={event.title}
                         loading="lazy"
+                        crossOrigin="anonymous"
+                        referrerPolicy="no-referrer"
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         onError={() => setImgError(true)}
                     />

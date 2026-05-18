@@ -168,7 +168,7 @@ function PlaylistPlayer({
     };
 
     const currentVideo = playlist[activeIndex];
-    const [showDesc, setShowDesc] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
 
     return (
         <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}>
@@ -182,16 +182,6 @@ function PlaylistPlayer({
                     Back to Playlists
                 </button>
                 <div className="flex items-center gap-2">
-                    {playlistDesc && (
-                        <button
-                            type="button"
-                            onClick={() => setShowDesc(!showDesc)}
-                            className="flex items-center gap-1.5 text-[10px] font-bold text-[#7c3aed] uppercase tracking-widest hover:text-[#a855f7] transition-colors px-3 py-1.5 rounded-full border border-[#7c3aed]/30 bg-[#7c3aed]/10"
-                        >
-                            <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className={`transition-transform ${showDesc ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
-                            Info
-                        </button>
-                    )}
                     <button
                         type="button"
                         onClick={onBack}
@@ -202,12 +192,6 @@ function PlaylistPlayer({
                     </button>
                 </div>
             </div>
-
-            {showDesc && playlistDesc && (
-                <div className="mb-4 p-4 rounded-2xl border border-white/5 bg-white/[0.02]">
-                    <p className="text-sm text-white/40 leading-relaxed">{playlistDesc}</p>
-                </div>
-            )}
 
             <div className="flex gap-0 overflow-hidden border border-white/5 flex-col xl:flex-row rounded-[32px]" style={{ background: 'linear-gradient(145deg, #121217 0%, #0e0b18 100%)' }}>
                 <div className="flex-1 flex flex-col min-w-0">
@@ -223,6 +207,22 @@ function PlaylistPlayer({
                             </span>
                             <span className="text-[10px] font-bold text-white/30">Video {activeIndex + 1} of {playlist.length}</span>
                         </div>
+
+                        {/* YouTube Style collapsible Description Box */}
+                        {playlistDesc && (
+                            <div className="mt-5 p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.04] transition-all text-left">
+                                <div className={`text-sm text-white/70 leading-relaxed ${!isExpanded ? 'line-clamp-3' : ''}`}>
+                                    {playlistDesc}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsExpanded(!isExpanded)}
+                                    className="mt-2 text-xs font-black text-[#a855f7] hover:underline uppercase tracking-wider block"
+                                >
+                                    {isExpanded ? 'Show less' : '...more'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -269,7 +269,7 @@ function ExternalYouTubePlaylistPlayer({
     playlistId,
     onBack
 }) {
-    const [showDesc, setShowDesc] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
     const [playerReady, setPlayerReady] = useState(false);
     const [videoTitle, setVideoTitle] = useState('');
@@ -355,16 +355,6 @@ function ExternalYouTubePlaylistPlayer({
                     Back to Playlists
                 </button>
                 <div className="flex items-center gap-2">
-                    {description && (
-                        <button
-                            type="button"
-                            onClick={() => setShowDesc(!showDesc)}
-                            className="flex items-center gap-1.5 text-[10px] font-bold text-[#7c3aed] uppercase tracking-widest hover:text-[#a855f7] transition-colors px-3 py-1.5 rounded-full border border-[#7c3aed]/30 bg-[#7c3aed]/10"
-                        >
-                            <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className={`transition-transform ${showDesc ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
-                            Info
-                        </button>
-                    )}
                     <button
                         type="button"
                         onClick={onBack}
@@ -375,12 +365,6 @@ function ExternalYouTubePlaylistPlayer({
                     </button>
                 </div>
             </div>
-
-            {showDesc && description && (
-                <div className="mb-4 p-4 rounded-2xl border border-white/5 bg-white/[0.02]">
-                    <p className="text-sm text-white/40 leading-relaxed">{description}</p>
-                </div>
-            )}
 
             <div className="flex gap-0 overflow-hidden border border-white/5 flex-col xl:flex-row rounded-[32px]" style={{ background: 'linear-gradient(145deg, #121217 0%, #0e0b18 100%)' }}>
                 <div className="flex-1 flex flex-col min-w-0">
@@ -433,6 +417,22 @@ function ExternalYouTubePlaylistPlayer({
                                 </button>
                             </div>
                         </div>
+
+                        {/* YouTube Style collapsible Description Box */}
+                        {description && (
+                            <div className="mt-5 p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.04] transition-all text-left">
+                                <div className={`text-sm text-white/70 leading-relaxed ${!isExpanded ? 'line-clamp-3' : ''}`}>
+                                    {description}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsExpanded(!isExpanded)}
+                                    className="mt-2 text-xs font-black text-[#a855f7] hover:underline uppercase tracking-wider block"
+                                >
+                                    {isExpanded ? 'Show less' : '...more'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 

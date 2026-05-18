@@ -412,6 +412,20 @@ export default function ClubEventManager() {
                                             placeholder="https://..."
                                             className="w-full bg-[#f0f4f8] text-gray-900 text-sm font-semibold rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#a855f7] transition-all"
                                         />
+                                        {form.image && /^https?:\/\/.+/.test(form.image) && (
+                                            <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                                                <img
+                                                    src={form.image}
+                                                    alt="Preview"
+                                                    className="w-full h-32 object-cover"
+                                                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                                                    onLoad={(e) => { e.target.style.display = 'block'; e.target.nextSibling.style.display = 'none'; }}
+                                                />
+                                                <div className="hidden items-center justify-center h-32 text-gray-400 text-xs">
+                                                    Could not load image — check the URL
+                                                </div>
+                                            </div>
+                                        )}
                                     </FormField>
 
                                     <FormField label="Registration URL">
