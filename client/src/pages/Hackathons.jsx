@@ -662,7 +662,7 @@ export default function Hackathons() {
               </div>
 
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-5 sm:p-6">
+              <div className="flex-1 overflow-y-auto custom-scrollbar-dark p-5 sm:p-6">
                 <div className="h-40 sm:h-48 overflow-hidden rounded-2xl mb-5">
                   <img
                     src={selectedHackathon.image || getFallbackImage('Startups', selectedHackathon.title, selectedHackathon._id, 0)}

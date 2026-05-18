@@ -247,7 +247,7 @@ export default function CollegeHackathonManager() {
                                 </button>
                             </div>
 
-                            <div className="overflow-y-auto pr-2 custom-scrollbar flex-1 min-h-0">
+                            <div className="overflow-y-auto pr-2 custom-scrollbar-dark flex-1 min-h-0">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                     <FormField label="Title" required>
                                         <input type="text" value={form.title} onChange={(e) => handleChange('title', e.target.value)} className="w-full bg-[#f0f4f8] text-gray-900 text-sm font-semibold rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#a855f7] transition-all" maxLength={200} />
