@@ -193,40 +193,41 @@ function PlaylistPlayer({
                 </div>
             </div>
 
-            <div className="flex gap-0 overflow-hidden border border-white/5 flex-col xl:flex-row rounded-[32px]" style={{ background: 'linear-gradient(145deg, #121217 0%, #0e0b18 100%)' }}>
-                <div className="flex-1 flex flex-col min-w-0">
-                    <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
-                        <div id={playerMountId} className="absolute inset-0 w-full h-full" />
-                    </div>
-
-                    <div className="p-6">
-                        <h2 className="text-xl font-black text-white uppercase tracking-tight mb-2">{currentVideo?.title}</h2>
-                        <div className="flex items-center gap-4">
-                            <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full" style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#7c3aed' }}>
-                                {playlistDuration} Total
-                            </span>
-                            <span className="text-[10px] font-bold text-white/30">Video {activeIndex + 1} of {playlist.length}</span>
-                        </div>
-
-                        {/* YouTube Style collapsible Description Box */}
-                        {playlistDesc && (
-                            <div className="mt-5 p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.04] transition-all text-left">
-                                <div className={`text-sm text-white/70 leading-relaxed ${!isExpanded ? 'line-clamp-3' : ''}`}>
-                                    {playlistDesc}
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsExpanded(!isExpanded)}
-                                    className="mt-2 text-xs font-black text-[#a855f7] hover:underline uppercase tracking-wider block"
-                                >
-                                    {isExpanded ? 'Show less' : '...more'}
-                                </button>
-                            </div>
-                        )}
-                    </div>
+            <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-0 overflow-hidden border border-white/5 rounded-[32px]" style={{ background: 'linear-gradient(145deg, #121217 0%, #0e0b18 100%)' }}>
+                {/* Element A: Video Player iframe wrapper */}
+                <div className="order-1 xl:col-start-1 xl:row-start-1 relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
+                    <div id={playerMountId} className="absolute inset-0 w-full h-full" />
                 </div>
 
-                <div className="xl:w-[340px] w-full border-t xl:border-t-0 xl:border-l border-white/5 flex flex-col" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                {/* Element C: Current Video Details */}
+                <div className="order-3 xl:col-start-1 xl:row-start-2 p-6 flex flex-col min-w-0">
+                    <h2 className="text-xl font-black text-white uppercase tracking-tight mb-2">{currentVideo?.title}</h2>
+                    <div className="flex items-center gap-4">
+                        <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full" style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#7c3aed' }}>
+                            {playlistDuration} Total
+                        </span>
+                        <span className="text-[10px] font-bold text-white/30">Video {activeIndex + 1} of {playlist.length}</span>
+                    </div>
+
+                    {/* YouTube Style collapsible Description Box */}
+                    {playlistDesc && (
+                        <div className="mt-5 p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.04] transition-all text-left">
+                            <div className={`text-sm text-white/70 leading-relaxed ${!isExpanded ? 'line-clamp-3' : ''}`}>
+                                {playlistDesc}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsExpanded(!isExpanded)}
+                                className="mt-2 text-xs font-black text-[#a855f7] hover:underline uppercase tracking-wider block"
+                            >
+                                {isExpanded ? 'Show less' : '...more'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Element B: Queue Sidebar */}
+                <div className="order-2 xl:col-start-2 xl:row-start-1 xl:row-span-2 xl:w-[340px] w-full border-t xl:border-t-0 xl:border-l border-white/5 flex flex-col" style={{ background: 'rgba(0,0,0,0.2)' }}>
                     <div className="px-5 py-4 border-b border-white/5">
                         <div className="flex items-center justify-between">
                             <h3 className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">Up Next</h3>
@@ -234,7 +235,7 @@ function PlaylistPlayer({
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar max-h-[500px]">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar max-h-[300px] xl:max-h-[500px]">
                         {playlist.map((item, index) => {
                             const isActive = index === activeIndex;
                             return (
@@ -366,78 +367,79 @@ function ExternalYouTubePlaylistPlayer({
                 </div>
             </div>
 
-            <div className="flex gap-0 overflow-hidden border border-white/5 flex-col xl:flex-row rounded-[32px]" style={{ background: 'linear-gradient(145deg, #121217 0%, #0e0b18 100%)' }}>
-                <div className="flex-1 flex flex-col min-w-0">
-                    <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
-                        <div id={playerMountId} className="absolute inset-0 w-full h-full" />
-                    </div>
-
-                    <div className="p-6">
-                        <h2 className="text-xl font-black text-white uppercase tracking-tight mb-2">{videoTitle || title}</h2>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full" style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#7c3aed' }}>
-                                    Video {activeIndex + 1}{playlistVideos.length > 0 ? ` of ${playlistVideos.length}` : ''}
-                                </span>
-                                {playerReady && (
-                                    <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full ${isPlaying ? '' : ''}`} style={{ background: isPlaying ? 'rgba(52,211,153,0.15)' : 'rgba(239,68,68,0.15)', border: `1px solid ${isPlaying ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)'}`, color: isPlaying ? '#34d399' : '#f87171' }}>
-                                        {isPlaying ? 'Playing' : 'Paused'}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    onClick={prevVideo}
-                                    disabled={!playerReady}
-                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30"
-                                >
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" /></svg>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={togglePlay}
-                                    disabled={!playerReady}
-                                    className="w-12 h-12 rounded-full flex items-center justify-center border text-white hover:bg-white/10 transition-all disabled:opacity-30"
-                                    style={{ background: 'rgba(124,58,237,0.2)', borderColor: 'rgba(124,58,237,0.4)' }}
-                                >
-                                    {isPlaying ? (
-                                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z" /></svg>
-                                    ) : (
-                                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                                    )}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={nextVideo}
-                                    disabled={!playerReady}
-                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30"
-                                >
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" /></svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* YouTube Style collapsible Description Box */}
-                        {description && (
-                            <div className="mt-5 p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.04] transition-all text-left">
-                                <div className={`text-sm text-white/70 leading-relaxed ${!isExpanded ? 'line-clamp-3' : ''}`}>
-                                    {description}
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsExpanded(!isExpanded)}
-                                    className="mt-2 text-xs font-black text-[#a855f7] hover:underline uppercase tracking-wider block"
-                                >
-                                    {isExpanded ? 'Show less' : '...more'}
-                                </button>
-                            </div>
-                        )}
-                    </div>
+            <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-0 overflow-hidden border border-white/5 rounded-[32px]" style={{ background: 'linear-gradient(145deg, #121217 0%, #0e0b18 100%)' }}>
+                {/* Element A: Video Player iframe wrapper */}
+                <div className="order-1 xl:col-start-1 xl:row-start-1 relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
+                    <div id={playerMountId} className="absolute inset-0 w-full h-full" />
                 </div>
 
+                {/* Element C: Video Details & Description */}
+                <div className="order-3 xl:col-start-1 xl:row-start-2 p-6 flex flex-col min-w-0">
+                    <h2 className="text-xl font-black text-white uppercase tracking-tight mb-2">{videoTitle || title}</h2>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full" style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#7c3aed' }}>
+                                Video {activeIndex + 1}{playlistVideos.length > 0 ? ` of ${playlistVideos.length}` : ''}
+                            </span>
+                            {playerReady && (
+                                <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full" style={{ background: isPlaying ? 'rgba(52,211,153,0.15)' : 'rgba(239,68,68,0.15)', border: `1px solid ${isPlaying ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)'}`, color: isPlaying ? '#34d399' : '#f87171' }}>
+                                    {isPlaying ? 'Playing' : 'Paused'}
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={prevVideo}
+                                disabled={!playerReady}
+                                className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30"
+                            >
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" /></svg>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={togglePlay}
+                                disabled={!playerReady}
+                                className="w-12 h-12 rounded-full flex items-center justify-center border text-white hover:bg-white/10 transition-all disabled:opacity-30"
+                                style={{ background: 'rgba(124,58,237,0.2)', borderColor: 'rgba(124,58,237,0.4)' }}
+                            >
+                                {isPlaying ? (
+                                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z" /></svg>
+                                ) : (
+                                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                )}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={nextVideo}
+                                disabled={!playerReady}
+                                className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30"
+                            >
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" /></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* YouTube Style collapsible Description Box */}
+                    {description && (
+                        <div className="mt-5 p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.04] transition-all text-left">
+                            <div className={`text-sm text-white/70 leading-relaxed ${!isExpanded ? 'line-clamp-3' : ''}`}>
+                                {description}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsExpanded(!isExpanded)}
+                                className="mt-2 text-xs font-black text-[#a855f7] hover:underline uppercase tracking-wider block"
+                            >
+                                {isExpanded ? 'Show less' : '...more'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Element B: Queue Sidebar */}
                 {playlistVideos.length > 0 && (
-                    <div className="xl:w-[340px] w-full border-t xl:border-t-0 xl:border-l border-white/5 flex flex-col" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                    <div className="order-2 xl:col-start-2 xl:row-start-1 xl:row-span-2 xl:w-[340px] w-full border-t xl:border-t-0 xl:border-l border-white/5 flex flex-col" style={{ background: 'rgba(0,0,0,0.2)' }}>
                         <div className="px-5 py-4 border-b border-white/5">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">Up Next</h3>
@@ -445,7 +447,7 @@ function ExternalYouTubePlaylistPlayer({
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto custom-scrollbar max-h-[500px]">
+                        <div className="flex-1 overflow-y-auto custom-scrollbar max-h-[300px] xl:max-h-[500px]">
                             {playlistVideos.map((item, index) => {
                                 const isActive = index === activeIndex;
                                 return (
