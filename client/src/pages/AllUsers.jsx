@@ -6,8 +6,6 @@ import { m, AnimatePresence } from 'framer-motion';
 import { Trash2, ShieldCheck, UserCheck, UserX, Search, X, ArrowLeft, RefreshCw, ChevronRight, UserCog } from 'lucide-react';
 import { adminAPI } from '../config/api';
 
-const LOAD_TIMEOUT = 8000;
-
 // These accounts cannot be deleted, unadmined, or unverified by anyone
 const PERMANENT_ADMIN_EMAILS = new Set([
     'lovepreetsingh73437@gmail.com',
@@ -43,13 +41,7 @@ export default function AllUsers() {
         try {
             setLoading(true);
             setError(null);
-            const timeout = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Server is waking up. Please wait and try again.')), LOAD_TIMEOUT)
-            );
-            const res = await Promise.race([
-                adminAPI.getUsers({ search: searchQuery || undefined }),
-                timeout
-            ]);
+            const res = await adminAPI.getUsers({ search: searchQuery || undefined });
             setUsers(res.users || res.data?.users || []);
         } catch (err) {
             const msg = err?.message || 'Failed to fetch users';

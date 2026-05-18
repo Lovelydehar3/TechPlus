@@ -40,8 +40,6 @@ function toDateTimeLocalValue(value) {
     return local.toISOString().slice(0, 16);
 }
 
-const LOAD_TIMEOUT = 8000;
-
 export default function CollegeHackathonManager() {
     const { addToast } = useToast();
     const [hackathons, setHackathons] = useState([]);
@@ -55,10 +53,7 @@ export default function CollegeHackathonManager() {
     const fetchHackathons = useCallback(async () => {
         try {
             setLoading(true);
-            const timeout = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Loading timed out')), LOAD_TIMEOUT)
-            );
-            const res = await Promise.race([hackathonAPI.getCollegeAdmin(), timeout]);
+            const res = await hackathonAPI.getCollegeAdmin();
             setHackathons(res.hackathons || []);
         } catch {
             addToast('Failed to load college hackathons', 'error');

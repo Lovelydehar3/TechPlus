@@ -69,8 +69,6 @@ function buildEventSchedule(eventDate, timeStart, timeEnd) {
 }
 
 /* ─── Main Component ──────────────────────────────────────────────────────── */
-const LOAD_TIMEOUT = 8000;
-
 export default function ClubEventManager() {
     const { addToast } = useToast();
 
@@ -94,10 +92,7 @@ export default function ClubEventManager() {
     // ── Fetch clubs ──────────────────────────────────────────────────────────
     const fetchClubs = useCallback(async () => {
         try {
-            const timeout = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Loading timed out')), LOAD_TIMEOUT)
-            );
-            const res = await Promise.race([clubAPI.getClubs(), timeout]);
+            const res = await clubAPI.getClubs();
             setClubs(res.clubs || []);
         } catch {
             addToast('Failed to load clubs', 'error');
@@ -108,13 +103,7 @@ export default function ClubEventManager() {
     const fetchEvents = useCallback(async () => {
         try {
             setLoading(true);
-            const timeout = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Loading timed out')), LOAD_TIMEOUT)
-            );
-            const res = await Promise.race([
-                clubAPI.getAllEvents(filterClubId || undefined),
-                timeout
-            ]);
+            const res = await clubAPI.getAllEvents(filterClubId || undefined);
             setEvents(res.events || []);
         } catch {
             addToast('Failed to load events', 'error');

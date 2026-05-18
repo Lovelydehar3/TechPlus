@@ -8,8 +8,6 @@ import { adminAPI } from '../config/api';
 import ClubEventManager from '../components/ClubEventManager';
 import CollegeHackathonManager from '../components/CollegeHackathonManager';
 
-const LOAD_TIMEOUT = 8000;
-
 export default function AdminPanel() {
     const { user } = useAuth();
     const { addToast } = useToast();
@@ -20,13 +18,7 @@ export default function AdminPanel() {
     const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
-            const timeout = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Loading timed out')), LOAD_TIMEOUT)
-            );
-            const res = await Promise.race([
-                adminAPI.getUsers(),
-                timeout
-            ]);
+            const res = await adminAPI.getUsers();
             setUsers(res.users || res.data?.users || []);
         } catch (err) {
             addToast(err?.message || 'Failed to fetch users', 'error');
