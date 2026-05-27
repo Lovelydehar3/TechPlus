@@ -3,7 +3,6 @@
 <img src="https://img.shields.io/badge/T%2B-TECHPLUS-7C3AED?style=for-the-badge&labelColor=0a0a0a&color=7C3AED" height="40"/>
 
 # TechPlus
-
  
 ### The Developer Intelligence Platform
 
